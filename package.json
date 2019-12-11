@@ -4,6 +4,7 @@
   "description": "Moderator tool assisting in miscellaneous tasks. Crossposts links from the subreddit to the Discord and notifies moderators.",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "test"
   },
   "repository": {
