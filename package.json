@@ -1,0 +1,29 @@
+{
+  "name": "dittostar",
+  "version": "1.0.0",
+  "description": "Moderator tool assisting in miscellaneous tasks. Crossposts links from the subreddit to the Discord and notifies moderators.",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jessicayyu/dittostar.git"
+  },
+  "keywords": [
+    "reddit",
+    "bot",
+    "dittostar"
+  ],
+  "author": "Jessica Yu",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/jessicayyu/dittostar/issues"
+  },
+  "homepage": "https://github.com/jessicayyu/dittostar#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "snoostorm": "^1.3.0",
+    "snoowrap": "^1.20.1"
+  }
+}
