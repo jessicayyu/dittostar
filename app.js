@@ -11,18 +11,14 @@ const r = new snoowrap({
     password: process.env.REDDIT_PASS
 });
 
-// const submissions = new SubmissionStream(client, {
-//     subreddit: 'pokemongiveaway',
-//     limit: 10,
-//     pollTime: 5000
-// });
-// submissions.on("submission", console.log);
-
-const comments = new CommentStream(client, {
-    subreddit: 'testingground4bots',
-    limit: 10,
-    pollTime: 5000
-});
-comments.on("comment", (item) => {
-    console.log(item)
-});
+r.getSubreddit('pokemongiveaway')
+    // .getHot().map(post => post.title)
+    .getNewModmailConversations({limit:3})
+    .map(modmail => {
+        let summary = [];
+        summary.push(modmail.id, modmail.subject, modmail.messages[0].author.name.name);
+        return summary;
+    })
+    .map(item => {
+        console.log("Subject: " + item[1] + "\nAuthor:" + item[2] + "\nhttps://mod.reddit.com/mail/all/" + item[0] + "\n")
+    });
