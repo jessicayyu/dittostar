@@ -2,12 +2,12 @@ require('dotenv').config();
 
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
-const disc = new Discord.Client();
+const client = new Discord.Client();
 
 const TOKEN = process.env.DISCORD_TOKEN;
 
-disc.on('ready', () => {
-    console.log(`Logged in as ${disc.user.tag}!`)
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`)
 });
 
 const r = new snoowrap({
@@ -32,9 +32,11 @@ r.getSubreddit('pokemongiveaway')
     .map(item => {
         const msg = "Subject: " + item[1] + "\nAuthor:" + item[2] + "\nhttps://mod.reddit.com/mail/all/" + item[0] + "\n";
         console.log(msg);
-    });
+        client.channels.get('423338578597380106').send(msg + "\n");
+    })
+    .catch(console.error);
 
-disc.on('guildMemberAdd', member => {
+client.on('guildMemberAdd', member => {
     const channel = member.guild.channels.find(ch => ch.name === 'chat-main');
     const greets = [
         `Hello, ${member}! So glad to have you here!`, 
@@ -49,11 +51,11 @@ disc.on('guildMemberAdd', member => {
     console.log('New user joined server!' + member);
 });
 
-disc.on('message', message => {
+client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
         message.delete()
             .then(console.log('Deleted server greet'))
     }
 });
 
-disc.login(TOKEN);
+client.login(TOKEN);
