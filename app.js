@@ -30,9 +30,9 @@ r.getSubreddit('pokemongiveaway')
         return summary;
     })
     .map(item => {
-        const msg = "Subject: " + item[1] + "\nAuthor:" + item[2] + "\nhttps://mod.reddit.com/mail/all/" + item[0] + "\n";
+        const msg = "Subject: " + item[1] + "\nAuthor:" + item[2] + "\nhttps://mod.reddit.com/mail/all/" + item[0] + "\n _ _";
         console.log(msg);
-        client.channels.get('423338578597380106').send(msg + "\n");
+        client.channels.get('423338578597380106').send(msg);
     })
     .catch(console.error);
 
