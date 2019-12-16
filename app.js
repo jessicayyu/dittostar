@@ -43,10 +43,12 @@ client.on('guildMemberAdd', member => {
         `Get back in the bag Neb--oh, hi ${member}!`, 
         `Let's have a champion time, ${member}! Ah ha ha, Leon is so corny, isn't he?`,
         `Joining us from Galar, ${member}?`,
-        `It's dangerous to go alone, take this! \*hands ${member} some expired coupons\*`
+        `It's dangerous to go alone, take this! \*hands ${member} some expired coupons\*`,
+        `Hihi! Sword or Shield, ${member}? Or maybe another generation?`,
+        `Hell~loo ${member}! Take a seat anywhere, this is the main room.`
     ]
     if (!channel) return;
-    let greeting = greets[rand(4)];
+    let greeting = greets[rand(6)];
     channel.send(greeting);
     console.log('New user joined server!' + member);
 });
@@ -54,7 +56,6 @@ client.on('guildMemberAdd', member => {
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
         message.delete()
-            .then(console.log('Deleted server greet'))
     }
 });
 
