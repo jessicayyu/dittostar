@@ -22,7 +22,6 @@ function rand(max, min = 0) {
     return min + Math.floor(Math.random() * Math.floor(max));
 }
 
-var modmailCheck = Date.now();
 r.getSubreddit('pokemongiveaway')
     .getNewModmailConversations({limit:5})
     .map(modmail => {
@@ -40,12 +39,27 @@ r.getSubreddit('pokemongiveaway')
                 .setTitle(modmail.subject)
                 .setAuthor(modmail.participant.name, "https://i.imgur.com/AvNa16N.png")
                 .setDescription("https://mod.reddit.com/mail/all/" + modmail.id + "\n" + body)
-                .addField("Recent messages by: ", modmail.authors[0].name);
+                .addField("Last reply by: ", modmail.authors[0].name);
 
             client.channels.get("423338578597380106").send(embed);
         }
     })
     .catch(console.error);
+
+    
+function checkComments() {
+    // check timestamp
+    // only console log if newer than timestamp
+    // update timestamp
+    r.getNew('pokemongiveaway', {limit:5})
+        .map(comment => {
+            console.log("author: " + comment.author.name + "\n" + comment.permalink + "\n");
+        })
+        .catch(console.error);
+}
+
+// checkComments();
+// setInterval(checkComments, 90000);
 
 client.on('guildMemberAdd', member => {
     const channel = member.guild.channels.find(ch => ch.name === 'chat-main');
