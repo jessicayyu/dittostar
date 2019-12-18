@@ -7,7 +7,7 @@ const client = new Discord.Client();
 const TOKEN = process.env.DISCORD_TOKEN;
 
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`)
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
 const r = new snoowrap({
@@ -22,17 +22,28 @@ function rand(max, min = 0) {
     return min + Math.floor(Math.random() * Math.floor(max));
 }
 
+var modmailCheck = Date.now();
 r.getSubreddit('pokemongiveaway')
-    .getNewModmailConversations({limit:3})
+    .getNewModmailConversations({limit:5})
     .map(modmail => {
-        let summary = [];
-        summary.push(modmail.id, modmail.subject, modmail.messages[0].author.name.name);
-        return summary;
-    })
-    .map(item => {
-        const msg = "Subject: " + item[1] + "\nAuthor:" + item[2] + "\nhttps://mod.reddit.com/mail/all/" + item[0] + "\n _ _";
-        console.log(msg);
-        client.channels.get('423338578597380106').send(msg);
+        console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
+        if (modmail.messages[0].author.name.isMod) { 
+            return; 
+        } else {
+            const body = modmail.messages[0].bodyMarkdown.slice(0,100) + " . . .";
+            // let usernames = [];
+            // for (let x = 0; x < 3; x++) {
+            //     usernames.push(modmail.authors[x].name);
+            // }
+            // const participants = usernames.join(", ");
+            const embed = new Discord.RichEmbed()
+                .setTitle(modmail.subject)
+                .setAuthor(modmail.participant.name, "https://i.imgur.com/AvNa16N.png")
+                .setDescription("https://mod.reddit.com/mail/all/" + modmail.id + "\n" + body)
+                .addField("Recent messages by: ", modmail.authors[0].name);
+
+            client.channels.get("423338578597380106").send(embed);
+        }
     })
     .catch(console.error);
 
@@ -46,7 +57,7 @@ client.on('guildMemberAdd', member => {
         `It's dangerous to go alone, take this! \*hands ${member} some expired coupons\*`,
         `Hihi! Sword or Shield, ${member}? Or maybe another generation?`,
         `Hell~loo ${member}! Take a seat anywhere, this is the main room.`
-    ]
+    ];
     if (!channel) return;
     let greeting = greets[rand(6)];
     channel.send(greeting);
@@ -55,7 +66,7 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
-        message.delete()
+        message.delete();
     }
 });
 
