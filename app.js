@@ -8,8 +8,11 @@ const client = new Discord.Client();
 const TOKEN = process.env.DISCORD_TOKEN;
 
 var testingChannel;
+var mainChannel;
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    testingChannel = getChannel("423338578597380106");
+    mainChannel = getChannel("232062367951749121");
 });
 
 const r = new snoowrap({
@@ -30,43 +33,43 @@ function getChannel(channel) {
         while (!target) { 
             target = client.channels.get(channel);
             getChannelCounter++;
-            console.log(getChannelCounter, channel);
         }
         return target;
     }
 }
-var testingChannel = getChannel("423338578597380106");
-var mainChannel = getChannel("232062367951749121");
 
 function rand(max, min = 0) {
     return min + Math.floor(Math.random() * Math.floor(max));
 }
 
 function getModmail() {
-    var options = { limit:5, sort: "recent"};
+    var options = { limit:5, sort: "unread"};
+    var timeNow = null;
     return function() {
         r.getSubreddit('pokemongiveaway')
             .getNewModmailConversations({limit:5})
-            .map((modmail, i) => {
-                if (i === 0) {
-                    options.after = modmail.messages[0].id;
-                }
-                console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
+            .map((modmail) => {
+                const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
                 if (modmail.messages[0].author.name.isMod) { 
                     return; 
+                } 
+                if (timeCheck) {
+                    return
                 } else {
+                    console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
+                    const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
                     let body = "";
                     if (modmail.messages[0].bodyMarkdown.length > 100) {
                         body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
                     } else {
                         body = modmail.messages[0].bodyMarkdown;
                     }
-                    let timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
                     const embed = new Discord.RichEmbed()
                         .setTitle("Modmail: " + modmail.subject)
                         .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
                         .setDescription(body + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\n" + timestamp);
-                        testingChannel().send(embed);
+                    testingChannel().send(embed);
+                    timeNow = moment();
                 }
             })
             .catch(console.error);
@@ -79,7 +82,7 @@ var checkPosts = function() {
         r.getNew('pokemongiveaway', options)
             .map((post, i) => {
                 // console.log(post);
-                let timestamp = moment.utc(post.created_utc * 1000).local().format("dddd, MMMM Do YYYY h:mmA");
+                let timestamp = moment.utc(post.created_utc * 1000).fromNow();
                 console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                 if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
                     const embed = new Discord.RichEmbed()
