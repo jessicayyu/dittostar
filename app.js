@@ -4,6 +4,9 @@ const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
+var moment = require('moment');
+moment().format();
+
 const TOKEN = process.env.DISCORD_TOKEN;
 
 client.on('ready', () => {
@@ -29,37 +32,53 @@ r.getSubreddit('pokemongiveaway')
         if (modmail.messages[0].author.name.isMod) { 
             return; 
         } else {
-            const body = modmail.messages[0].bodyMarkdown.slice(0,100) + " . . .";
+            let body = "";
+            if (modmail.messages[0].bodyMarkdown.length > 100) {
+                body = modmail.messages[0].bodyMarkdown.slice(0,100) + " . . .";
+            } else {
+                body = modmail.messages[0].bodyMarkdown;
+            }
             // let usernames = [];
             // for (let x = 0; x < 3; x++) {
             //     usernames.push(modmail.authors[x].name);
             // }
             // const participants = usernames.join(", ");
             const embed = new Discord.RichEmbed()
-                .setTitle(modmail.subject)
-                .setAuthor(modmail.participant.name, "https://i.imgur.com/AvNa16N.png")
-                .setDescription("https://mod.reddit.com/mail/all/" + modmail.id + "\n" + body)
-                .addField("Last reply by: ", modmail.authors[0].name);
-
+                .setTitle("Modmail: " + modmail.subject)
+                .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
+                .setDescription(body + "\nhttps://mod.reddit.com/mail/all/" + modmail.id);
             client.channels.get("423338578597380106").send(embed);
         }
     })
     .catch(console.error);
 
-    
-function checkComments() {
+var checkPosts = function() {
+    var options = { limit:3, sort: "new"};
     // check timestamp
     // only console log if newer than timestamp
     // update timestamp
-    r.getNew('pokemongiveaway', {limit:5})
-        .map(comment => {
-            console.log("author: " + comment.author.name + "\n" + comment.permalink + "\n");
-        })
-        .catch(console.error);
+    return function() {
+        r.getNew('pokemongiveaway', options)
+            .map(post => {
+                // console.log(post);
+                let timestamp = moment(post.created_UTC).format("dddd, MMMM Do YYYY h:mmA");
+                console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + post.link_flair_css_class + "\n" + timestamp);
+                if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
+                    const embed = new Discord.RichEmbed()
+                        .setTitle(post.title)
+                        .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                        .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
+                    client.channels.get("423338578597380106").send(embed);
+                }
+                options.before = post.name;
+            })
+            .catch(console.error);
+    }
 }
 
-// checkComments();
-// setInterval(checkComments, 90000);
+var postFeed = checkPosts();
+postFeed();
+setInterval(postFeed, 90000);
 
 client.on('guildMemberAdd', member => {
     const channel = member.guild.channels.find(ch => ch.name === 'chat-main');
@@ -68,7 +87,7 @@ client.on('guildMemberAdd', member => {
         `Get back in the bag Neb--oh, hi ${member}!`, 
         `Let's have a champion time, ${member}! Ah ha ha, Leon is so corny, isn't he?`,
         `Joining us from Galar, ${member}?`,
-        `It's dangerous to go alone, take this! \*hands ${member} some expired coupons\*`,
+        `It's dangerous to go alone, take this! \\*hands ${member} some expired coupons\\*`,
         `Hihi! Sword or Shield, ${member}? Or maybe another generation?`,
         `Hell~loo ${member}! Take a seat anywhere, this is the main room.`
     ];
