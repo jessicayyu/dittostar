@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/jessicayyu/dittostar#readme",
   "dependencies": {
+    "axios": "^0.19.0",
     "discord.js": "^11.5.1",
     "dotenv": "^8.2.0",
     "moment": "^2.24.0",

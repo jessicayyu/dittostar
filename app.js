@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-
+const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 
@@ -81,16 +81,15 @@ var checkPosts = function() {
     return function() {
         r.getNew('pokemongiveaway', options)
             .map((post, i) => {
-                // console.log(post);
-                let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-                console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                 if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
+                    let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+                    console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                     const embed = new Discord.RichEmbed()
                         .setTitle(post.title)
                         .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                         .setThumbnail("https://i.imgur.com/71bnPgK.png")
                         .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
-                    testingChannel().send(embed);
+                    mainChannel().send(embed);
                 }
                 if (i === 0) {
                     options.before = post.name;
