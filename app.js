@@ -26,6 +26,7 @@ const r = new snoowrap({
 
 const moment = require('moment');
 moment().format();
+var cooldown = new Set();
 
 function getChannel(channel) {
     var target = null;
@@ -128,6 +129,44 @@ client.on('guildMemberAdd', member => {
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
         message.delete();
+    }
+    if (!message.content.startsWith(prefix) || message.author.bot) {
+        return
+    }
+    var role;
+    var arg = message.content.slice(1).split(' ');
+    var cmd = arg[0];
+    if (cmd === 'ping') {
+        message.channel.send('pong!');
+    } else if (cmd === 'raid') {
+        if (cooldown.has(message.author.id)) {
+            message.channel.send('Hey, slow down, please.');
+            console.log('cooldown');
+            return;
+        } else {
+            role = "657365039979692032";
+            message.guild.roles.get(role).setMentionable(true)
+                .then(() => {
+                    message.channel.send(`There's a <@&${role}> coming up!`);
+                    cooldown.add(message.author.id);
+                    message.guild.roles.get(role).setMentionable(false);
+                    setTimeout(() => {
+                        cooldown.delete(message.author.id);
+                    }, 30000);
+                })
+        }
+    } else if (cmd === 'role') {
+        if (arg[1] === 'raid') {
+            role = '657365039979692032';
+            var findRole = message.member.roles.find(r => r.id === role);
+            if (findRole) {
+                message.member.removeRole(role)
+                    .then(message.channel.send('Role removed!'));
+            } else {
+                message.member.addRole(role)
+                    .then(message.channel.send('Role added!'));
+            }
+        }
     }
 });
 

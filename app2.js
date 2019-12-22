@@ -68,13 +68,12 @@ client.on('message', message => {
                     message.guild.roles.get(role).setMentionable(false);
                     setTimeout(() => {
                         cooldown.delete(message.author.id);
-                        console.log('cooldown: ' + JSON.stringify(cooldown));
                     }, 15000);
                 })
         }
     } else if (cmd === 'role') {
         if (arg[1] === 'raid') {
-           var findRole = message.member.roles.find('id', '657365039979692032');
+           var findRole = message.member.roles.find(r => r.id === '657365039979692032');
            if (findRole) {
                 message.member.removeRole('657365039979692032')
                     .then(message.channel.send('Role removed!'));
