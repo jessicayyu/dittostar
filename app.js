@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { prefix } = require('./config.json');
+const { prefix, subreddit } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -46,17 +46,14 @@ function rand(max, min = 0) {
 }
 
 function getModmail() {
-    var timeNow = null;
+    var timeNow = moment();
     return function() {
-        r.getSubreddit('pokemongiveaway')
+        r.getSubreddit(subreddit)
             .getNewModmailConversations({limit:5})
             .map((modmail) => {
                 const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
-                if (modmail.messages[0].author.name.isMod) { 
+                if (modmail.messages[0].author.name.isMod || timeCheck) { 
                     return; 
-                } 
-                if (timeCheck) {
-                    return
                 } else {
                     console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
                     const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
@@ -80,33 +77,43 @@ function getModmail() {
 
 var checkPosts = function() {
     var options = { limit:5, sort: "new"};
-    return function() {
-        r.getNew('pokemongiveaway', options)
-            .map((post, i) => {
-                if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
-                    let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-                    console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
-                    const embed = new Discord.RichEmbed()
-                        .setTitle(post.title)
-                        .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                        .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                        .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
-                    mainChannel().send(embed);
+    return function(bool = false) {
+        if (bool) {
+            options = { limit: 10, sort: "new", before: null };
+        }
+        r.getNew(subreddit, options)
+            .then((posts) => {
+                if (!bool && !options.before) {
+                    options.before = posts[0].name;
+                    return;
                 }
-                if (i === 0) {
-                    options.before = post.name;
-                }
+                console.log('Checking giveaways ' + moment().format("MMM D h:mm:ssA"))
+                posts.map((post, i) => {
+                    if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
+                        let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+                        console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+                        const embed = new Discord.RichEmbed()
+                            .setTitle(post.title)
+                            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                            .setThumbnail("https://i.imgur.com/71bnPgK.png")
+                            .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
+                        mainChannel().send(embed);
+                    }
+                    if (i === 0) {
+                        options.before = post.name;
+                    }
+                })
             })
             .catch(console.error);
     }
 }
 
 var modmailFeed = getModmail();
-setTimeout(modmailFeed, 30000);
+setTimeout(modmailFeed, 15000);
 setInterval(modmailFeed, 180000);
 
 var postFeed = checkPosts();
-setTimeout(postFeed, 30000);
+setTimeout(postFeed, 15000);
 setInterval(postFeed, 120000);
 
 client.on('guildMemberAdd', member => {
@@ -130,6 +137,15 @@ client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
         message.delete();
     }
+    if (message.content.includes('fuck')) {
+        console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
+        var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*'];
+        var msg = angryMori[rand(6)];
+        if (msg) {
+            message.channel.send(msg);
+        }
+        return
+    }
     if (!message.content.startsWith(prefix) || message.author.bot) {
         return
     }
@@ -138,12 +154,16 @@ client.on('message', message => {
     var cmd = arg[0];
     if (cmd === 'ping') {
         message.channel.send('pong!');
+        console.log(message.content);
     } else if (cmd === 'raid') {
         if (cooldown.has(message.author.id)) {
             message.channel.send('Hey, slow down, please.');
-            console.log('cooldown');
+            console.log('cooldown ' + cmd);
             return;
         } else {
+            if (!message.guild.id === "232062367951749121") {
+                return
+            }
             var role = "657365039979692032";
             const index = prefix.length + cmd.length + 1;
             message.guild.roles.get(role).setMentionable(true)
@@ -160,6 +180,9 @@ client.on('message', message => {
         }
     } else if (cmd === 'role') {
         if (arg[1] === 'raid') {
+            if (!message.guild.id === "232062367951749121") {
+                return
+            }
             role = '657365039979692032';
             var findRole = message.member.roles.find(r => r.id === role);
             if (findRole) {
@@ -170,6 +193,17 @@ client.on('message', message => {
                     .then(message.channel.send('Role added!'));
             }
         }
+    } else if (cmd === 'giveaways') {
+        if (cooldown.has(message.author.id)) {
+            message.channel.send('Hey, slow down, please.');
+            console.log('cooldown ' + cmd);
+            return;
+        }
+        postFeed(true);
+        cooldown.add(message.author.id);
+        setTimeout(() => {
+            cooldown.delete(message.author.id);
+        }, 180000);
     }
 });
 
