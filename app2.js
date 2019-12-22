@@ -61,9 +61,10 @@ client.on('message', message => {
             return;
         } else {
             var role = "657365039979692032";
+            const index = prefix.length + cmd.length + 1;
             message.guild.roles.get(role).setMentionable(true)
                 .then(() => {
-                    message.channel.send(`There's a <@&${role}> coming up!`);
+                    message.channel.send('<@&' + role + '> ' + message.content.slice(index));
                     cooldown.add(message.author.id);
                     message.guild.roles.get(role).setMentionable(false);
                     setTimeout(() => {

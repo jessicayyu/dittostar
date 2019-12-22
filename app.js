@@ -144,15 +144,16 @@ client.on('message', message => {
             console.log('cooldown');
             return;
         } else {
-            role = "657365039979692032";
+            var role = "657365039979692032";
+            const index = prefix.length + cmd.length + 1;
             message.guild.roles.get(role).setMentionable(true)
                 .then(() => {
-                    message.channel.send(`There's a <@&${role}> coming up!`);
+                    message.channel.send('<@&' + role + '> ' + message.content.slice(index));
                     cooldown.add(message.author.id);
                     message.guild.roles.get(role).setMentionable(false);
                     setTimeout(() => {
                         cooldown.delete(message.author.id);
-                    }, 30000);
+                    }, 15000);
                 })
         }
     } else if (cmd === 'role') {
