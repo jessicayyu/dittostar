@@ -64,13 +64,15 @@ client.on('message', message => {
             const index = prefix.length + cmd.length + 1;
             message.guild.roles.get(role).setMentionable(true)
                 .then(() => {
-                    message.channel.send('<@&' + role + '> ' + message.content.slice(index));
+                    message.channel.send('<@&' + role + '> ' + message.content.slice(index))
+                        .then(() => {
+                            message.guild.roles.get(role).setMentionable(false);
+                        });
                     cooldown.add(message.author.id);
-                    message.guild.roles.get(role).setMentionable(false);
                     setTimeout(() => {
                         cooldown.delete(message.author.id);
                     }, 15000);
-                })
+                });
         }
     } else if (cmd === 'role') {
         if (arg[1] === 'raid') {
