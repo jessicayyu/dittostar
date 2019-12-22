@@ -21,7 +21,7 @@ Fork from this repo or download your own copy.
 * DiscordJS
 
 ## OAUTH2
-It is necessary to use [OAUTH2 to get an access token](https://github.com/reddit-archive/reddit/wiki/OAuth2) in order to make POST requests to modmail.
+It is necessary to use [OAUTH2 to get an access token](https://github.com/reddit-archive/reddit/wiki/OAuth2) in order to make POST requests to modmail. If no POST requests to modmail are needed, then  you do not need to create an access token.
 
 First, authorize the app at the following URL:  
 > ```https://www.reddit.com/api/v1/authorize?client_id=${process.env.CLIENT_ID}&response_type=code&state=${ARBITRARY_CODEWORD}&redirect_uri=${REDIRECT_URI}&duration=permanent&scope=modmail```  

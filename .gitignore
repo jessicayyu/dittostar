@@ -3,3 +3,4 @@ personaluse.txt
 *.env
 node_modules
 example*.js
+error*

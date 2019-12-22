@@ -3,6 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const { prefix } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -33,6 +34,7 @@ function getChannel(channel) {
         while (!target) { 
             target = client.channels.get(channel);
             getChannelCounter++;
+            console.log(getChannelCounter);
         }
         return target;
     }
@@ -43,7 +45,6 @@ function rand(max, min = 0) {
 }
 
 function getModmail() {
-    var options = { limit:5, sort: "unread"};
     var timeNow = null;
     return function() {
         r.getSubreddit('pokemongiveaway')
