@@ -66,6 +66,7 @@ function getModmail() {
                     const embed = new Discord.RichEmbed()
                         .setTitle("Modmail: " + modmail.subject)
                         .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
+                        .setColor("#ff4500")
                         .setDescription(body + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\n" + timestamp);
                     testingChannel().send(embed);
                     timeNow = moment();
@@ -77,17 +78,26 @@ function getModmail() {
 
 var checkPosts = function() {
     var options = { limit:5, sort: "new"};
-    return function(bool = false) {
-        if (bool) {
-            options = { limit: 10, sort: "new", before: null };
-        }
+    var last;
+    return function() {
+        // if (bool) {
+        //     options = { limit: 10, sort: "new", before: null };
+        //     setTimeout(() => {
+        //         options.limit = 5;
+        //     }, 3000);
+        // }
         r.getNew(subreddit, options)
             .then((posts) => {
-                if (!bool && !options.before) {
+                if (!options.before) {
                     options.before = posts[0].name;
+                    last = posts[0].id;
+                    console.log('empty before ' + posts[0].name + ' ' + last);
                     return;
                 }
-                console.log('Checking giveaways ' + moment().format("MMM D h:mm:ssA"))
+                let now = moment();
+                if (now.minute() % 1 === 0) {
+                    console.log('GA feed ' + now.format("MMM D h:mm:ssA") + ' ' + options.before + ' ' + last);
+                }
                 posts.map((post, i) => {
                     if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
                         let timestamp = moment.utc(post.created_utc * 1000).fromNow();
@@ -101,7 +111,12 @@ var checkPosts = function() {
                     }
                     if (i === 0) {
                         options.before = post.name;
+                        last = post.id;
+                        if (now.minute() % 5 === 0) {
+                            console.log('Updating before position');
+                        }
                     }
+                    return post;
                 })
             })
             .catch(console.error);
@@ -204,6 +219,40 @@ client.on('message', message => {
         setTimeout(() => {
             cooldown.delete(message.author.id);
         }, 180000);
+    } else if (cmd === 'time') {
+        if (!arg[1]) {
+            message.channel.send("Umm... what? You want to know the time where?");
+        }
+        const zones = {
+            sydney: "Australia/Sydney",
+            amsterdam: "Europe/Amsterdam",
+            tokyo: "Asia/Tokyo",
+            california: "America/Los_Angeles",
+            portland: "America/Los_Angeles",
+            chicago: "America/Chicago",
+            miami: "America/New_York"
+        };
+        let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+        var location = zones[cmdArg.toLowerCase()];
+        if (!location) {
+            message.channel.send("Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami off the top of my head.");
+            return;
+        }
+        axios.get("http://worldtimeapi.org/api/timezone/" + location)
+            .then((response) => {
+                console.log(response.data.datetime, location);
+                var timeData = moment().utcOffset(response.data.datetime);
+                let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + cmdArg.slice(0,1).toUpperCase() + cmdArg.slice(1) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
+                message.channel.send(msg);
+                var RNG = rand(4);
+                if (RNG < 2) {
+                    var sassArray = ["You could use your own phone, you know.", "You're already on the internet, just Google it."]
+                    setTimeout(() => {
+                        message.channel.send(sassArray[RNG]);
+                    }, 2000);
+                } 
+            })
+            .catch(console.error);
     }
 });
 

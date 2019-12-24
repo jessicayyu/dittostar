@@ -1,0 +1,5 @@
+{
+    "title": "Mori Help Menu",
+    "commands": "!role raid - add yourself to subscribe to Max Raid alert pings\n
+    !raid [optional] - Ping the @raid group, along with additional text if desired"
+}
