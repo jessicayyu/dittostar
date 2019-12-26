@@ -93,7 +93,7 @@ var checkPosts = function() {
                     return;
                 }
                 let now = moment();
-                if (now.minute() % 1 === 0) {
+                if (now.minute() % 3 === 0) {
                     console.log('GA feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
                 posts.map((post, i) => {
@@ -142,21 +142,21 @@ var checkComments = function() {
                     return;
                 }
                 let now = moment();
-                if (now.minute() % 5 === 0) {
+                if (now.minute() % 3 === 0) {
                     console.log('comment feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
                 comments.map((comment, i) => {
                     if (comment.id < last || comment.id === last || comment.distinguished) {
                         return;
                     }
-                    if (comment.body.includes("please")) {
+                    let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
+                    if (comment.body.includes("mod")) {
                         let body = comment.body.length > 150 ? comment.body.slice(0,150) : comment.body;
-                        let timestamp = moment.utc(comment.created_utc * 1000).fromNow();
-                        console.log("Mods mentioned: " + comment.permalink);
+                        console.log("Comment has watched keyword: " + comment.permalink);
                         const embed = new Discord.RichEmbed()
-                            .setAuthor("/u/" + post.author.name, `https://www.reddit.com/u/${post.author.name}`)
-                            .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                            .setDescription(body + "\n[" + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
+                            .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                            .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
                         testingChannel().send(embed);
                     }
                     if (i === 0) {
