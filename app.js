@@ -35,7 +35,7 @@ function getChannel(channel) {
         while (!target) { 
             target = client.channels.get(channel);
             getChannelCounter++;
-            console.log(getChannelCounter);
+            console.log('Get channel attempt ' + getChannelCounter);
         }
         return target;
     }
@@ -146,11 +146,11 @@ var checkComments = function() {
                     console.log('comment feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
                 comments.map((comment, i) => {
-                    if (comment.id < last || comment.id === last || comment.distinguished) {
+                    if (comment.id < last || comment.id === last ) {
                         return;
                     }
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
-                    if (comment.body.includes("mod")) {
+                    if (comment.body.includes("mod") && !comment.distinguished) {
                         let body = comment.body.length > 150 ? comment.body.slice(0,150) : comment.body;
                         console.log("Comment has watched keyword: " + comment.permalink);
                         const embed = new Discord.RichEmbed()
