@@ -110,7 +110,7 @@ var checkPosts = function() {
                             .setURL(post.url)
                             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                             .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                            .setDescription(timestamp + " at https://www.redd.it/" + post.id);
+                            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://www.redd.it/" + post.id + ")");
                         mainChannel().send(embed);
                     }
                     if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
@@ -124,7 +124,6 @@ var checkPosts = function() {
                     }
                     if (i === 0) {
                         last = post.name;
-                        console.log('Updating before position');
                     }
                     return post;
                 })
@@ -136,11 +135,11 @@ var checkPosts = function() {
 };
 
 var modmailFeed = getModmail();
-setTimeout(modmailFeed, 15000);
+setTimeout(modmailFeed, 10000);
 setInterval(modmailFeed, 180000);
 
 var postFeed = checkPosts();
-setTimeout(postFeed, 15000);
+setTimeout(postFeed, 10000);
 setInterval(postFeed, 120000);
 
 var checkComments = function() {
