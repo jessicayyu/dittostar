@@ -65,9 +65,10 @@ var getModmail = function() {
                     }
                     const embed = new Discord.RichEmbed()
                         .setTitle("Modmail: " + modmail.subject)
+                        .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
                         .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
                         .setColor("#ff4500")
-                        .setDescription(body + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\n" + timestamp);
+                        .setDescription(body + "\n" + timestamp);
                     testingChannel().send(embed);
                     timeNow = moment();
                 }
@@ -104,11 +105,22 @@ var checkPosts = function() {
                         let timestamp = moment.utc(post.created_utc * 1000).fromNow();
                         console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                         const embed = new Discord.RichEmbed()
+                            .setColor("#1a9eb4")
                             .setTitle(post.title)
+                            .setURL(post.url)
                             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                             .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                            .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
+                            .setDescription(timestamp + " at https://www.redd.it/" + post.id);
                         mainChannel().send(embed);
+                    }
+                    if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
+                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) : post.selftext;
+                        console.log("Comment has watched keyword: " + post.url);
+                        const embedWordFound = new Discord.RichEmbed()
+                            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                            .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
+                        testingChannel().send(embedWordFound);
                     }
                     if (i === 0) {
                         last = post.name;
@@ -209,7 +221,7 @@ client.on('message', message => {
         return
     }
     var role;
-    var arg = message.content.slice(1).split(' ');
+    var arg = message.content.slice(1).split(/ +/);
     var cmd = arg[0];
     if (cmd === 'ping') {
         message.channel.send('pong!');
