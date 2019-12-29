@@ -35,7 +35,7 @@ function getChannel(channel) {
         while (!target) { 
             target = client.channels.get(channel);
             getChannelCounter++;
-            console.log(getChannelCounter);
+            console.log('Get channel attempt ' + getChannelCounter);
         }
         return target;
     }
@@ -45,7 +45,7 @@ function rand(max, min = 0) {
     return min + Math.floor(Math.random() * Math.floor(max));
 }
 
-function getModmail() {
+var getModmail = function() {
     var timeNow = moment();
     return function() {
         r.getSubreddit(subreddit)
@@ -65,16 +65,17 @@ function getModmail() {
                     }
                     const embed = new Discord.RichEmbed()
                         .setTitle("Modmail: " + modmail.subject)
+                        .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
                         .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
                         .setColor("#ff4500")
-                        .setDescription(body + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\n" + timestamp);
+                        .setDescription(body + "\n" + timestamp);
                     testingChannel().send(embed);
                     timeNow = moment();
                 }
             })
             .catch(console.error);
     }
-}
+};
 
 var checkPosts = function() {
     var options = { limit:5, sort: "new"};
@@ -88,48 +89,102 @@ var checkPosts = function() {
         // }
         r.getNew(subreddit, options)
             .then((posts) => {
-                if (!options.before) {
-                    options.before = posts[0].name;
-                    last = posts[0].id;
-                    console.log('empty before ' + posts[0].name + ' ' + last);
+                if (!last) {
+                    last = posts[0].name;
                     return;
                 }
                 let now = moment();
-                if (now.minute() % 1 === 0) {
-                    console.log('GA feed ' + now.format("MMM D h:mm:ssA") + ' ' + options.before + ' ' + last);
+                if (now.minute() % 3 === 0) {
+                    console.log('GA feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
                 posts.map((post, i) => {
+                    if (post.name < last || post.name === last || !post.link_flair_css_class) {
+                        return;
+                    }
                     if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
                         let timestamp = moment.utc(post.created_utc * 1000).fromNow();
                         console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                         const embed = new Discord.RichEmbed()
+                            .setColor("#1a9eb4")
                             .setTitle(post.title)
+                            .setURL(post.url)
                             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                             .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                            .setDescription("https://www.reddit.com" + post.permalink + "\n" + timestamp);
+                            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://www.redd.it/" + post.id + ")");
                         mainChannel().send(embed);
                     }
+                    if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
+                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) : post.selftext;
+                        console.log("Comment has watched keyword: " + post.url);
+                        const embedWordFound = new Discord.RichEmbed()
+                            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                            .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
+                        testingChannel().send(embedWordFound);
+                    }
                     if (i === 0) {
-                        options.before = post.name;
-                        last = post.id;
-                        if (now.minute() % 5 === 0) {
-                            console.log('Updating before position');
-                        }
+                        last = post.name;
                     }
                     return post;
                 })
             })
-            .catch(console.error);
+            .catch(() => {
+                console.error;
+            });
     }
-}
+};
 
 var modmailFeed = getModmail();
-setTimeout(modmailFeed, 15000);
+setTimeout(modmailFeed, 10000);
 setInterval(modmailFeed, 180000);
 
 var postFeed = checkPosts();
-setTimeout(postFeed, 15000);
+setTimeout(postFeed, 10000);
 setInterval(postFeed, 120000);
+
+var checkComments = function() {
+    var options = { limit:10, sort: "new"};
+    var last;
+    return function() {
+        r.getNewComments(subreddit, options)
+            .then((comments) => {
+                if (!last) {
+                    last = comments[0].id;
+                    return;
+                }
+                let now = moment();
+                if (now.minute() % 3 === 0) {
+                    console.log('comment feed ' + now.format("MMM D h:mm A") + ' ' + last);
+                }
+                comments.map((comment, i) => {
+                    if (comment.id < last || comment.id === last ) {
+                        return;
+                    }
+                    let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
+                    if (comment.body.includes("mod") && !comment.distinguished) {
+                        let body = comment.body.length > 150 ? comment.body.slice(0,150) : comment.body;
+                        console.log("Comment has watched keyword: " + comment.permalink);
+                        const embed = new Discord.RichEmbed()
+                            .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                            .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
+                        testingChannel().send(embed);
+                    }
+                    if (i === 0) {
+                        last = comment.id;
+                    }
+                    return comment;
+                })
+            })
+            .catch(() => {
+                console.error;
+            });
+    }
+}
+
+var commentFeed = checkComments();
+setTimeout(commentFeed, 15000);
+setInterval(commentFeed, 120000);
 
 client.on('guildMemberAdd', member => {
     const channel = member.guild.channels.find(ch => ch.name === 'chat-main');
@@ -165,7 +220,7 @@ client.on('message', message => {
         return
     }
     var role;
-    var arg = message.content.slice(1).split(' ');
+    var arg = message.content.slice(1).split(/ +/);
     var cmd = arg[0];
     if (cmd === 'ping') {
         message.channel.send('pong!');
