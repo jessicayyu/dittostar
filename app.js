@@ -80,7 +80,7 @@ var getModmail = function() {
 var checkPosts = function() {
     var options = { limit:5, sort: "new"};
     var last;
-    return function() {
+    return function(bool = false) {
         // if (bool) {
         //     options = { limit: 10, sort: "new", before: null };
         //     setTimeout(() => {
@@ -104,7 +104,7 @@ var checkPosts = function() {
                     if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
                         let timestamp = moment.utc(post.created_utc * 1000).fromNow();
                         console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
-                        const embed = new Discord.RichEmbed()
+                        let embed = new Discord.RichEmbed()
                             .setColor("#1a9eb4")
                             .setTitle(post.title)
                             .setURL(post.url)
@@ -114,9 +114,10 @@ var checkPosts = function() {
                         mainChannel().send(embed);
                     }
                     if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
-                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) : post.selftext;
-                        console.log("Comment has watched keyword: " + post.url);
-                        const embedWordFound = new Discord.RichEmbed()
+                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+                        console.log("Post has watched keyword: " + post.url);
+                        console.log(i, post.distinguished, post.selftext.slice(0, 150));
+                        let embedWordFound = new Discord.RichEmbed()
                             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                             .setThumbnail("https://i.imgur.com/vXeJfVh.png")
                             .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
@@ -162,7 +163,7 @@ var checkComments = function() {
                     }
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
                     if (comment.body.includes("mod") && !comment.distinguished) {
-                        let body = comment.body.length > 150 ? comment.body.slice(0,150) : comment.body;
+                        let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
                         console.log("Comment has watched keyword: " + comment.permalink);
                         const embed = new Discord.RichEmbed()
                             .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
@@ -205,6 +206,9 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
+        if (!message.guild.id === "232062367951749121") {
+            return
+        }
         message.delete();
     }
     if (message.content.includes('fuck')) {
@@ -308,6 +312,10 @@ client.on('message', message => {
                 } 
             })
             .catch(console.error);
+    } else if (cmd === 'dex') {
+        let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+        cmdArg = cmdArg.split(' ').join('');
+        message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
     }
 });
 
