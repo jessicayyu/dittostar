@@ -32,6 +32,9 @@ Then use the code at the end of the URL in the following curl command:
   
 >The format for the authorization code is `client_id:client_secret` in base 64 encoding.
 
+## Commands
+See [this page for the bot commands](./commands.md).
+
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
