@@ -316,6 +316,22 @@ client.on('message', message => {
         let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
         cmdArg = cmdArg.split(' ').join('');
         message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+    } else if (cmd === 'help') {
+        if (!arg[1]) {
+            message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
+        } else {
+            const commandDex = {
+                role: "[ raid ] - set your role to @raid for raid notifications",
+                raid: "Ping the @raid notification group for Max Raid Battles", 
+                time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
+                dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page"
+            };
+            if (commandDex[arg[1]]) {
+                message.channel.send(commandDex[arg[1]]);
+            } else {
+                message.channel.send("Sorry, I don't understand.");
+            }
+        }
     }
 });
 
