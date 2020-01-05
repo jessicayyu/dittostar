@@ -97,11 +97,8 @@ var checkPosts = function() {
                 if (now.minute() % 3 === 0) {
                     console.log('GA feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
-                posts.map((post, i) => {
-                    if (post.name < last || post.name === last || !post.link_flair_css_class) {
-                        return;
-                    }
-                    if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
+                posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
+                    if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc'].indexOf(post.link_flair_css_class) >= 0) {
                         let timestamp = moment.utc(post.created_utc * 1000).fromNow();
                         console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                         let embed = new Discord.RichEmbed()
@@ -113,15 +110,18 @@ var checkPosts = function() {
                             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://www.redd.it/" + post.id + ")");
                         mainChannel().send(embed);
                     }
-                    if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
-                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
-                        console.log("Post has watched keyword: " + post.url);
-                        console.log(i, post.distinguished, post.selftext.slice(0, 150));
-                        let embedWordFound = new Discord.RichEmbed()
-                            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                            .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
-                        testingChannel().send(embedWordFound);
+                    if (!post.distinguished) {
+                        if (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod")) {
+                            console.log('Distinguished? ' + post.distinguished + typeof(post.distinguished));
+                            let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+                            console.log("Post has watched keyword: " + post.url);
+                            console.log(i, post.distinguished, post.selftext.slice(0, 150));
+                            let embedWordFound = new Discord.RichEmbed()
+                                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                                .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
+                            testingChannel().send(embedWordFound);
+                        }
                     }
                     if (i === 0) {
                         last = post.name;
