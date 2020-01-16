@@ -165,6 +165,10 @@ var checkComments = function() {
                     }
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
                     if (!comment.distinguished && comment.body.includes("mod")) {
+                        if (comment.body.indexOf("mod") === comment.body.indexOf("modest")) {
+                            console.log('Mod match for modest found, ignoring');
+                            return;
+                        }
                         let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
                         console.log("Comment has watched keyword: " + comment.permalink);
                         const embed = new Discord.RichEmbed()
@@ -231,7 +235,6 @@ client.on('message', message => {
     var cmd = arg[0];
     if (cmd === 'ping') {
         message.channel.send('pong!');
-        console.log(message.content);
     } else if (cmd === 'raid') {
         if (cooldown.has(message.author.id)) {
             message.channel.send('Hey, slow down, please.');
@@ -319,6 +322,9 @@ client.on('message', message => {
         let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
         cmdArg = cmdArg.split(' ').join('').toLowerCase();
         message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+    } else if (cmd === 'type') {
+        // query pokedexjs, check for types
+        // query type calculator
     } else if (cmd === 'help') {
         if (!arg[1]) {
             message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
