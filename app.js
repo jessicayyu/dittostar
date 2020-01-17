@@ -26,8 +26,9 @@ const r = new snoowrap({
 
 const moment = require('moment');
 moment().format();
-var Pokedex = require('pokedex'),
-    pokedex = new Pokedex();
+const Pokedex = require('pokedex.js');
+const pokedex = new Pokedex('en');
+const { getTypeWeaknesses } = require('poke-types');
 var cooldown = new Set();
 
 function getChannel(channel) {
@@ -113,7 +114,10 @@ var checkPosts = function() {
                         mainChannel().send(embed);
                     }
                     if (!post.distinguished && !post.stickied) {
-                        if (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod") || post.selftext.includes("twitch")) {
+                        if (post.selftext.includes("mod") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("discord")) {
+                            if (post.selftext.indexOf("mod") === post.selftext.indexOf("modest")) {
+                                return;
+                            }
                             let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
                             console.log("Post has watched keyword: " + post.url);
                             console.log(i, post.selftext.slice(0, 150));
@@ -165,17 +169,16 @@ var checkComments = function() {
                     }
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
                     if (!comment.distinguished && comment.body.includes("mod")) {
-                        if (comment.body.indexOf("mod") === comment.body.indexOf("modest")) {
+                        if (comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
                             console.log('Mod match for modest found, ignoring');
-                            return;
+                            let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
+                            console.log("Comment has watched keyword: " + comment.permalink);
+                            const embed = new Discord.RichEmbed()
+                                .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                                .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
+                            testingChannel().send(embed);
                         }
-                        let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-                        console.log("Comment has watched keyword: " + comment.permalink);
-                        const embed = new Discord.RichEmbed()
-                            .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
-                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                            .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
-                        testingChannel().send(embed);
                     }
                     if (i === 0) {
                         last = comment.id;
@@ -325,6 +328,58 @@ client.on('message', message => {
     } else if (cmd === 'type') {
         // query pokedexjs, check for types
         // query type calculator
+        let pokemonArg = arg;
+        pokemonArg.shift();
+        pokemonArg.forEach((input, i) => {
+            let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
+            pokemonArg[i] = caseChange;
+        });
+        pokemonArg = pokemonArg.join(' ');
+        let typeDuo = pokedex.name(pokemonArg).get();
+        if (typeDuo === '[]') {
+            console.log("No Pokemon found");
+            return;
+        }
+        typeDuo = JSON.parse(typeDuo)[0].type;
+        var typeChart;
+        var typeFX = { 
+            "ultra": [],
+            "super": [],
+            "normal": [],
+            "notVery": [],
+            "weak": [],
+            "noEffect": []
+        };
+        if (typeDuo[1]) {
+            typeChart = getTypeWeaknesses(typeDuo[0],typeDuo[1]);
+        } else if (typeDuo[0]) {
+            typeChart = getTypeWeaknesses(typeDuo[0]);
+        } else {
+            console.log("No Pokedex info found");
+        }
+        for (var type in typeChart) {
+            if (typeChart[type] === 4) {
+                typeFX.ultra.push(type);
+            } else if (typeChart[type] === 2) {
+                typeFX.super.push(type);
+            } else if (typeChart[type] === 1) {
+                typeFX.normal.push(type);
+            } else if (typeChart[type] === 0.5) {
+                typeFX.notVery.push(type);
+            } else if (typeChart[type] === 0.25) {
+                typeFX.weak.push(type);
+            } else if (typeChart[type] === 0) {
+                typeFX.noEffect.push(type);
+            }
+        }
+        let desc = '⚔️ ';
+        if (typeFX.ultra.length > 0) { desc += '4x: [ ' + typeFX.ultra.join(', ') + ' ], '}
+        if (typeFX.super.length > 0) { desc += '2x: [ ' + typeFX.super.join(', ') + ' ]\n'}
+        if (typeFX.normal.length > 0) { desc += '🔹  1x: [ ' + typeFX.normal.join(', ') + ' ]\n🚫 '}
+        if (typeFX.noEffect.length > 0) { desc += '0x: [ ' + typeFX.noEffect.join(', ') + ' ], '}
+        if (typeFX.weak.length > 0) { desc += '0.25x: [ ' + typeFX.weak.join(', ') + ' ], '}
+        if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
+        message.channel.send("**" + pokemonArg + ' - ' + typeDuo.join('/') + '**\n\n' + desc);
     } else if (cmd === 'help') {
         if (!arg[1]) {
             message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
