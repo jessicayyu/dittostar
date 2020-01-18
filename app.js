@@ -115,17 +115,16 @@ var checkPosts = function() {
                     }
                     if (!post.distinguished && !post.stickied) {
                         if (post.selftext.includes("mod") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("discord")) {
-                            if (post.selftext.indexOf("mod") === post.selftext.indexOf("modest")) {
-                                return;
+                            if (post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
+                                let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+                                console.log("Post has watched keyword: " + post.url);
+                                console.log(i, post.selftext.slice(0, 150));
+                                let embedWordFound = new Discord.RichEmbed()
+                                    .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                                    .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                                    .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+                                testingChannel().send(embedWordFound);
                             }
-                            let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
-                            console.log("Post has watched keyword: " + post.url);
-                            console.log(i, post.selftext.slice(0, 150));
-                            let embedWordFound = new Discord.RichEmbed()
-                                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                                .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
-                            testingChannel().send(embedWordFound);
                         }
                     }
                     if (i === 0) {
@@ -379,7 +378,7 @@ client.on('message', message => {
         if (typeFX.noEffect.length > 0) { desc += '0x: [ ' + typeFX.noEffect.join(', ') + ' ], '}
         if (typeFX.weak.length > 0) { desc += '0.25x: [ ' + typeFX.weak.join(', ') + ' ], '}
         if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
-        message.channel.send("**" + pokemonArg + ' - ' + typeDuo.join('/') + '**\n\n' + desc);
+        message.channel.send("**" + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + desc);
     } else if (cmd === 'help') {
         if (!arg[1]) {
             message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
