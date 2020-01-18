@@ -26,6 +26,9 @@ const r = new snoowrap({
 
 const moment = require('moment');
 moment().format();
+const Pokedex = require('pokedex.js');
+const pokedex = new Pokedex('en');
+const { getTypeWeaknesses } = require('poke-types');
 var cooldown = new Set();
 
 function getChannel(channel) {
@@ -97,12 +100,9 @@ var checkPosts = function() {
                 if (now.minute() % 3 === 0) {
                     console.log('GA feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
-                posts.map((post, i) => {
-                    if (post.name < last || post.name === last || !post.link_flair_css_class) {
-                        return;
-                    }
-                    if (post.link_flair_css_class === "giveaway" || post.link_flair_css_class === "hcgiveaway" || post.link_flair_css_class === "contest" || post.link_flair_css_class === "mod" || post.link_flair_css_class === "ddisc") {
-                        let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+                posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
+                    let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+                    if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc'].indexOf(post.link_flair_css_class) >= 0) {
                         console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
                         let embed = new Discord.RichEmbed()
                             .setColor("#1a9eb4")
@@ -110,21 +110,26 @@ var checkPosts = function() {
                             .setURL(post.url)
                             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                             .setThumbnail("https://i.imgur.com/71bnPgK.png")
-                            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://www.redd.it/" + post.id + ")");
+                            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
                         mainChannel().send(embed);
                     }
-                    if ((!post.distinguished) && (post.selftext.includes("mods") || post.selftext.includes("subscribe") || post.selftext.includes("a mod"))) {
-                        let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
-                        console.log("Post has watched keyword: " + post.url);
-                        console.log(i, post.distinguished, post.selftext.slice(0, 150));
-                        let embedWordFound = new Discord.RichEmbed()
-                            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                            .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://www.redd.it/" + post.id + ")");
-                        testingChannel().send(embedWordFound);
+                    if (!post.distinguished && !post.stickied) {
+                        if (post.selftext.includes("mod") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("discord")) {
+                            if (post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
+                                let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+                                console.log("Post has watched keyword: " + post.url);
+                                console.log(i, post.selftext.slice(0, 150));
+                                let embedWordFound = new Discord.RichEmbed()
+                                    .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                                    .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                                    .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+                                testingChannel().send(embedWordFound);
+                            }
+                        }
                     }
                     if (i === 0) {
                         last = post.name;
+                        console.log("last updated");
                     }
                     return post;
                 })
@@ -162,14 +167,17 @@ var checkComments = function() {
                         return;
                     }
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
-                    if (comment.body.includes("mod") && !comment.distinguished) {
-                        let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-                        console.log("Comment has watched keyword: " + comment.permalink);
-                        const embed = new Discord.RichEmbed()
-                            .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
-                            .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                            .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
-                        testingChannel().send(embed);
+                    if (!comment.distinguished && comment.body.includes("mod")) {
+                        if (comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
+                            console.log('Mod match for modest found, ignoring');
+                            let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
+                            console.log("Comment has watched keyword: " + comment.permalink);
+                            const embed = new Discord.RichEmbed()
+                                .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                                .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
+                            testingChannel().send(embed);
+                        }
                     }
                     if (i === 0) {
                         last = comment.id;
@@ -201,6 +209,7 @@ client.on('guildMemberAdd', member => {
     if (!channel) return;
     let greeting = greets[rand(6)];
     channel.send(greeting);
+    channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
     console.log('New user joined server!' + member);
 });
 
@@ -228,7 +237,6 @@ client.on('message', message => {
     var cmd = arg[0];
     if (cmd === 'ping') {
         message.channel.send('pong!');
-        console.log(message.content);
     } else if (cmd === 'raid') {
         if (cooldown.has(message.author.id)) {
             message.channel.send('Hey, slow down, please.');
@@ -314,8 +322,79 @@ client.on('message', message => {
             .catch(console.error);
     } else if (cmd === 'dex') {
         let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
-        cmdArg = cmdArg.split(' ').join('');
+        cmdArg = cmdArg.split(' ').join('').toLowerCase();
         message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+    } else if (cmd === 'type') {
+        // query pokedexjs, check for types
+        // query type calculator
+        let pokemonArg = arg;
+        pokemonArg.shift();
+        pokemonArg.forEach((input, i) => {
+            let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
+            pokemonArg[i] = caseChange;
+        });
+        pokemonArg = pokemonArg.join(' ');
+        let typeDuo = pokedex.name(pokemonArg).get();
+        if (typeDuo === '[]') {
+            console.log("No Pokemon found");
+            return;
+        }
+        typeDuo = JSON.parse(typeDuo)[0].type;
+        var typeChart;
+        var typeFX = { 
+            "ultra": [],
+            "super": [],
+            "normal": [],
+            "notVery": [],
+            "weak": [],
+            "noEffect": []
+        };
+        if (typeDuo[1]) {
+            typeChart = getTypeWeaknesses(typeDuo[0],typeDuo[1]);
+        } else if (typeDuo[0]) {
+            typeChart = getTypeWeaknesses(typeDuo[0]);
+        } else {
+            console.log("No Pokedex info found");
+        }
+        for (var type in typeChart) {
+            if (typeChart[type] === 4) {
+                typeFX.ultra.push(type);
+            } else if (typeChart[type] === 2) {
+                typeFX.super.push(type);
+            } else if (typeChart[type] === 1) {
+                typeFX.normal.push(type);
+            } else if (typeChart[type] === 0.5) {
+                typeFX.notVery.push(type);
+            } else if (typeChart[type] === 0.25) {
+                typeFX.weak.push(type);
+            } else if (typeChart[type] === 0) {
+                typeFX.noEffect.push(type);
+            }
+        }
+        let desc = '⚔️ ';
+        if (typeFX.ultra.length > 0) { desc += '4x: [ ' + typeFX.ultra.join(', ') + ' ], '}
+        if (typeFX.super.length > 0) { desc += '2x: [ ' + typeFX.super.join(', ') + ' ]\n'}
+        if (typeFX.normal.length > 0) { desc += '🔹  1x: [ ' + typeFX.normal.join(', ') + ' ]\n🚫 '}
+        if (typeFX.noEffect.length > 0) { desc += '0x: [ ' + typeFX.noEffect.join(', ') + ' ], '}
+        if (typeFX.weak.length > 0) { desc += '0.25x: [ ' + typeFX.weak.join(', ') + ' ], '}
+        if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
+        message.channel.send("**" + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + desc);
+    } else if (cmd === 'help') {
+        if (!arg[1]) {
+            message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
+        } else {
+            const commandDex = {
+                role: "[ raid ] - set your role to @raid for raid notifications",
+                raid: "Ping the @raid notification group for Max Raid Battles", 
+                time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
+                dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page"
+            };
+            if (commandDex[arg[1]]) {
+                message.channel.send(commandDex[arg[1]]);
+            } else {
+                message.channel.send("Sorry, I don't understand.");
+            }
+        }
     }
 });
 
