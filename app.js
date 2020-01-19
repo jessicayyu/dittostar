@@ -29,6 +29,7 @@ moment().format();
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
+const dex = require('./dex-helpers');
 var cooldown = new Set();
 
 function getChannel(channel) {
@@ -129,7 +130,6 @@ var checkPosts = function() {
                     }
                     if (i === 0) {
                         last = post.name;
-                        console.log("last updated");
                     }
                     return post;
                 })
@@ -162,14 +162,11 @@ var checkComments = function() {
                 if (now.minute() % 3 === 0) {
                     console.log('comment feed ' + now.format("MMM D h:mm A") + ' ' + last);
                 }
-                comments.map((comment, i) => {
-                    if (comment.id < last || comment.id === last ) {
-                        return;
-                    }
+                comments.filter(comment => comment.id > last)
+                .map((comment, i) => {
                     let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
                     if (!comment.distinguished && comment.body.includes("mod")) {
                         if (comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
-                            console.log('Mod match for modest found, ignoring');
                             let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
                             console.log("Comment has watched keyword: " + comment.permalink);
                             const embed = new Discord.RichEmbed()
@@ -214,21 +211,6 @@ client.on('guildMemberAdd', member => {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
     console.log('New user joined server!' + member);
 });
-
-function capitalize(inputText) {
-    let temp;
-    if (Array.isArray(inputText)) {
-        temp = inputText;
-    } else {
-        temp = inputText.split(' ');
-    }
-    temp.forEach((input, i) => {
-        let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
-        temp[i] = caseChange;
-    });
-    temp = temp.join(' ');
-    return temp;
-}
 
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
@@ -348,7 +330,8 @@ client.on('message', message => {
         if (Number(pokemonArg[0])) {
             typeDuo = pokedex.id(Number(pokemonArg[0])).get();
         } else {
-            pokemonArg = capitalize(pokemonArg);
+            pokemonArg = dex.capitalize(pokemonArg);
+            if (pokemonArg === "Mr. Mime") { pokemonArg = "Mr. mime" }
             typeDuo = pokedex.name(pokemonArg).get();
         }
         if (typeDuo === '[]') {
@@ -356,18 +339,11 @@ client.on('message', message => {
             return;
         }
         typeDuo = JSON.parse(typeDuo);
-        pokemonArg = capitalize(typeDuo[0].name);
+        dex.checkDexResults(typeDuo);
+        pokemonArg = dex.capitalize(typeDuo[0].name);
         let idNum = typeDuo[0].id;
         typeDuo = typeDuo[0].type;
         var typeChart;
-        var typeFX = { 
-            "ultra": [],
-            "super": [],
-            "normal": [],
-            "notVery": [],
-            "weak": [],
-            "noEffect": []
-        };
         if (typeDuo[1]) {
             typeChart = getTypeWeaknesses(typeDuo[0],typeDuo[1]);
         } else if (typeDuo[0]) {
@@ -375,29 +351,8 @@ client.on('message', message => {
         } else {
             console.log('No types to enter');
         }
-        for (var type in typeChart) {
-            if (typeChart[type] === 4) {
-                typeFX.ultra.push(type);
-            } else if (typeChart[type] === 2) {
-                typeFX.super.push(type);
-            } else if (typeChart[type] === 1) {
-                typeFX.normal.push(type);
-            } else if (typeChart[type] === 0.5) {
-                typeFX.notVery.push(type);
-            } else if (typeChart[type] === 0.25) {
-                typeFX.weak.push(type);
-            } else if (typeChart[type] === 0) {
-                typeFX.noEffect.push(type);
-            }
-        }
-        let desc = '⚔️ ';
-        if (typeFX.ultra.length > 0) { desc += '4x: [ ' + typeFX.ultra.join(', ') + ' ], '}
-        if (typeFX.super.length > 0) { desc += '2x: [ ' + typeFX.super.join(', ') + ' ]\n'}
-        if (typeFX.normal.length > 0) { desc += '🔹  1x: [ ' + typeFX.normal.join(', ') + ' ]\n🚫 '}
-        if (typeFX.noEffect.length > 0) { desc += '0x: [ ' + typeFX.noEffect.join(', ') + ' ], '}
-        if (typeFX.weak.length > 0) { desc += '0.25x: [ ' + typeFX.weak.join(', ') + ' ], '}
-        if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
-        message.channel.send("**#" + idNum + ' ' + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + desc);
+        let typeDescript = dex.formatTypeOutput(typeChart);
+        message.channel.send("**#" + idNum + ' ' + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + typeDescript);
     } else if (cmd === 'help') {
         if (!arg[1]) {
             message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, and `type`! Use `!help [command]` to get more info on the command.')
