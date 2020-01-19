@@ -177,6 +177,8 @@ var checkComments = function() {
                                 .setThumbnail("https://i.imgur.com/vXeJfVh.png")
                                 .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
                             testingChannel().send(embed);
+                        } else {
+                            console.log("Comment: mod hit, but says modest");
                         }
                     }
                     if (i === 0) {
@@ -212,6 +214,21 @@ client.on('guildMemberAdd', member => {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
     console.log('New user joined server!' + member);
 });
+
+function capitalize(inputText) {
+    let temp;
+    if (Array.isArray(inputText)) {
+        temp = inputText;
+    } else {
+        temp = inputText.split(' ');
+    }
+    temp.forEach((input, i) => {
+        let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
+        temp[i] = caseChange;
+    });
+    temp = temp.join(' ');
+    return temp;
+}
 
 client.on('message', message => {
     if (message.type === "GUILD_MEMBER_JOIN") {
@@ -325,21 +342,23 @@ client.on('message', message => {
         cmdArg = cmdArg.split(' ').join('').toLowerCase();
         message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
     } else if (cmd === 'type') {
-        // query pokedexjs, check for types
-        // query type calculator
         let pokemonArg = arg;
+        let typeDuo;
         pokemonArg.shift();
-        pokemonArg.forEach((input, i) => {
-            let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
-            pokemonArg[i] = caseChange;
-        });
-        pokemonArg = pokemonArg.join(' ');
-        let typeDuo = pokedex.name(pokemonArg).get();
+        if (Number(pokemonArg[0])) {
+            typeDuo = pokedex.id(Number(pokemonArg[0])).get();
+        } else {
+            pokemonArg = capitalize(pokemonArg);
+            typeDuo = pokedex.name(pokemonArg).get();
+        }
         if (typeDuo === '[]') {
-            console.log("No Pokemon found");
+            message.channel.send('Sorry, I\'m confused...');
             return;
         }
-        typeDuo = JSON.parse(typeDuo)[0].type;
+        typeDuo = JSON.parse(typeDuo);
+        pokemonArg = capitalize(typeDuo[0].name);
+        let idNum = typeDuo[0].id;
+        typeDuo = typeDuo[0].type;
         var typeChart;
         var typeFX = { 
             "ultra": [],
@@ -354,7 +373,7 @@ client.on('message', message => {
         } else if (typeDuo[0]) {
             typeChart = getTypeWeaknesses(typeDuo[0]);
         } else {
-            console.log("No Pokedex info found");
+            console.log('No types to enter');
         }
         for (var type in typeChart) {
             if (typeChart[type] === 4) {
@@ -378,19 +397,20 @@ client.on('message', message => {
         if (typeFX.noEffect.length > 0) { desc += '0x: [ ' + typeFX.noEffect.join(', ') + ' ], '}
         if (typeFX.weak.length > 0) { desc += '0.25x: [ ' + typeFX.weak.join(', ') + ' ], '}
         if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
-        message.channel.send("**" + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + desc);
+        message.channel.send("**#" + idNum + ' ' + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + desc);
     } else if (cmd === 'help') {
         if (!arg[1]) {
-            message.channel.send('Available commands are `role`, `raid`, `time`, and `dex`! Use `!help [command]` to get more info on the command.')
+            message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, and `type`! Use `!help [command]` to get more info on the command.')
         } else {
             const commandDex = {
                 role: "[ raid ] - set your role to @raid for raid notifications",
                 raid: "Ping the @raid notification group for Max Raid Battles", 
                 time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
-                dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page"
+                dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
+                type: "[ pokemon name OR number ] - Get the type weaknesses for a Pokemon"
             };
             if (commandDex[arg[1]]) {
-                message.channel.send(commandDex[arg[1]]);
+                message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
             } else {
                 message.channel.send("Sorry, I don't understand.");
             }
