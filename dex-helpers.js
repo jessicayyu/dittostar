@@ -1,3 +1,5 @@
+const { getTypeWeaknesses } = require('poke-types');
+
 const capitalize = function(inputText) {
     let temp;
     if (Array.isArray(inputText)) {
@@ -45,7 +47,7 @@ const formatTypeOutput = function(typeResults) {
     if (typeFX.notVery.length > 0) { desc += '0.5x: [ ' + typeFX.notVery.join(', ') + ' ]'}
     return desc;
 };
-const checkDexResults = function(inputDexRes) {
+const checkDexForms = function(inputDexRes) {
     let getPokemonRes = [];
     if (inputDexRes.length > 1) {
         for (let i = 0; i < inputDexRes.length; i++) {
@@ -58,9 +60,24 @@ const checkDexResults = function(inputDexRes) {
         console.log(getPokemonRes)
     }
 };
+const multiFormTypes = function (dexResult) {
+    let typeChart;
+    let form = dexResult.formName ? ' - ' + dexResult.formName : '';
+    if (dexResult.type[1]) {
+        typeChart = getTypeWeaknesses(dexResult.type[0],dexResult.type[1]);
+    } else if (dexResult.type[0]) {
+        typeChart = getTypeWeaknesses(dexResult.type[0]);
+    } else {
+        console.log('No types to enter');
+    }
+    let typeDescript = formatTypeOutput(typeChart);
+    let typeOutputMsg = "**#" + dexResult.id + ' ' + capitalize(dexResult.name) + ' - ' + dexResult.type.join('/') + form + '**\n' + typeDescript;
+    return typeOutputMsg;
+};
 
 module.exports = {
     capitalize: capitalize,
     formatTypeOutput: formatTypeOutput, 
-    checkDexResults: checkDexResults
+    checkDexForms: checkDexForms,
+    multiFormTypes: multiFormTypes
 };

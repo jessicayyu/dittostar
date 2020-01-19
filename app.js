@@ -11,7 +11,9 @@ const TOKEN = process.env.DISCORD_TOKEN;
 var testingChannel;
 var mainChannel;
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+    let timeStart = new Date();
+    timeStart = timeStart.getHours() + ':' + timeStart.getMinutes();
+    console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
     testingChannel = getChannel("423338578597380106");
     mainChannel = getChannel("232062367951749121");
 });
@@ -324,46 +326,35 @@ client.on('message', message => {
         cmdArg = cmdArg.split(' ').join('').toLowerCase();
         message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
     } else if (cmd === 'type') {
-        let pokemonArg = arg;
-        let typeDuo;
-        pokemonArg.shift();
-        if (Number(pokemonArg[0])) {
-            typeDuo = pokedex.id(Number(pokemonArg[0])).get();
+        let pkdexTypeRes;
+        arg.shift();
+        if (Number(arg[0])) {
+            pkdexTypeRes = pokedex.id(Number(arg[0])).get();
         } else {
-            pokemonArg = dex.capitalize(pokemonArg);
-            if (pokemonArg === "Mr. Mime") { pokemonArg = "Mr. mime" }
-            typeDuo = pokedex.name(pokemonArg).get();
+            arg = dex.capitalize(arg);
+            if (arg === "Mr. Mime") { arg = "Mr. mime" }
+            pkdexTypeRes = pokedex.name(arg).get();
         }
-        if (typeDuo === '[]') {
+        if (pkdexTypeRes === '[]') {
             message.channel.send('Sorry, I\'m confused...');
             return;
         }
-        typeDuo = JSON.parse(typeDuo);
-        dex.checkDexResults(typeDuo);
-        pokemonArg = dex.capitalize(typeDuo[0].name);
-        let idNum = typeDuo[0].id;
-        typeDuo = typeDuo[0].type;
-        var typeChart;
-        if (typeDuo[1]) {
-            typeChart = getTypeWeaknesses(typeDuo[0],typeDuo[1]);
-        } else if (typeDuo[0]) {
-            typeChart = getTypeWeaknesses(typeDuo[0]);
-        } else {
-            console.log('No types to enter');
-        }
-        let typeDescript = dex.formatTypeOutput(typeChart);
-        message.channel.send("**#" + idNum + ' ' + pokemonArg + ' - ' + typeDuo.join('/') + '**\n' + typeDescript);
+        pkdexTypeRes = JSON.parse(pkdexTypeRes);
+        pkdexTypeRes.forEach(typeResult => {
+            let typeMessage = dex.multiFormTypes(typeResult);
+            message.channel.send(typeMessage);
+        })
     } else if (cmd === 'help') {
+        const commandDex = {
+            role: "[ raid ] - set your role to @raid for raid notifications",
+            raid: "Ping the @raid notification group for Max Raid Battles", 
+            time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
+            dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
+            type: "[ pokemon name OR number ] - Get the type weaknesses for a Pokemon"
+        };
         if (!arg[1]) {
             message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, and `type`! Use `!help [command]` to get more info on the command.')
         } else {
-            const commandDex = {
-                role: "[ raid ] - set your role to @raid for raid notifications",
-                raid: "Ping the @raid notification group for Max Raid Battles", 
-                time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
-                dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
-                type: "[ pokemon name OR number ] - Get the type weaknesses for a Pokemon"
-            };
             if (commandDex[arg[1]]) {
                 message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
             } else {
