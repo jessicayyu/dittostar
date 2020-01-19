@@ -60,7 +60,7 @@ const checkDexForms = function(inputDexRes) {
         console.log(getPokemonRes)
     }
 };
-const multiFormTypes = function (dexResult) {
+const multiFormTypes = function(dexResult) {
     let typeChart;
     let form = dexResult.formName ? ' - ' + dexResult.formName : '';
     if (dexResult.type[1]) {
