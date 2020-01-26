@@ -155,7 +155,7 @@ setTimeout(postFeed, 10000);
 setInterval(postFeed, 120000);
 
 var checkComments = function() {
-  var options = { limit:10, sort: "new"};
+  var options = { limit:15, sort: "new"};
   var last;
   return function() {
     r.getNewComments(subreddit, options)
@@ -327,8 +327,22 @@ client.on('message', message => {
       .catch(console.error);
   } else if (cmd === 'dex') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
-    cmdArg = cmdArg.split(' ').join('').toLowerCase();
-    message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+    let pkmn;
+    if (Number(cmdArg)) { 
+      pkmn = pokedex.id(Number(cmdArg)).get();
+    } else {
+      cmdArg = dex.capitalize(cmdArg);
+      pkmn = pokedex.name(cmdArg).get();
+    }
+    pkmn = JSON.parse(pkmn);
+    if (pkmn[0].localId) {
+      cmdArg = cmdArg.split(' ').join('').toLowerCase();
+      message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+    } else {
+      let padNum = pkmn[0].id;
+      padNum = padNum.padStart(3, '0');
+      message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${pkmn[0].id}.shtml`);
+    }
   } else if (cmd === 'type') {
     let pkdexTypeRes;
     arg.shift();
