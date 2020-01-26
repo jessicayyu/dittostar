@@ -1,5 +1,6 @@
 const { getTypeWeaknesses } = require('poke-types');
 
+// input can be array or string, returns properly capitalized string
 const capitalize = function(inputText) {
   let temp;
   if (Array.isArray(inputText)) {
