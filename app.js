@@ -341,7 +341,7 @@ client.on('message', message => {
     } else {
       let padNum = pkmn[0].id;
       padNum = padNum.padStart(3, '0');
-      message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${pkmn[0].id}.shtml`);
+      message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
     }
   } else if (cmd === 'type') {
     let pkdexTypeRes;
