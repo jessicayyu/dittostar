@@ -332,10 +332,13 @@ client.on('message', message => {
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
       cmdArg = dex.capitalize(cmdArg);
+      if (cmdArg === "Mr. Mime") { cmdArg = "Mr. mime"}
       pkmn = pokedex.name(cmdArg).get();
     }
     pkmn = JSON.parse(pkmn);
-    if (pkmn[0].localId) {
+    if (!pkmn) {
+      message.channel.send('I dunno what Pokemon that is. Sorry.')
+    } else if (pkmn[0].localId) {
       cmdArg = cmdArg.split(' ').join('').toLowerCase();
       message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
     } else {
