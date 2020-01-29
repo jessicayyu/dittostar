@@ -252,10 +252,17 @@ client.on('message', message => {
         return
       }
       var role = "657365039979692032";
-      const index = prefix.length + cmd.length + 1;
+      let index;
+      let star;
+      if (Number(arg[1])) {
+        index = prefix.length + cmd.length + 3;
+        star = arg[1] + '★ ';
+      } else {
+        index = prefix.length + cmd.length + 1;
+      }
       message.guild.roles.get(role).setMentionable(true)
         .then(() => {
-          message.channel.send('<@&' + role + '> ' + message.content.slice(index))
+          message.channel.send('<@&' + role + '> ' + star + message.content.slice(index))
             .then(() => {
               message.guild.roles.get(role).setMentionable(false);
             });
@@ -270,14 +277,19 @@ client.on('message', message => {
       if (!message.guild.id === "232062367951749121") {
         return
       }
-      role = '657365039979692032';
-      var findRole = message.member.roles.find(r => r.id === role);
+      // role = '657365039979692032';
+      // var findRole = message.member.roles.find(r => r.id === role);
+      role = 'raid';
+      var findRole = message.member.roles.find(r => r.name === role);
       if (findRole) {
-        message.member.removeRole(role)
-          .then(message.channel.send('Role removed!'));
+        message.member.removeRole(findRole)
+          .then(message.channel.send('Role removed!'))
+          .catch(console.error);
       } else {
+        role = message.guild.roles.find(r => r.name === role);
         message.member.addRole(role)
-          .then(message.channel.send('Role added!'));
+          .then(message.channel.send('Role added!'))
+          .catch(console.error);
       }
     }
   } else if (cmd === 'giveaways') {
@@ -336,8 +348,7 @@ client.on('message', message => {
       pkmn = pokedex.name(cmdArg).get();
     }
     pkmn = JSON.parse(pkmn);
-    console.log(pkmn);
-    if (!pkmn) {
+    if (pkmn.length < 1) {
       message.channel.send('I dunno what Pokemon that is. Sorry.');
       return;
     } else if (pkmn[0].localId) {
