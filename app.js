@@ -336,8 +336,10 @@ client.on('message', message => {
       pkmn = pokedex.name(cmdArg).get();
     }
     pkmn = JSON.parse(pkmn);
+    console.log(pkmn);
     if (!pkmn) {
-      message.channel.send('I dunno what Pokemon that is. Sorry.')
+      message.channel.send('I dunno what Pokemon that is. Sorry.');
+      return;
     } else if (pkmn[0].localId) {
       cmdArg = cmdArg.split(' ').join('').toLowerCase();
       message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
