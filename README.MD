@@ -1,48 +1,35 @@
-# Project Title
+# DittoStar - Moderator tool bridging Reddit and Discord
 
 DittoStar is a tool for subreddit moderators who also have a Discord presence. DittoStar retrieves information such as new modmail, relevant posts, etc and cross-posts them to Discord into specified channels.
 
-## Getting Started
-
-Fork from this repo or download your own copy.
-
-### Prerequisites
-
-* NPM, Node
-
 ### Installing
 
-`npm install`
+    npm install
+    npm start
 
-## Built With
+## Prerequisites
 
 * NodeJS
+* NPM
 * Snoostorm
 * DiscordJS
-
-## OAUTH2
-It is necessary to use [OAUTH2 to get an access token](https://github.com/reddit-archive/reddit/wiki/OAuth2) in order to make POST requests to modmail. If no POST requests to modmail are needed, then  you do not need to create an access token.
-
-First, authorize the app at the following URL:  
-> ```https://www.reddit.com/api/v1/authorize?client_id=${process.env.CLIENT_ID}&response_type=code&state=${ARBITRARY_CODEWORD}&redirect_uri=${REDIRECT_URI}&duration=permanent&scope=modmail```  
-
-
-Then use the code at the end of the URL in the following curl command:  
-> ```curl -X POST --data "grant_type=authorization_code&code=${CODE}&redirect_uri=${REDIRECT_URI}" -H 'Authorization: Basic ${AUTHORIZATION_CODE}' https://www.reddit.com/api/v1/access_token```
-  
->The format for the authorization code is `client_id:client_secret` in base 64 encoding.
+* PokedexJS
+* Poke-Types
 
 ## Commands
-See [this page for the bot commands](./commands.md).
+See [this page for the bot commands and config](./commands.md). Currently supported commands include: 
 
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+| Command | Argument | Description |  
+|-|-|-|  
+| ping | | Responds with `pong!` |
+| role | *raid* | Sets role to a specified role |  
+| raid | *[number] [text]* | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
+| time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
+| dex | *pokemon name* | Returns a link to the Serebii Sword & Shield Pokedex for the specified Pokemon |
+| type | *pokemon name OR pokedex number OR typings* | Returns type weakness match-up | 
 
 ## Authors
 
 * **Jessica Yu** - [Github](https://github.com/jessicayyu)
 
-## License
 
-Unlicensed.
