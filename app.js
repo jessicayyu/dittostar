@@ -253,7 +253,7 @@ client.on('message', message => {
       }
       var role = "657365039979692032";
       let index;
-      let star;
+      let star = '';
       if (Number(arg[1])) {
         index = prefix.length + cmd.length + 3;
         star = arg[1] + '★ ';
@@ -277,8 +277,6 @@ client.on('message', message => {
       if (!message.guild.id === "232062367951749121") {
         return
       }
-      // role = '657365039979692032';
-      // var findRole = message.member.roles.find(r => r.id === role);
       role = 'raid';
       var findRole = message.member.roles.find(r => r.name === role);
       if (findRole) {
