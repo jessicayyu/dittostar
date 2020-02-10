@@ -105,7 +105,7 @@ var checkPosts = function() {
         }
         let now = moment();
         if (now.minute() % 3 === 0) {
-          console.log('GA feed ' + now.format("MMM D h:mm A") + ' ' + last);
+          console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
@@ -122,7 +122,7 @@ var checkPosts = function() {
           }
           if (!post.distinguished && !post.stickied) {
             if (post.selftext.includes("mod") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("discord")) {
-              if (post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
+              if ( post.selftext.indexOf("mod") < 0 || post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
                 let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
                 console.log("Post has watched keyword: " + post.url);
                 console.log(i, post.selftext.slice(0, 150));
@@ -166,13 +166,13 @@ var checkComments = function() {
         }
         let now = moment();
         if (now.minute() % 3 === 0) {
-          console.log('comment feed ' + now.format("MMM D h:mm A") + ' ' + last);
+          console.log(now.format("MMM D h:mm A") + ' comment feed ' +  + last);
         }
         comments.filter(comment => comment.id > last)
         .map((comment, i) => {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished && comment.body.includes("mod")) {
-            if (comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
+            if (post.selftext.indexOf("mod") < 0 || comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
               let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
               console.log("Comment has watched keyword: " + comment.permalink);
               const embed = new Discord.RichEmbed()
@@ -253,7 +253,7 @@ client.on('message', message => {
       }
       var role = "657365039979692032";
       let index;
-      let star;
+      let star = '';
       if (Number(arg[1])) {
         index = prefix.length + cmd.length + 3;
         star = arg[1] + '★ ';
@@ -277,8 +277,6 @@ client.on('message', message => {
       if (!message.guild.id === "232062367951749121") {
         return
       }
-      // role = '657365039979692032';
-      // var findRole = message.member.roles.find(r => r.id === role);
       role = 'raid';
       var findRole = message.member.roles.find(r => r.name === role);
       if (findRole) {
@@ -344,7 +342,6 @@ client.on('message', message => {
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
       cmdArg = dex.capitalize(cmdArg);
-      if (cmdArg === "Mr. Mime") { cmdArg = "Mr. mime"}
       pkmn = pokedex.name(cmdArg).get();
     }
     pkmn = JSON.parse(pkmn);
@@ -374,7 +371,6 @@ client.on('message', message => {
       message.channel.send("**" + typeDuo.join('/') + '**\n' + typeDescript);
       return;
     } else {
-      if (arg === "Mr. Mime") { arg = "Mr. mime" }
       pkdexTypeRes = pokedex.name(arg).get();
       pkdexTypeRes = JSON.parse(pkdexTypeRes);
     }
@@ -386,6 +382,8 @@ client.on('message', message => {
       let typeMessage = dex.multiFormTypes(typeResult);
       message.channel.send(typeMessage);
     })
+  } else if (cmd === 'ability' || cmd === 'ha') {
+
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",

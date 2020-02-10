@@ -9,12 +9,7 @@ DittoStar is a tool for subreddit moderators who also have a Discord presence. D
 
 ## Prerequisites
 
-* NodeJS
-* NPM
-* Snoostorm
-* DiscordJS
-* PokedexJS
-* Poke-Types
+* NodeJS 13.2.0
 
 ## Commands
 See [this page for the bot commands and config](./commands.md). Currently supported commands include: 
@@ -31,5 +26,9 @@ See [this page for the bot commands and config](./commands.md). Currently suppor
 ## Authors
 
 * **Jessica Yu** - [Github](https://github.com/jessicayyu)
+  
+## License
+  
+* No license.
 
 
