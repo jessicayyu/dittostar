@@ -121,7 +121,7 @@ var checkPosts = function() {
             mainChannel().send(embed);
           }
           if (!post.distinguished && !post.stickied) {
-            if (post.selftext.includes("mod") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("discord")) {
+            if ( post.selftext.includes("discord") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("mod")) {
               if ( post.selftext.indexOf("mod") < 0 || post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
                 let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
                 console.log("Post has watched keyword: " + post.url);
