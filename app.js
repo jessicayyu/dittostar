@@ -166,7 +166,7 @@ var checkComments = function() {
         }
         let now = moment();
         if (now.minute() % 3 === 0) {
-          console.log(now.format("MMM D h:mm A") + ' comment feed ' +  + last);
+          console.log(now.format("MMM D h:mm A") + ' comment feed ' + last);
         }
         comments.filter(comment => comment.id > last)
         .map((comment, i) => {
@@ -383,17 +383,45 @@ client.on('message', message => {
       message.channel.send(typeMessage);
     })
   } else if (cmd === 'ability' || cmd === 'ha') {
-
+    let pkdexTypeRes;
+    arg.shift();
+    arg = dex.capitalize(arg);
+    if (Number(arg)) {
+      pkdexTypeRes = pokedex.id(Number(arg)).get();
+    } else {
+      pkdexTypeRes = pokedex.name(arg).get();
+    }
+    pkdexTypeRes = JSON.parse(pkdexTypeRes);
+    if (pkdexTypeRes.length === 0) {
+      message.channel.send('Sorry, I\'m confused...');
+      return;
+    } 
+    pkdexTypeRes.forEach(result => {
+      let abilityArr = result.ability;
+      let abilityText = [];
+      let form = "";
+      form = result.formName ? ": " + result.formName + "\n": "\n" ;
+      for (let i = 0; i < abilityArr.length; i++) {
+        if (abilityArr[i].hidden === true) {
+          abilityText.unshift("HA: " + abilityArr[i].name);
+        } else {
+          abilityText.push(i + ": " + abilityArr[i].name)
+        }
+      }
+      message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
+    })
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
       raid: "Ping the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
+      ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
+      ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`"
     };
     if (!arg[1]) {
-      message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, and `type`! Use `!help [command]` to get more info on the command.')
+      message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, `ability`, `ha`, and `type`! Use `!help [command]` to get more info on the command.');
     } else {
       if (commandDex[arg[1]]) {
         message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
