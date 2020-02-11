@@ -109,7 +109,7 @@ var checkPosts = function() {
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc'].indexOf(post.link_flair_css_class) >= 0) {
+          if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc', 'question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             let embed = new Discord.RichEmbed()
               .setColor("#1a9eb4")
@@ -118,7 +118,11 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            mainChannel().send(embed);
+            if (['question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
+              testingChannel().send(embed);
+            } else {
+              mainChannel().send(embed);
+            }
           }
           if (!post.distinguished && !post.stickied) {
             if ( post.selftext.includes("discord") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("mod")) {
