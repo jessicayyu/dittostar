@@ -1,14 +1,18 @@
-let array = ["discord", "subscribe", "twitch", "mod"];
-
-var checkKeywords = function (input, array) {
-  let match = false;
+var checkKeywords = function(input, array) {
   for (let i = 0; i < array.length; i++) {
     if (input.includes(array[i])) {
-      return array[i];
+      if (array[i] !== "mod") { 
+        return array[i]; 
+      } 
+      let matchers = input.match(/\bmods?\b/gi);
+      if (matchers) {
+          return matchers.join(', ');
+      }
     }
   }
-}
+  return false;
+};
 
 module.exports = {
   checkKeywords: checkKeywords,
-}
+};
