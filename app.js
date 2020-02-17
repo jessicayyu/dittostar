@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { prefix, subreddit } = require('./config.json');
+const { prefix, subreddit, discordInvite } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -105,7 +105,7 @@ var checkPosts = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 1 === 0) {
+        if (now.minute() % 2 === 0) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
@@ -156,7 +156,7 @@ setInterval(modmailFeed, 180000);
 
 var postFeed = checkPosts();
 setTimeout(postFeed, 10000);
-setInterval(postFeed, 120000);
+setInterval(postFeed, 90000);
 
 var checkComments = function() {
   var options = { limit:20, sort: "new"};
@@ -228,6 +228,7 @@ client.on('message', message => {
     }
     message.delete();
   }
+  /* swear words censor */
   if (message.content.includes('fuck')) {
     console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*'];
@@ -236,6 +237,17 @@ client.on('message', message => {
       message.channel.send(msg);
     }
     return
+  }
+  /* Remove Discord invites */
+  if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
+    let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+    if (!modCheck) {
+      const embed = new Discord.RichEmbed()
+        .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+        .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+      testingChannel().send(embed);
+      message.delete();
+    }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
