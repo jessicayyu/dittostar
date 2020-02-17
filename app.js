@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { prefix, subreddit } = require('./config.json');
+const { prefix, subreddit, discordInvite } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -36,6 +36,7 @@ const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
 const dex = require('./dex-helpers');
+const watch = require('./watchers.js');
 var cooldown = new Set();
 
 function getChannel(channel) {
@@ -104,7 +105,7 @@ var checkPosts = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 3 === 0) {
+        if (now.minute() % 2 === 0) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
@@ -125,17 +126,16 @@ var checkPosts = function() {
             }
           }
           if (!post.distinguished && !post.stickied) {
-            if ( post.selftext.includes("discord") || post.selftext.includes("subscribe") || post.selftext.includes("twitch") || post.selftext.includes("mod")) {
-              if ( post.selftext.indexOf("mod") < 0 || post.selftext.indexOf("mod") !== post.selftext.indexOf("modest")) {
-                let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
-                console.log("Post has watched keyword: " + post.url);
-                console.log(i, post.selftext.slice(0, 150));
-                let embedWordFound = new Discord.RichEmbed()
-                  .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                  .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                  .setDescription(body + "\n[Watched keyword mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
-                testingChannel().send(embedWordFound);
-              }
+            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod"]);
+            if (matchers) {
+              let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+              console.log("Post has watched keyword: " + post.url);
+              console.log(i, post.selftext.slice(0, 150));
+              let embedWordFound = new Discord.RichEmbed()
+                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+              testingChannel().send(embedWordFound);
             }
           }
           if (i === 0) {
@@ -156,10 +156,10 @@ setInterval(modmailFeed, 180000);
 
 var postFeed = checkPosts();
 setTimeout(postFeed, 10000);
-setInterval(postFeed, 120000);
+setInterval(postFeed, 90000);
 
 var checkComments = function() {
-  var options = { limit:15, sort: "new"};
+  var options = { limit:20, sort: "new"};
   var last;
   return function() {
     r.getNewComments(subreddit, options)
@@ -169,24 +169,23 @@ var checkComments = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 3 === 0) {
+        if (now.minute() % 1 === 0) {
           console.log(now.format("MMM D h:mm A") + ' comment feed ' + last);
         }
         comments.filter(comment => comment.id > last)
         .map((comment, i) => {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished && comment.body.includes("mod")) {
-            if (post.selftext.indexOf("mod") < 0 || comment.body.indexOf("mod") !== comment.body.indexOf("modest")) {
+            let matchers = watch.checkKeywords(comment.body, ["mod"]);
+            if (matchers) {
               let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-              console.log("Comment has watched keyword: " + comment.permalink);
+              console.log("Comment has watched keyword: " + matchers + " " + comment.permalink);
               const embed = new Discord.RichEmbed()
                 .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
                 .setThumbnail("https://i.imgur.com/vXeJfVh.png")
                 .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
               testingChannel().send(embed);
-            } else {
-              console.log("Comment: mod hit, but says modest");
-            }
+            } 
           }
           if (i === 0) {
             last = comment.id;
@@ -229,6 +228,7 @@ client.on('message', message => {
     }
     message.delete();
   }
+  /* swear words censor */
   if (message.content.includes('fuck')) {
     console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*'];
@@ -237,6 +237,17 @@ client.on('message', message => {
       message.channel.send(msg);
     }
     return
+  }
+  /* Remove Discord invites */
+  if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
+    let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+    if (!modCheck) {
+      const embed = new Discord.RichEmbed()
+        .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+        .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+      testingChannel().send(embed);
+      message.delete();
+    }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return

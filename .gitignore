@@ -4,3 +4,4 @@ personaluse.txt
 node_modules
 example*.js
 error*
+config.json
