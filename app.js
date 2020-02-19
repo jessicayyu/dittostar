@@ -364,8 +364,8 @@ client.on('message', message => {
       message.channel.send('I dunno what Pokemon that is. Sorry.');
       return;
     } else if (pkmn[0].localId) {
-      cmdArg = cmdArg.split(' ').join('').toLowerCase();
-      message.channel.send(`https://www.serebii.net/pokedex-swsh/${cmdArg}/`);
+      pkmn = pkmn[0].name.split(' ').join('').toLowerCase();
+      message.channel.send(`https://www.serebii.net/pokedex-swsh/${pkmn}/`);
     } else {
       let padNum = pkmn[0].id;
       padNum = padNum.padStart(3, '0');
