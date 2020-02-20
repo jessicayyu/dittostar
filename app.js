@@ -88,6 +88,18 @@ var getModmail = function() {
   }
 };
 
+const postColors = {
+  'giveaway': '#1a9eb4', 
+  'hcgiveaway': '#c894de',
+  'contest': '#f479b5',
+  'mod': '#fd0100',
+  'ddisc':'#ff7d4d',
+  'question':'#2852bc',
+  'info': '#cccccc',
+};
+
+const postLinkClasses = Object.keys(postColors);
+
 var checkPosts = function() {
   var options = { limit:5, sort: "new"};
   var last;
@@ -110,16 +122,17 @@ var checkPosts = function() {
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc', 'question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
+          if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+
             let embed = new Discord.RichEmbed()
-              .setColor("#1a9eb4")
+              .setColor(postColors[post.link_flair_css_class])
               .setTitle(post.title)
               .setURL(post.url)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
+            if (post.link_flair_css_class === 'info') {
               testingChannel().send(embed);
             } else {
               mainChannel().send(embed);
