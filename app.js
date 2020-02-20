@@ -389,8 +389,8 @@ client.on('message', message => {
       pkdexTypeRes = pokedex.name(arg).get();
       pkdexTypeRes = JSON.parse(pkdexTypeRes);
     }
-    if (pkdexTypeRes === '[]') {
-      message.channel.send('Sorry, I\'m confused...');
+    if (pkdexTypeRes.length === 0) {
+      message.channel.send('Sorry, I don\'t get it');
       return;
     }
     pkdexTypeRes.forEach(typeResult => {
