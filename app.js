@@ -88,6 +88,18 @@ var getModmail = function() {
   }
 };
 
+const postColors = {
+  'giveaway': '#1a9eb4', 
+  'hcgiveaway': '#c894de',
+  'contest': '#f479b5',
+  'mod': '#fd0100',
+  'ddisc':'#ff7d4d',
+  'question':'#2852bc',
+  'info': '#cccccc',
+};
+
+const postLinkClasses = Object.keys(postColors);
+
 var checkPosts = function() {
   var options = { limit:5, sort: "new"};
   var last;
@@ -110,17 +122,21 @@ var checkPosts = function() {
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          if (['giveaway', 'hcgiveaway', 'contest', 'mod', 'ddisc', 'question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
+          if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+
             let embed = new Discord.RichEmbed()
-              .setColor("#1a9eb4")
+              .setColor(postColors[post.link_flair_css_class])
               .setTitle(post.title)
               .setURL(post.url)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['question', 'info'].indexOf(post.link_flair_css_class) >= 0) {
+            if (['info','question'].indexOf(post.link_flair_css_class)) {
               testingChannel().send(embed);
+              if (post.link_flair_css_class === 'info') { 
+                mainChannel().send(embed);
+              }
             } else {
               mainChannel().send(embed);
             }
@@ -231,7 +247,9 @@ client.on('message', message => {
   /* swear words censor */
   if (message.content.includes('fuck')) {
     console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
-    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*'];
+    const angreh = client.emojis.find(emoji => emoji.name === "angreh");
+    const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
+    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned];
     var msg = angryMori[rand(6)];
     if (msg) {
       message.channel.send(msg);
@@ -389,8 +407,8 @@ client.on('message', message => {
       pkdexTypeRes = pokedex.name(arg).get();
       pkdexTypeRes = JSON.parse(pkdexTypeRes);
     }
-    if (pkdexTypeRes === '[]') {
-      message.channel.send('Sorry, I\'m confused...');
+    if (pkdexTypeRes.length === 0) {
+      message.channel.send('Sorry, I don\'t get it');
       return;
     }
     pkdexTypeRes.forEach(typeResult => {
