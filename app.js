@@ -132,7 +132,7 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['info','question'].indexOf(post.link_flair_css_class)) {
+            if (['info','question'].indexOf(post.link_flair_css_class) >= 0) {
               testingChannel().send(embed);
               if (post.link_flair_css_class === 'info') { 
                 mainChannel().send(embed);
