@@ -245,12 +245,12 @@ client.on('message', message => {
     message.delete();
   }
   /* swear words censor */
-  if (message.content.includes('fuck')) {
+  if (message.content.match(/fuck/)) {
     console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
     const angreh = client.emojis.find(emoji => emoji.name === "angreh");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned];
-    var msg = angryMori[rand(6)];
+    var msg = angryMori[rand(5)];
     if (msg) {
       message.channel.send(msg);
     }
