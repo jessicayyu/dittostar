@@ -104,12 +104,13 @@ var checkPosts = function() {
   var options = { limit:5, sort: "new"};
   var last;
   return function(bool = false) {
-    // if (bool) {
-    //   options = { limit: 10, sort: "new", before: null };
-    //   setTimeout(() => {
-    //     options.limit = 5;
-    //   }, 3000);
-    // }
+    if (bool) {
+      options = { limit: 10, sort: "new"};
+      last = "0";
+      setTimeout(() => {
+        options.limit = 5;
+      }, 3000);
+    }
     r.getNew(subreddit, options)
       .then((posts) => {
         if (!last) {
@@ -325,6 +326,11 @@ client.on('message', message => {
       }
     }
   } else if (cmd === 'giveaways') {
+    var findRole = message.member.roles.find(r => r.name === "Moderator");
+    if (!findRole) {
+      message.channel.send("I don't have to take orders from *you*.");
+      return;
+    }
     if (cooldown.has(message.author.id)) {
       message.channel.send('Hey, slow down, please.');
       console.log('cooldown ' + cmd);
