@@ -132,7 +132,7 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['info','question'].indexOf(post.link_flair_css_class)) {
+            if (['info','question'].indexOf(post.link_flair_css_class) >= 0) {
               testingChannel().send(embed);
               if (post.link_flair_css_class === 'info') { 
                 mainChannel().send(embed);
@@ -245,12 +245,12 @@ client.on('message', message => {
     message.delete();
   }
   /* swear words censor */
-  if (message.content.includes('fuck')) {
+  if (message.content.match(/fuck/)) {
     console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
     const angreh = client.emojis.find(emoji => emoji.name === "angreh");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned];
-    var msg = angryMori[rand(6)];
+    var msg = angryMori[rand(5)];
     if (msg) {
       message.channel.send(msg);
     }
