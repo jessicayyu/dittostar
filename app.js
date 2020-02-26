@@ -38,6 +38,7 @@ const { getTypeWeaknesses } = require('poke-types');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
+var swear = {};
 
 function getChannel(channel) {
   var target = null;
@@ -63,7 +64,7 @@ var getModmail = function() {
       .getNewModmailConversations({limit:5})
       .map((modmail) => {
         const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
-        if (modmail.messages[0].author.name.isMod || timeCheck) { 
+        if ((modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) || timeCheck) { 
           return; 
         } else {
           console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
@@ -104,12 +105,13 @@ var checkPosts = function() {
   var options = { limit:5, sort: "new"};
   var last;
   return function(bool = false) {
-    // if (bool) {
-    //   options = { limit: 10, sort: "new", before: null };
-    //   setTimeout(() => {
-    //     options.limit = 5;
-    //   }, 3000);
-    // }
+    if (bool) {
+      options = { limit: 10, sort: "new"};
+      last = "0";
+      setTimeout(() => {
+        options.limit = 5;
+      }, 3000);
+    }
     r.getNew(subreddit, options)
       .then((posts) => {
         if (!last) {
@@ -244,15 +246,39 @@ client.on('message', message => {
     }
     message.delete();
   }
+  let mute = message.guild.roles.find(r => r.name === "mute");
   /* swear words censor */
-  if (message.content.match(/fuck/)) {
-    console.log('Swearing ' + message.author.username + ' ' + moment().format("MMM D h:mm:ssA"));
-    const angreh = client.emojis.find(emoji => emoji.name === "angreh");
+  if (message.content.match(/fuck/i) || message.content.match(/cunt/i)) {
+    const angreh = client.emojis.find(emoji => emoji.name === "ping");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
-    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned];
-    var msg = angryMori[rand(5)];
+    const psy = client.emojis.find(emoji => emoji.name === "psy");
+    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
+    var msg = angryMori[rand(8)];
     if (msg) {
-      message.channel.send(msg);
+      message.channel.send(`${msg}`);
+    }
+    /* Mute if server matches */
+    if (message.guild.id === "232062367951749121") {
+      if (swear[message.author.id] === 1) {
+        message.channel.send('\\*reaches for her hammer\\*');
+      }
+      if (swear[message.author.id] >= 2) {
+        message.member.addRole(mute);
+        watch.unmute(message, 180);
+        const embed = new Discord.RichEmbed()
+          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+         .setDescription('Muted for swearing in ' + message.channel);
+        testingChannel().send(embed);
+      }
+      if (swear[message.author.id]) {
+        swear[message.author.id] += 1;
+      } else {
+        swear[message.author.id] = 1;
+      }
+      console.log(message.author.username + ' swear ' + swear[message.author.id] + ' ' + moment().format("h:mm:ssA"));
+      setTimeout(() => {
+        delete swear[message.author.id];
+      }, 300000);
     }
     return
   }
@@ -265,6 +291,8 @@ client.on('message', message => {
         .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
       testingChannel().send(embed);
       message.delete();
+      message.member.addRole(mute);
+      watch.unmute(message, 180);
     }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
@@ -324,6 +352,11 @@ client.on('message', message => {
       }
     }
   } else if (cmd === 'giveaways') {
+    var findRole = message.member.roles.find(r => r.name === "Moderator");
+    if (!findRole) {
+      message.channel.send("I don't have to take orders from *you*.");
+      return;
+    }
     if (cooldown.has(message.author.id)) {
       message.channel.send('Hey, slow down, please.');
       console.log('cooldown ' + cmd);

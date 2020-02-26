@@ -25,6 +25,12 @@ See [this page for the bot commands and config](./commands.md). Currently suppor
 | ha | *pokemon name* | Same as the `ability` command above. |
 | type | *pokemon name OR pokedex number OR typings* | Returns type weakness match-up | 
 
+## Helper Functions
+
+### Watchers
+* Check keywords
+* Unmute user (Discord)
+
 ## Authors
 
 * **Jessica Yu** - [Github](https://github.com/jessicayyu)
