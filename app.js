@@ -64,7 +64,7 @@ var getModmail = function() {
       .getNewModmailConversations({limit:5})
       .map((modmail) => {
         const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
-        if (modmail.messages[0].author.name.isMod || timeCheck) { 
+        if ((modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) || timeCheck) { 
           return; 
         } else {
           console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
