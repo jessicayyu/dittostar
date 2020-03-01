@@ -27,7 +27,7 @@ See [this page for the bot commands and config](./commands.md). Currently suppor
 
 ## Helper Functions
 
-### Watchers
+### Watcher Helper Functions
 * Check keywords
 * Unmute user (Discord)
 
