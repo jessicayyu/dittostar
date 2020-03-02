@@ -271,6 +271,7 @@ client.on('message', message => {
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
          .setDescription('Muted for swearing in ' + message.channel);
         testingChannel().send(embed);
+        message.channel.send(embed);
       }
       if (swear[message.author.id]) {
         swear[message.author.id] += 1;
