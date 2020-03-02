@@ -67,7 +67,7 @@ var getModmail = function() {
         if (timeCheck) {
           return;
         } 
-        if (modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
+        if (modmail.messages[0].author.name.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
           return; 
         } 
         console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
