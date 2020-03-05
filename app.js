@@ -64,26 +64,28 @@ var getModmail = function() {
       .getNewModmailConversations({limit:5})
       .map((modmail) => {
         const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
-        if ((modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) || timeCheck) { 
+        if (timeCheck) {
+          return;
+        } 
+        if (modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
           return; 
+        } 
+        console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
+        const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
+        let body = "";
+        if (modmail.messages[0].bodyMarkdown.length > 100) {
+          body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
         } else {
-          console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
-          const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
-          let body = "";
-          if (modmail.messages[0].bodyMarkdown.length > 100) {
-            body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
-          } else {
-            body = modmail.messages[0].bodyMarkdown;
-          }
-          const embed = new Discord.RichEmbed()
-            .setTitle("Modmail: " + modmail.subject)
-            .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
-            .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
-            .setColor("#ff4500")
-            .setDescription(body + "\n" + timestamp);
-          testingChannel().send(embed);
-          timeNow = moment();
+          body = modmail.messages[0].bodyMarkdown;
         }
+        const embed = new Discord.RichEmbed()
+          .setTitle("Modmail: " + modmail.subject)
+          .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
+          .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
+          .setColor("#ff4500")
+          .setDescription(body + "\n" + timestamp);
+        testingChannel().send(embed);
+        timeNow = moment();
       })
       .catch(console.error);
   }
@@ -269,6 +271,7 @@ client.on('message', message => {
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
          .setDescription('Muted for swearing in ' + message.channel);
         testingChannel().send(embed);
+        message.channel.send(embed);
       }
       if (swear[message.author.id]) {
         swear[message.author.id] += 1;
