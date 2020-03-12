@@ -249,7 +249,7 @@ client.on('message', message => {
     message.delete();
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
-  /* swear words censor */
+  /* curse words censor */
   if (message.content.match(/fuck/i) || message.content.match(/cunt/i)) {
     const angreh = client.emojis.find(emoji => emoji.name === "ping");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
@@ -260,18 +260,23 @@ client.on('message', message => {
       message.channel.send(`${msg}`);
     }
     /* Mute if server matches */
-    if (message.guild.id === "232062367951749121") {
+    if (message.guild.id === "232062367951749121" || message.guild.id === "312085609638526977") {
       if (swear[message.author.id] === 1) {
         message.channel.send('\\*reaches for her hammer\\*');
       }
       if (swear[message.author.id] >= 2) {
-        message.member.addRole(mute);
-        watch.unmute(message, 180);
-        const embed = new Discord.RichEmbed()
-          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-         .setDescription('Muted for swearing in ' + message.channel);
-        testingChannel().send(embed);
-        message.channel.send(embed);
+        if (message.guild.id === "232062367951749121") {
+          message.member.addRole(mute);
+          watch.unmute(message, 180);
+          const embed = new Discord.RichEmbed()
+            .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+           .setDescription('Muted for swearing in ' + message.channel);
+          testingChannel().send(embed);
+          message.channel.send(embed);
+        } else if (message.guild.id === "312085609638526977" && rand(5) === 0) {
+          message.channel.send("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+          console.log("Mori swear scream");
+        }
       }
       if (swear[message.author.id]) {
         swear[message.author.id] += 1;
