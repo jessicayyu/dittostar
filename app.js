@@ -67,7 +67,7 @@ var getModmail = function() {
         if (timeCheck) {
           return;
         } 
-        if (modmail.messages[0].author.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
+        if (modmail.messages[0].author.name.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
           return; 
         } 
         console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
@@ -249,28 +249,40 @@ client.on('message', message => {
     message.delete();
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
-  /* swear words censor */
+  /* curse words censor */
   if (message.content.match(/fuck/i) || message.content.match(/cunt/i)) {
     const angreh = client.emojis.find(emoji => emoji.name === "ping");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
     const psy = client.emojis.find(emoji => emoji.name === "psy");
-    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
-    var msg = angryMori[rand(8)];
+    const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
+    var msg = angryMori[rand(12)];
     if (msg) {
       message.channel.send(`${msg}`);
     }
+    if (message.content.match(/fucks mori/i) || message.content.match(/fucks?.*out.*mori/i)) {
+      if (swear[message.author.id]) {
+        swear[message.author.id] += 2;
+      } else {
+        swear[message.author.id] = 2;
+      }
+    }
     /* Mute if server matches */
-    if (message.guild.id === "232062367951749121") {
+    if (message.guild.id === "232062367951749121" || message.guild.id === "312085609638526977") {
       if (swear[message.author.id] === 1) {
+        var msg = angryMori[rand(5)];
         message.channel.send('\\*reaches for her hammer\\*');
       }
       if (swear[message.author.id] >= 2) {
-        message.member.addRole(mute);
+        message.member.addRole(mute)
+          .catch(console.error);
         watch.unmute(message, 180);
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-         .setDescription('Muted for swearing in ' + message.channel);
-        testingChannel().send(embed);
+          .setDescription('Muted for swearing in ' + message.channel);
+        if (message.guild.id === "232062367951749121") { 
+          testingChannel().send(embed);
+        }
         message.channel.send(embed);
       }
       if (swear[message.author.id]) {
