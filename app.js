@@ -224,11 +224,8 @@ setTimeout(commentFeed, 15000);
 setInterval(commentFeed, 120000);
 
 client.on('guildMemberAdd', member => {
-  let channel;
-  if (message.guild.id === '232062367951749121') {
-    channel = member.guild.channels.find(ch => ch.name === 'chat-main');
-  } 
-  if (message.guild.id === '633473228739837984') {
+  let channel = member.guild.channels.find(ch => ch.name === 'chat-main');
+  if (member.guild.id === '633473228739837984') {
     channel = member.guild.channels.find(ch => ch.name === 'landing');
   } 
   const greets = [
@@ -243,7 +240,7 @@ client.on('guildMemberAdd', member => {
   if (!channel) return;
   let greeting = greets[rand(6)];
   channel.send(greeting);
-  if (message.guild.id === '232062367951749121') {
+  if (member.guild.id === '232062367951749121') {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
   console.log('New user joined server!' + member);
@@ -251,7 +248,8 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', message => {
   if (message.type === "GUILD_MEMBER_JOIN") {
-    if (!message.guild.id === "232062367951749121") {
+    console.log(message.guild.id);
+    if (!message.guild.id === "232062367951749121" || !message.guild.id === '633473228739837984') {
       return
     }
     message.delete();
