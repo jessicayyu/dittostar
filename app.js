@@ -265,17 +265,20 @@ client.on('message', message => {
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
   /* curse words censor */
-  if (message.content.match(/fuck/i) || message.content.match(/cunt/i)) {
+  const censorArray = [/fuck/i, /cunt/i];
+  const censorImmediately = [/fucks mori/i, /fucks?.*out.*mori/i, /nigger/i, /chink/i];
+  if (watch.checkKeywordsRegex(message.content, censorArray) || watch.checkKeywordsRegex(message.content, censorImmediately)) {
+    console.log('censor detected');
     const angreh = client.emojis.find(emoji => emoji.name === "ping");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
     const psy = client.emojis.find(emoji => emoji.name === "psy");
     const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
-    var msg = angryMori[rand(12)];
+    var msg = angryMori[rand(16)];
     if (msg) {
       message.channel.send(`${msg}`);
     }
-    if (message.content.match(/fucks mori/i) || message.content.match(/fucks?.*out.*mori/i)) {
+    if (watch.checkKeywordsRegex(message.content, censorImmediately)) {
       if (swear[message.author.id]) {
         swear[message.author.id] += 2;
       } else {
