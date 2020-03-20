@@ -150,7 +150,7 @@ var checkPosts = function() {
             }
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod"]);
+            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter"]);
             if (matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
@@ -200,7 +200,7 @@ var checkComments = function() {
         .map((comment, i) => {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished) {
-            let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legendary","mythical"]);
+            let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legend","mythical","paypal","ebay"]);
             if (matchers) {
               let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
               console.log("Comment has watched keyword: " + matchers + " " + comment.permalink);
@@ -251,12 +251,17 @@ client.on('guildMemberAdd', member => {
 });
 
 client.on('message', message => {
-  if (message.type === "GUILD_MEMBER_JOIN") {
+  if (message.type === 'GUILD_MEMBER_JOIN') {
     console.log(message.guild.id);
-    if (!message.guild.id === "232062367951749121" || !message.guild.id === '633473228739837984') {
+    if (!message.guild.id === '232062367951749121' || !message.guild.id === '633473228739837984') {
       return
     }
     message.delete();
+  }
+  if (message.author.id === '402601316830150656') {
+    if (message.content.includes('server nickname')) {
+      message.delete(60000);
+    }
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
   /* curse words censor */
