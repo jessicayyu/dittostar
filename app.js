@@ -10,6 +10,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 
 var testingChannel;
 var mainChannel;
+var feedChannel;
 client.on('ready', () => {
   let timeStart = new Date();
   if (timeStart.getMinutes() < 10) {
@@ -20,6 +21,7 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
   testingChannel = getChannel("423338578597380106");
   mainChannel = getChannel("232062367951749121");
+  feedChannel = getChannel("690017722821640199");
 });
 
 const r = new snoowrap({
@@ -140,9 +142,11 @@ var checkPosts = function() {
               testingChannel().send(embed);
               if (post.link_flair_css_class === 'info') { 
                 mainChannel().send(embed);
+                feedChannel().send(embed);
               }
             } else {
               mainChannel().send(embed);
+              feedChannel().send(embed);
             }
           }
           if (!post.distinguished && !post.stickied) {
@@ -195,15 +199,15 @@ var checkComments = function() {
         comments.filter(comment => comment.id > last)
         .map((comment, i) => {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
-          if (!comment.distinguished && comment.body.includes("mod")) {
-            let matchers = watch.checkKeywords(comment.body, ["mod"]);
+          if (!comment.distinguished) {
+            let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legendary","mythical"]);
             if (matchers) {
               let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
               console.log("Comment has watched keyword: " + matchers + " " + comment.permalink);
               const embed = new Discord.RichEmbed()
                 .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
                 .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                .setDescription(body + "\n[Mods mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
+                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
               testingChannel().send(embed);
             } 
           }
@@ -224,7 +228,10 @@ setTimeout(commentFeed, 15000);
 setInterval(commentFeed, 120000);
 
 client.on('guildMemberAdd', member => {
-  const channel = member.guild.channels.find(ch => ch.name === 'chat-main');
+  let channel = member.guild.channels.find(ch => ch.name === 'chat-main');
+  if (member.guild.id === '633473228739837984') {
+    channel = member.guild.channels.find(ch => ch.name === 'landing');
+  } 
   const greets = [
     `Hello, ${member}! So glad to have you here!`, 
     `Get back in the bag Neb--oh, hi ${member}!`, 
@@ -237,13 +244,16 @@ client.on('guildMemberAdd', member => {
   if (!channel) return;
   let greeting = greets[rand(6)];
   channel.send(greeting);
-  channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
+  if (member.guild.id === '232062367951749121') {
+    channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
+  }
   console.log('New user joined server!' + member);
 });
 
 client.on('message', message => {
   if (message.type === "GUILD_MEMBER_JOIN") {
-    if (!message.guild.id === "232062367951749121") {
+    console.log(message.guild.id);
+    if (!message.guild.id === "232062367951749121" || !message.guild.id === '633473228739837984') {
       return
     }
     message.delete();

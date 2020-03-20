@@ -6,6 +6,7 @@ var checkKeywords = function(input, array) {
       if (array[i] !== "mod") { 
         return array[i]; 
       } 
+      /* if mod is a match, check against regex for false positives */
       let matchers = input.match(/\bmods?\b/gi);
       if (matchers) {
           return matchers.join(', ');
