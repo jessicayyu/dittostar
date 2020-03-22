@@ -202,13 +202,23 @@ var checkComments = function() {
           if (!comment.distinguished) {
             let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legend","mythical","paypal","ebay"]);
             if (matchers) {
-              let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-              console.log("Comment has watched keyword: " + matchers + " " + comment.permalink);
-              const embed = new Discord.RichEmbed()
-                .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
-                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
-              testingChannel().send(embed);
+              let linkID = comment.link_id.split('_')[1];
+              r.getSubmission(linkID).fetch()
+                .then((submission) => {
+                  return submission.link_flair_css_class;
+                })
+                .then((flair) => {
+                  if (matchers.includes('mod') || postLinkClasses.indexOf(flair) < 0) {
+                    let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
+                    console.log("Comment match: " + matchers + " " + comment.permalink);
+                    const embed = new Discord.RichEmbed()
+                      .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                      .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                      .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + "?context=5)");
+                    testingChannel().send(embed);
+                  }
+                })
+                .catch(console.error);
             } 
           }
           if (i === 0) {
@@ -267,9 +277,11 @@ var mildMoriArray = [deeplyconcerned, psy,
 client.on('message', message => {
   if (message.type === 'GUILD_MEMBER_JOIN') {
     if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
+      console.log(message.guild.name + ' ' + message.guild.id);
       return
     }
-    message.delete();
+    message.delete()
+      .catch(console.error);
   }
   if (message.author.id === '402601316830150656') {
     if (message.content.includes('server nickname')) {
