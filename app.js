@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { prefix, subreddit, discordInvite } = require('./config.json');
+const { prefix, subreddit, discordInvite, pokeGuild, theCompany } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -244,7 +244,7 @@ client.on('guildMemberAdd', member => {
   if (!channel) return;
   let greeting = greets[rand(6)];
   channel.send(greeting);
-  if (member.guild.id === '232062367951749121') {
+  if (member.guild.id === pokeGuild) {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
   console.log('New user joined server!' + member);
@@ -253,14 +253,14 @@ client.on('guildMemberAdd', member => {
 client.on('message', message => {
   if (message.type === 'GUILD_MEMBER_JOIN') {
     console.log(message.guild.id);
-    if (!message.guild.id === '232062367951749121' || !message.guild.id === '633473228739837984') {
+    if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
       return
     }
     message.delete();
   }
   if (message.author.id === '402601316830150656') {
     if (message.content.includes('server nickname')) {
-      message.delete(60000);
+      message.delete(90000);
     }
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
@@ -268,12 +268,12 @@ client.on('message', message => {
   const censorArray = [/fuck/i, /cunt/i];
   const censorImmediately = [/fucks mori/i, /fucks?.*out.*mori/i, /nigger/i, /chink/i];
   if (watch.checkKeywordsRegex(message.content, censorArray) || watch.checkKeywordsRegex(message.content, censorImmediately)) {
-    console.log('censor detected');
     const angreh = client.emojis.find(emoji => emoji.name === "ping");
     const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
     const psy = client.emojis.find(emoji => emoji.name === "psy");
     const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
+    var mildMori = [deeplyconcerned, psy, scream];
     var msg = angryMori[rand(16)];
     if (msg) {
       message.channel.send(`${msg}`);
@@ -286,7 +286,7 @@ client.on('message', message => {
       }
     }
     /* Mute if server matches */
-    if (message.guild.id === "232062367951749121" || message.guild.id === "312085609638526977") {
+    if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
       if (swear[message.author.id] === 1) {
         var msg = angryMori[rand(5)];
         message.channel.send('\\*reaches for her hammer\\*');
@@ -298,7 +298,7 @@ client.on('message', message => {
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
           .setDescription('Muted for swearing in ' + message.channel);
-        if (message.guild.id === "232062367951749121") { 
+        if (message.guild.id === pokeGuild) { 
           testingChannel().send(embed);
         }
         message.channel.send(embed);
@@ -317,15 +317,17 @@ client.on('message', message => {
   }
   /* Remove Discord invites */
   if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
-    let modCheck = message.member.roles.find(r => r.name === 'Moderator');
-    if (!modCheck) {
-      const embed = new Discord.RichEmbed()
-        .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-        .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
-      testingChannel().send(embed);
-      message.delete();
-      message.member.addRole(mute);
-      watch.unmute(message, 180);
+    if (message.guild.id === pokeGuild) {
+      let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+      if (!modCheck) {
+        const embed = new Discord.RichEmbed()
+          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+          .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+        testingChannel().send(embed);
+        message.delete();
+        message.member.addRole(mute);
+        watch.unmute(message, 180);
+      }
     }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
@@ -342,7 +344,7 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     } else {
-      if (!message.guild.id === "232062367951749121") {
+      if (message.guild.id !== pokeGuild) {
         return
       }
       var role = "657365039979692032";
@@ -368,7 +370,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     if (arg[1] === 'raid') {
-      if (!message.guild.id === "232062367951749121") {
+      if (message.guild.id !== pokeGuild) {
         return
       }
       role = 'raid';
