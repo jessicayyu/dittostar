@@ -250,9 +250,22 @@ client.on('guildMemberAdd', member => {
   console.log('New user joined server!' + member);
 });
 
+/* Mori response tables */
+const angreh = client.emojis.find(emoji => emoji.name === "ping");
+const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
+const psy = client.emojis.find(emoji => emoji.name === "psy");
+const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+var angryMoriArray = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
+var mildMoriArray = [deeplyconcerned, psy, 
+  'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
+  'https://tenor.com/view/cats-kittens-gif-8595392', 
+  'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
+  'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
+  'https://tenor.com/view/thirsty-dry-sloth-gif-4035803', scream];
+
+/* Discord message responses */  
 client.on('message', message => {
   if (message.type === 'GUILD_MEMBER_JOIN') {
-    console.log(message.guild.id);
     if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
       return
     }
@@ -265,55 +278,60 @@ client.on('message', message => {
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
   /* curse words censor */
-  const censorArray = [/fuck/i, /cunt/i];
-  const censorImmediately = [/fucks mori/i, /fucks?.*out.*mori/i, /nigger/i, /chink/i];
-  if (watch.checkKeywordsRegex(message.content, censorArray) || watch.checkKeywordsRegex(message.content, censorImmediately)) {
-    const angreh = client.emojis.find(emoji => emoji.name === "ping");
-    const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
-    const psy = client.emojis.find(emoji => emoji.name === "psy");
-    const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
-    var mildMori = [deeplyconcerned, psy, scream];
-    var msg = angryMori[rand(16)];
-    if (msg) {
-      message.channel.send(`${msg}`);
-    }
-    if (watch.checkKeywordsRegex(message.content, censorImmediately)) {
-      if (swear[message.author.id]) {
-        swear[message.author.id] += 2;
-      } else {
-        swear[message.author.id] = 2;
-      }
-    }
-    /* Mute if server matches */
-    if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+  if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+    const censorArray = [/fuck/i, /cunt/i];
+    const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
+    const deleteOnMessage = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
+    if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteOnMessage) {
+      var msg;
+      var int;
       if (swear[message.author.id] === 1) {
-        var msg = angryMori[rand(5)];
-        message.channel.send('\\*reaches for her hammer\\*');
+        int = rand(8);
       }
-      if (swear[message.author.id] >= 2) {
+      int = rand(14);
+      if (message.guild.id === pokeGuild) {
+        msg = angryMoriArray[int];
+      }
+      if (message.guild.id === theCompany) {
+        msg = mildMoriArray[int];
+      }
+      if (msg) {
+        message.channel.send(`${msg}`);
+        if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
+          message.channel.send('\\*reaches for her hammer\\*');
+        }
+      }
+      /* Mute if server matches */
+      if ((swear[message.author.id] >= 2 && message.guild.id === pokeGuild) || censorImmediately || deleteOnMessage) {
         message.member.addRole(mute)
           .catch(console.error);
         watch.unmute(message, 180);
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
           .setDescription('Muted for swearing in ' + message.channel);
-        if (message.guild.id === pokeGuild) { 
+        if (message.guild.id === pokeGuild) {
+          if (message.channel.id !== "423338578597380106") { 
+            message.channel.send(embed);
+          }
+          embed.setDescription('Muted for swearing in ' + message.channel + '\n> ' + message.content);
           testingChannel().send(embed);
+        } else {
+          message.channel.send(embed);
         }
-        message.channel.send(embed);
+        if (deleteOnMessage) {
+          message.delete();
+        }
       }
       if (swear[message.author.id]) {
         swear[message.author.id] += 1;
       } else {
         swear[message.author.id] = 1;
       }
-      console.log(message.author.username + ' swear ' + swear[message.author.id] + ' ' + moment().format("h:mm:ssA"));
+      console.log(message.author.username + ' swear ' + swear[message.author.id] + ' rand(' + int + ') ' + moment().format("h:mm:ssA") + '\n' + message.content);
       setTimeout(() => {
         delete swear[message.author.id];
       }, 300000);
     }
-    return
   }
   /* Remove Discord invites */
   if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
@@ -427,7 +445,7 @@ client.on('message', message => {
         var timeData = moment().utcOffset(response.data.datetime);
         let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + cmdArg.slice(0,1).toUpperCase() + cmdArg.slice(1) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
         message.channel.send(msg);
-        var RNG = rand(6);
+        var RNG = rand(10);
         if (RNG < 2) {
           var sassArray = ["You could use your own phone, you know.", "You're already on the internet, just Google it."]
           setTimeout(() => {
