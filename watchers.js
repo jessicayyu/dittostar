@@ -16,6 +16,15 @@ var checkKeywords = function(input, array) {
   return false;
 };
 
+var checkKeywordsRegex = function(input, array) {
+  for (let i = 0; i < array.length; i++) {
+    if (input.match(array[i])) {
+      return input.match(array[i]);
+    }
+  }
+  return false;
+};
+
 var unmute = function (message, seconds) {
   setTimeout(() => {
     let findMute = message.member.roles.find(r => r.name === "mute");
@@ -27,5 +36,6 @@ var unmute = function (message, seconds) {
 
 module.exports = {
   checkKeywords: checkKeywords,
+  checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
 };
