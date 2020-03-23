@@ -466,9 +466,10 @@ client.on('message', message => {
         } 
       })
       .catch(console.error);
-  } else if (cmd === 'dex') {
+  } else if (cmd === 'dex' || cmd === 'sprite' || cmd === 'shiny') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     let pkmn;
+    let urlModifier;
     if (Number(cmdArg)) { 
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
@@ -479,68 +480,78 @@ client.on('message', message => {
     if (pkmn.length < 1) {
       message.channel.send('I dunno what Pokemon that is. Sorry.');
       return;
-    } else if (pkmn[0].localId) {
-      pkmn = pkmn[0].name.split(' ').join('').toLowerCase();
-      message.channel.send(`https://www.serebii.net/pokedex-swsh/${pkmn}/`);
+    } 
+    if (pkmn[0].localId) {
+      if (cmd === 'dex') {
+        pkmn = pkmn[0].name.split(' ').join('').toLowerCase();
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmn}/`);
+      } 
+      if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
+      if (cmd === 'sprite') { urlModifer = 'swordshield/pokemon'; }
     } else {
       let padNum = pkmn[0].id;
       padNum = padNum.padStart(3, '0');
-      message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
-    }
-  } else if (cmd === 'type') {
-    let pkdexTypeRes;
-    arg.shift();
-    arg = dex.capitalize(arg);
-    let typesArray = ["Normal", "Fire", "Fighting", "Water", "Flying", "Grass", "Poison", "Electric", "Ground", "Psychic", "Rock", "Ice", "Bug", "Dragon", "Ghost", "Dark", "Steel", "Fairy"];
-    if (Number(arg)) {
-      pkdexTypeRes = pokedex.id(Number(arg)).get();
-      pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    } else if (typesArray.indexOf(arg.split(' ')[0]) >= 0) {
-      let typeDuo = arg.split(' ');
-      let typeChart = getTypeWeaknesses(typeDuo[0], typeDuo[1]);
-      let typeDescript = dex.formatTypeOutput(typeChart);
-      message.channel.send("**" + typeDuo.join('/') + '**\n' + typeDescript);
-      return;
-    } else {
-      pkdexTypeRes = pokedex.name(arg).get();
-      pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    }
-    if (pkdexTypeRes.length === 0) {
-      message.channel.send('Sorry, I don\'t get it');
-      return;
-    }
-    pkdexTypeRes.forEach(typeResult => {
-      let typeMessage = dex.multiFormTypes(typeResult);
-      message.channel.send(typeMessage);
-    })
-  } else if (cmd === 'ability' || cmd === 'ha') {
-    let pkdexTypeRes;
-    arg.shift();
-    arg = dex.capitalize(arg);
-    if (Number(arg)) {
-      pkdexTypeRes = pokedex.id(Number(arg)).get();
-    } else {
-      pkdexTypeRes = pokedex.name(arg).get();
-    }
-    pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    if (pkdexTypeRes.length === 0) {
-      message.channel.send('Sorry, I\'m confused...');
-      return;
-    } 
-    pkdexTypeRes.forEach(result => {
-      let abilityArr = result.ability;
-      let abilityText = [];
-      let form = "";
-      form = result.formName ? ": " + result.formName + "\n": "\n" ;
-      for (let i = 0; i < abilityArr.length; i++) {
-        if (abilityArr[i].hidden === true) {
-          abilityText.unshift("HA: " + abilityArr[i].name);
-        } else {
-          abilityText.push(i + ": " + abilityArr[i].name)
-        }
+      if (cmd === 'dex') {
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
       }
-      message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
-    })
+      if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
+      if (cmd === 'sprite') { urlModifer = 'sunmoon/pokemon'; }
+    }
+    message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
+  } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
+    let pkdexTypeRes;
+    arg.shift();
+    arg = dex.capitalize(arg);
+    if (cmd === 'type') {
+      let typesArray = ["Normal", "Fire", "Fighting", "Water", "Flying", "Grass", "Poison", "Electric", "Ground", "Psychic", "Rock", "Ice", "Bug", "Dragon", "Ghost", "Dark", "Steel", "Fairy"];
+      if (Number(arg)) {
+        pkdexTypeRes = pokedex.id(Number(arg)).get();
+        pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      } else if (typesArray.indexOf(arg.split(' ')[0]) >= 0) {
+        let typeDuo = arg.split(' ');
+        let typeChart = getTypeWeaknesses(typeDuo[0], typeDuo[1]);
+        let typeDescript = dex.formatTypeOutput(typeChart);
+        message.channel.send("**" + typeDuo.join('/') + '**\n' + typeDescript);
+        return;
+      } else {
+        pkdexTypeRes = pokedex.name(arg).get();
+        pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      }
+      if (pkdexTypeRes.length === 0) {
+        message.channel.send('Sorry, I don\'t get it');
+        return;
+      }
+      pkdexTypeRes.forEach(typeResult => {
+        let typeMessage = dex.multiFormTypes(typeResult);
+        message.channel.send(typeMessage);
+      })
+    }
+    if (cmd === 'ability' || cmd === 'ha') {
+      if (Number(arg)) {
+        pkdexTypeRes = pokedex.id(Number(arg)).get();
+      } else {
+        pkdexTypeRes = pokedex.name(arg).get();
+      }
+      pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      if (pkdexTypeRes.length === 0) {
+        message.channel.send('Sorry, I\'m confused...');
+        return;
+      } 
+      pkdexTypeRes.forEach(result => {
+        let abilityArr = result.ability;
+        let abilityText = [];
+        let form = "";
+        form = result.formName ? ": " + result.formName + "\n": "\n" ;
+        for (let i = 0; i < abilityArr.length; i++) {
+          if (abilityArr[i].hidden === true) {
+            abilityText.unshift("HA: " + abilityArr[i].name);
+          } else {
+            abilityText.push(i + ": " + abilityArr[i].name)
+          }
+        }
+        message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
+      })
+    }
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
