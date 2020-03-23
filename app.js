@@ -468,8 +468,7 @@ client.on('message', message => {
       .catch(console.error);
   } else if (cmd === 'dex' || cmd === 'sprite' || cmd === 'shiny') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
-    let pkmn;
-    let urlModifier;
+    let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
@@ -478,26 +477,27 @@ client.on('message', message => {
     }
     pkmn = JSON.parse(pkmn);
     if (pkmn.length < 1) {
-      message.channel.send('I dunno what Pokemon that is. Sorry.');
-      return;
-    } 
-    if (pkmn[0].localId) {
+      message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
+    } else if (pkmn[0].localId) {
       if (cmd === 'dex') {
-        pkmn = pkmn[0].name.split(' ').join('').toLowerCase();
-        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmn}/`);
-      } 
-      if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
-      if (cmd === 'sprite') { urlModifer = 'swordshield/pokemon'; }
+        let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmnName}/`);
+      } else {
+        if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
+        if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
+        message.channel.send(`https://www.serebii.net/${urlModifier}/${pkmn[0].id}.png`);
+      }
     } else {
-      let padNum = pkmn[0].id;
+      padNum = pkmn[0].id;
       padNum = padNum.padStart(3, '0');
       if (cmd === 'dex') {
         message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
+      } else {
+        if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
+        if (cmd === 'sprite') { urlModifier = 'sunmoon/pokemon'; }
+        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
       }
-      if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
-      if (cmd === 'sprite') { urlModifer = 'sunmoon/pokemon'; }
     }
-    message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
     let pkdexTypeRes;
     arg.shift();
@@ -555,15 +555,21 @@ client.on('message', message => {
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
-      raid: "Ping the @raid notification group for Max Raid Battles", 
+      raid: "- Pings the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
       ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
       ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`"
+      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
+      sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
+      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite"
     };
     if (!arg[1]) {
-      message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, `ability`, `ha`, and `type`! Use `!help [command]` to get more info on the command.');
+      let commandDexKeys = '';
+      for (var key in commandDex) {
+        commandDexKeys += `\`${key}\` ${commandDex[key]}\n`
+      }
+      message.channel.send('Available commands are \n' + commandDexKeys + '\nUse `!help [command]` to get more info on the command.');
     } else {
       if (commandDex[arg[1]]) {
         message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
