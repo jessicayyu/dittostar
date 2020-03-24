@@ -377,7 +377,7 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      var role = "657365039979692032";
+      role = "657365039979692032";
       let index;
       let star = '';
       if (Number(arg[1])) {
@@ -410,10 +410,15 @@ client.on('message', message => {
           .then(message.channel.send('Role removed!'))
           .catch(console.error);
       } else {
+        let groupRole = message.guild.roles.get('691796497125212230');
         role = message.guild.roles.find(r => r.name === role);
         message.member.addRole(role)
           .then(message.channel.send('Role added!'))
-          .catch(console.error);
+          .catch(console.error)
+          .then(() => {
+            message.member.addRole(groupRole)
+              .catch(console.error)
+          });
       }
     }
   } else if (cmd === 'giveaways') {
