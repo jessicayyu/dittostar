@@ -406,7 +406,7 @@ client.on('message', message => {
         return
       }
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
-      message.channel.send(roleResult);
+      message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
   } else if (cmd === 'giveaways') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
@@ -470,18 +470,20 @@ client.on('message', message => {
     pkmn = JSON.parse(pkmn);
     if (pkmn.length < 1) {
       message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
-    } else if (pkmn[0].localId) {
+      return;
+    }
+    padNum = pkmn[0].id;
+    padNum = padNum.padStart(3, '0');
+    if (pkmn[0].localId) {
       if (cmd === 'dex') {
         let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
         message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmnName}/`);
       } else {
         if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
         if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
-        message.channel.send(`https://www.serebii.net/${urlModifier}/${pkmn[0].id}.png`);
+        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
       }
     } else {
-      padNum = pkmn[0].id;
-      padNum = padNum.padStart(3, '0');
       if (cmd === 'dex') {
         message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
       } else {
@@ -572,20 +574,22 @@ client.on('message', message => {
   }
 });
 
-client.on('messageReactionAdd', (reaction, user) => {
+/* Raid emoji assignment */
+const raidEmojiAssignment = function(reaction, user) {
   if (reaction.message.id ==='658214917027004436') {
     let member = reaction.message.channel.guild.members.get(user.id);
     let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-    console.log(roleResult + ` ${member.displayName}`);
+    let botCommandsChannel = client.channels.get('423705492225916929');
+    botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
   }
+};
+
+client.on('messageReactionAdd', (reaction, user) => {
+  raidEmojiAssignment(reaction, user);
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
-  if (reaction.message.id ==='658214917027004436') {
-    let member = reaction.message.channel.guild.members.get(user.id);
-    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-    console.log(roleResult + ` ${member.displayName}`);
-  }
+  raidEmojiAssignment(reaction, user);
 });
 
 client.login(TOKEN);
