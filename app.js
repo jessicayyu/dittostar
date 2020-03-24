@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const { prefix, subreddit, discordInvite, pokeGuild, theCompany } = require('./config.json');
 const axios = require('axios');
 
@@ -19,9 +19,12 @@ client.on('ready', () => {
     timeStart = timeStart.getHours() + ':' + timeStart.getMinutes();
   }
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
-  testingChannel = getChannel("423338578597380106");
-  mainChannel = getChannel("232062367951749121");
-  feedChannel = getChannel("690017722821640199");
+  testingChannel = getChannel('423338578597380106');
+  mainChannel = getChannel('232062367951749121');
+  feedChannel = getChannel('690017722821640199');
+  let emojiChannel = client.channels.get('399407103959236618');
+  emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
+    .catch(console.error);
 });
 
 const r = new snoowrap({
@@ -260,18 +263,7 @@ client.on('guildMemberAdd', member => {
   console.log('New user joined server!' + member);
 });
 
-/* Mori response tables */
-const angreh = client.emojis.find(emoji => emoji.name === "ping");
-const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
-const psy = client.emojis.find(emoji => emoji.name === "psy");
 const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-var angryMoriArray = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
-var mildMoriArray = [deeplyconcerned, psy, 
-  'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
-  'https://tenor.com/view/cats-kittens-gif-8595392', 
-  'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
-  'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
-  'https://tenor.com/view/thirsty-dry-sloth-gif-4035803', scream];
 
 /* Discord message responses */  
 client.on('message', message => {
@@ -295,6 +287,16 @@ client.on('message', message => {
     const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
     const deleteOnMessage = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
     if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteOnMessage) {
+      const angreh = client.emojis.find(emoji => emoji.name === "ping");
+      const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
+      const psy = client.emojis.find(emoji => emoji.name === "psy");
+      var angryMoriArray = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
+      var mildMoriArray = [deeplyconcerned, psy, 
+        'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
+        'https://tenor.com/view/cats-kittens-gif-8595392', 
+        'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
+        'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
+        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803', scream];
       var msg;
       var int;
       if (swear[message.author.id] === 1) {
@@ -403,23 +405,8 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      role = 'raid';
-      var findRole = message.member.roles.find(r => r.name === role);
-      if (findRole) {
-        message.member.removeRole(findRole)
-          .then(message.channel.send('Role removed!'))
-          .catch(console.error);
-      } else {
-        let groupRole = message.guild.roles.get('691796497125212230');
-        role = message.guild.roles.find(r => r.name === role);
-        message.member.addRole(role)
-          .then(message.channel.send('Role added!'))
-          .catch(console.error)
-          .then(() => {
-            message.member.addRole(groupRole)
-              .catch(console.error)
-          });
-      }
+      let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
+      message.channel.send(roleResult);
     }
   } else if (cmd === 'giveaways') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
@@ -582,6 +569,22 @@ client.on('message', message => {
         message.channel.send("Sorry, I don't understand.");
       }
     }
+  }
+});
+
+client.on('messageReactionAdd', (reaction, user) => {
+  if (reaction.message.id ==='658214917027004436') {
+    let member = reaction.message.channel.guild.members.get(user.id);
+    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+    console.log(roleResult + ` ${member.displayName}`);
+  }
+});
+
+client.on('messageReactionRemove', (reaction, user) => {
+  if (reaction.message.id ==='658214917027004436') {
+    let member = reaction.message.channel.guild.members.get(user.id);
+    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+    console.log(roleResult + ` ${member.displayName}`);
   }
 });
 
