@@ -285,8 +285,8 @@ client.on('message', message => {
   if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
     const censorArray = [/fuck/i, /cunt/i];
     const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
-    const deleteOnMessage = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
-    if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteOnMessage) {
+    const deleteImmediately = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
+    if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteImmediately) {
       const angreh = client.emojis.find(emoji => emoji.name === "ping");
       const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
       const psy = client.emojis.find(emoji => emoji.name === "psy");
@@ -316,23 +316,27 @@ client.on('message', message => {
         }
       }
       /* Mute if server matches */
-      if ((swear[message.author.id] >= 2 && message.guild.id === pokeGuild) || censorImmediately || deleteOnMessage) {
+      if ((swear[message.author.id] >= 2 && message.guild.id === pokeGuild) || censorImmediately || deleteImmediately) {
         message.member.addRole(mute)
           .catch(console.error);
         watch.unmute(message, 180);
+        let muteReason;
+        muteReason = 'cursing';
+        if (censorImmediately) { muteReason = 'being inappropriate to Mori'}
+        if (deleteImmediately) { muteReason = 'using racial slurs'}
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-          .setDescription('Muted for swearing in ' + message.channel);
+          .setDescription(`Muted for ${muteReason} in ${message.channel}`);
         if (message.guild.id === pokeGuild) {
           if (message.channel.id !== "423338578597380106") { 
             message.channel.send(embed);
           }
-          embed.setDescription('Muted for swearing in ' + message.channel + '\n> ' + message.content);
+          embed.setDescription('Muted for ' + muteReason + ' in ' + message.channel + '\n\n> ' + message.content);
           testingChannel().send(embed);
         } else {
           message.channel.send(embed);
         }
-        if (deleteOnMessage) {
+        if (deleteImmediately) {
           message.delete();
         }
       }
