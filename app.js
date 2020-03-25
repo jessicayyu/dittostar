@@ -11,6 +11,9 @@ const TOKEN = process.env.DISCORD_TOKEN;
 var testingChannel;
 var mainChannel;
 var feedChannel;
+
+client.on('error', console.error);
+
 client.on('ready', () => {
   let timeStart = new Date();
   if (timeStart.getMinutes() < 10) {
@@ -171,9 +174,7 @@ var checkPosts = function() {
           return post;
         })
       })
-      .catch(() => {
-        console.error;
-      });
+      .catch(console.error);
   }
 };
 
@@ -230,9 +231,7 @@ var checkComments = function() {
           return comment;
         })
       })
-      .catch(() => {
-        console.error;
-      });
+      .catch(console.error);
   }
 }
 
@@ -322,7 +321,7 @@ client.on('message', message => {
         watch.unmute(message, 180);
         let muteReason;
         muteReason = 'cursing';
-        if (censorImmediately) { muteReason = 'being inappropriate to Mori'}
+        if (censorImmediately) { muteReason = 'being an asshole to me, jerkass, '}
         if (deleteImmediately) { muteReason = 'using racial slurs'}
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
@@ -441,10 +440,12 @@ client.on('message', message => {
       chicago: "America/Chicago",
       miami: "America/New_York"
     };
+    const timeExcuseArray = [`I don't really have internet at work.`, `I'm bad at geography.`,`I don't have any others memorized.`, `... well, I dunno, can't you check on your own phone?`, `my work internet is pretty heavily filtered.`,`because I haven't been paid yet and I dunno, do I look like I would know?`];
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     var location = zones[cmdArg.toLowerCase()];
     if (!location) {
-      message.channel.send("Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami off the top of my head.");
+      let timeExcuse = timeExcuseArray[rand(timeExcuseArray.length)];
+      message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
       return;
     }
     axios.get("http://worldtimeapi.org/api/timezone/" + location)
@@ -461,7 +462,10 @@ client.on('message', message => {
           }, 2000);
         } 
       })
-      .catch(console.error);
+      .catch(error => {
+        console.log(error.response);
+        message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
+      });
   } else if (cmd === 'dex' || cmd === 'sprite' || cmd === 'shiny') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     let pkmn, urlModifier, padNum;
