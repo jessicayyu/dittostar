@@ -1,5 +1,7 @@
 {
   "prefix": "!",
   "subreddit": "subreddit",
-  "discordInvite": "inviteCodeHere"
+  "discordInvite": "inviteCodeHere",
+  "pokeGuild": "guildID",
+  "theCompany": "guildID"
 }

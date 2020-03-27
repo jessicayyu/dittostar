@@ -28,8 +28,9 @@ See [this page for the bot commands and config](./commands.md). Currently suppor
 ## Helper Functions
 
 ### Watcher Helper Functions
-* Check keywords
-* Unmute user (Discord)
+* checkKeywords(input,array) - Checks for text matches
+* checkKeywordsRegex(input, array) - Check text matches using regex
+* unmute(message, seconds) - Unmute user (Discord)
 
 ## Authors
 

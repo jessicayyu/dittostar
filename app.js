@@ -2,8 +2,8 @@ require('dotenv').config();
 
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
-const client = new Discord.Client();
-const { prefix, subreddit, discordInvite } = require('./config.json');
+const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+const { prefix, subreddit, discordInvite, pokeGuild, theCompany } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -11,6 +11,9 @@ const TOKEN = process.env.DISCORD_TOKEN;
 var testingChannel;
 var mainChannel;
 var feedChannel;
+
+client.on('error', console.error);
+
 client.on('ready', () => {
   let timeStart = new Date();
   if (timeStart.getMinutes() < 10) {
@@ -19,9 +22,12 @@ client.on('ready', () => {
     timeStart = timeStart.getHours() + ':' + timeStart.getMinutes();
   }
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
-  testingChannel = getChannel("423338578597380106");
-  mainChannel = getChannel("232062367951749121");
-  feedChannel = getChannel("690017722821640199");
+  testingChannel = getChannel('423338578597380106');
+  mainChannel = getChannel('232062367951749121');
+  feedChannel = getChannel('690017722821640199');
+  let emojiChannel = client.channels.get('399407103959236618');
+  emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
+    .catch(console.error);
 });
 
 const r = new snoowrap({
@@ -41,6 +47,7 @@ const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
+const mori = require('./dialogue.json');
 
 function getChannel(channel) {
   var target = null;
@@ -55,6 +62,7 @@ function getChannel(channel) {
   }
 }
 
+/* RNG: random number generator */
 function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
@@ -168,9 +176,7 @@ var checkPosts = function() {
           return post;
         })
       })
-      .catch(() => {
-        console.error;
-      });
+      .catch(console.error);
   }
 };
 
@@ -202,13 +208,23 @@ var checkComments = function() {
           if (!comment.distinguished) {
             let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legend","mythical","paypal","ebay"]);
             if (matchers) {
-              let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-              console.log("Comment has watched keyword: " + matchers + " " + comment.permalink);
-              const embed = new Discord.RichEmbed()
-                .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
-                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + ")");
-              testingChannel().send(embed);
+              let linkID = comment.link_id.split('_')[1];
+              r.getSubmission(linkID).fetch()
+                .then((submission) => {
+                  return submission.link_flair_css_class;
+                })
+                .then((flair) => {
+                  if (matchers.includes('mod') || postLinkClasses.indexOf(flair) < 0) {
+                    let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
+                    console.log("Comment match: " + matchers + " " + comment.permalink);
+                    const embed = new Discord.RichEmbed()
+                      .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
+                      .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                      .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + "?context=5)");
+                    testingChannel().send(embed);
+                  }
+                })
+                .catch(console.error);
             } 
           }
           if (i === 0) {
@@ -217,9 +233,7 @@ var checkComments = function() {
           return comment;
         })
       })
-      .catch(() => {
-        console.error;
-      });
+      .catch(console.error);
   }
 }
 
@@ -244,88 +258,130 @@ client.on('guildMemberAdd', member => {
   if (!channel) return;
   let greeting = greets[rand(6)];
   channel.send(greeting);
-  if (member.guild.id === '232062367951749121') {
+  if (member.guild.id === pokeGuild) {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
   console.log('New user joined server!' + member);
 });
 
+const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+/* Discord message responses */  
 client.on('message', message => {
   if (message.type === 'GUILD_MEMBER_JOIN') {
-    console.log(message.guild.id);
-    if (!message.guild.id === '232062367951749121' || !message.guild.id === '633473228739837984') {
+    if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
+      console.log(message.guild.name + ' ' + message.guild.id);
       return
     }
-    message.delete();
+    message.delete()
+      .catch(console.error);
   }
   if (message.author.id === '402601316830150656') {
     if (message.content.includes('server nickname')) {
-      message.delete(60000);
+      message.delete(90000);
     }
   }
   let mute = message.guild.roles.find(r => r.name === "mute");
   /* curse words censor */
-  const censorArray = [/fuck/i, /cunt/i];
-  const censorImmediately = [/fucks mori/i, /fucks?.*out.*mori/i, /nigger/i, /chink/i];
-  if (watch.checkKeywordsRegex(message.content, censorArray) || watch.checkKeywordsRegex(message.content, censorImmediately)) {
-    console.log('censor detected');
-    const angreh = client.emojis.find(emoji => emoji.name === "ping");
-    const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
-    const psy = client.emojis.find(emoji => emoji.name === "psy");
-    const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    var angryMori = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
-    var msg = angryMori[rand(16)];
-    if (msg) {
-      message.channel.send(`${msg}`);
-    }
-    if (watch.checkKeywordsRegex(message.content, censorImmediately)) {
-      if (swear[message.author.id]) {
-        swear[message.author.id] += 2;
-      } else {
-        swear[message.author.id] = 2;
+  if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+    const censorArray = [/fuck/i, /cunt/i];
+    const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
+    const deleteImmediately = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
+    if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteImmediately) {
+      const angreh = client.emojis.find(emoji => emoji.name === "ping");
+      const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
+      const psy = client.emojis.find(emoji => emoji.name === "psy");
+      var angryMoriArray = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
+      var mildMoriArray = [scream, deeplyconcerned, psy, 
+        'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
+        'https://tenor.com/view/cats-kittens-gif-8595392', 
+        'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
+        'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
+        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803',
+        'Um... do you want a cup of tea to calm down?', 
+        'Yeah, fuck you! (Am I doing this right?)',
+        'https://tenor.com/view/catkitty-sad-eyes-courtneyp-snow-gif-16648576',
+        'https://tenor.com/view/puppy-love-hi-dont-leave-cute-gif-12851514',
+        'https://tenor.com/view/puppy-love-golden-retriever-all-you-need-is-love-gif-13117096',
+        'https://tenor.com/view/animal-turtle-flap-cut-small-gif-4517332'
+      ];
+      var msg;
+      var int;
+      var resTable;
+      if (message.guild.id === pokeGuild) {
+        resTable = angryMoriArray;
       }
-    }
-    /* Mute if server matches */
-    if (message.guild.id === "232062367951749121" || message.guild.id === "312085609638526977") {
+      if (message.guild.id === theCompany) {
+        resTable = mildMoriArray;
+      }
       if (swear[message.author.id] === 1) {
-        var msg = angryMori[rand(5)];
-        message.channel.send('\\*reaches for her hammer\\*');
+        int = rand(resTable.length);
+        if (int === 0) {
+          int = rand(resTable.lenth);
+        }
+        msg = resTable[rand(int)];
+      } else {
+        int = rand(resTable.length * 2);
+        if (int === 0) {
+          int = rand(resTable.lenth * 2);
+        }
       }
-      if (swear[message.author.id] >= 2) {
+      msg = resTable[int];
+      if (msg) {
+        message.channel.send(`${msg}`);
+        if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
+          message.channel.send('\\*reaches for her hammer\\*');
+        }
+      }
+      /* Mute if server matches */
+      if ((swear[message.author.id] >= 2 && message.guild.id === pokeGuild) || censorImmediately || deleteImmediately) {
         message.member.addRole(mute)
           .catch(console.error);
         watch.unmute(message, 180);
+        let muteReason;
+        muteReason = 'cursing';
+        if (censorImmediately) { muteReason = 'being an asshole to me, jerkass, '}
+        if (deleteImmediately) { muteReason = 'using racial slurs'}
         const embed = new Discord.RichEmbed()
           .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-          .setDescription('Muted for swearing in ' + message.channel);
-        if (message.guild.id === "232062367951749121") { 
+          .setDescription(`Muted for ${muteReason} in ${message.channel}`);
+        if (message.guild.id === pokeGuild) {
+          if (message.channel.id !== "423338578597380106") { 
+            message.channel.send(embed);
+          }
+          embed.setDescription('Muted for ' + muteReason + ' in ' + message.channel + '\n\n> ' + message.content);
           testingChannel().send(embed);
+        } else {
+          message.channel.send(embed);
         }
-        message.channel.send(embed);
+        if (deleteImmediately) {
+          message.delete();
+        }
       }
       if (swear[message.author.id]) {
         swear[message.author.id] += 1;
       } else {
         swear[message.author.id] = 1;
       }
-      console.log(message.author.username + ' swear ' + swear[message.author.id] + ' ' + moment().format("h:mm:ssA"));
+      console.log(message.author.username + ' swear ' + swear[message.author.id] + ' rand(' + int + ') ' + moment().format("h:mm:ssA") + '\n' + message.content);
       setTimeout(() => {
         delete swear[message.author.id];
       }, 300000);
     }
-    return
   }
   /* Remove Discord invites */
   if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
-    let modCheck = message.member.roles.find(r => r.name === 'Moderator');
-    if (!modCheck) {
-      const embed = new Discord.RichEmbed()
-        .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-        .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
-      testingChannel().send(embed);
-      message.delete();
-      message.member.addRole(mute);
-      watch.unmute(message, 180);
+    if (message.guild.id === pokeGuild) {
+      let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+      if (!modCheck) {
+        const embed = new Discord.RichEmbed()
+          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+          .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+        testingChannel().send(embed);
+        message.delete();
+        message.member.addRole(mute);
+        watch.unmute(message, 180);
+      }
     }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
@@ -342,10 +398,10 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     } else {
-      if (!message.guild.id === "232062367951749121") {
+      if (message.guild.id !== pokeGuild) {
         return
       }
-      var role = "657365039979692032";
+      role = "657365039979692032";
       let index;
       let star = '';
       if (Number(arg[1])) {
@@ -368,21 +424,11 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     if (arg[1] === 'raid') {
-      if (!message.guild.id === "232062367951749121") {
+      if (message.guild.id !== pokeGuild) {
         return
       }
-      role = 'raid';
-      var findRole = message.member.roles.find(r => r.name === role);
-      if (findRole) {
-        message.member.removeRole(findRole)
-          .then(message.channel.send('Role removed!'))
-          .catch(console.error);
-      } else {
-        role = message.guild.roles.find(r => r.name === role);
-        message.member.addRole(role)
-          .then(message.channel.send('Role added!'))
-          .catch(console.error);
-      }
+      let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
+      message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
   } else if (cmd === 'giveaways') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
@@ -416,7 +462,8 @@ client.on('message', message => {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     var location = zones[cmdArg.toLowerCase()];
     if (!location) {
-      message.channel.send("Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami off the top of my head.");
+      let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
+      message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
       return;
     }
     axios.get("http://worldtimeapi.org/api/timezone/" + location)
@@ -425,7 +472,7 @@ client.on('message', message => {
         var timeData = moment().utcOffset(response.data.datetime);
         let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + cmdArg.slice(0,1).toUpperCase() + cmdArg.slice(1) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
         message.channel.send(msg);
-        var RNG = rand(6);
+        var RNG = rand(10);
         if (RNG < 2) {
           var sassArray = ["You could use your own phone, you know.", "You're already on the internet, just Google it."]
           setTimeout(() => {
@@ -433,10 +480,13 @@ client.on('message', message => {
           }, 2000);
         } 
       })
-      .catch(console.error);
-  } else if (cmd === 'dex') {
+      .catch(error => {
+        console.log(error.response);
+        message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
+      });
+  } else if (cmd === 'dex' || cmd === 'sprite' || cmd === 'shiny') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
-    let pkmn;
+    let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
@@ -445,82 +495,101 @@ client.on('message', message => {
     }
     pkmn = JSON.parse(pkmn);
     if (pkmn.length < 1) {
-      message.channel.send('I dunno what Pokemon that is. Sorry.');
-      return;
-    } else if (pkmn[0].localId) {
-      pkmn = pkmn[0].name.split(' ').join('').toLowerCase();
-      message.channel.send(`https://www.serebii.net/pokedex-swsh/${pkmn}/`);
-    } else {
-      let padNum = pkmn[0].id;
-      padNum = padNum.padStart(3, '0');
-      message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
-    }
-  } else if (cmd === 'type') {
-    let pkdexTypeRes;
-    arg.shift();
-    arg = dex.capitalize(arg);
-    let typesArray = ["Normal", "Fire", "Fighting", "Water", "Flying", "Grass", "Poison", "Electric", "Ground", "Psychic", "Rock", "Ice", "Bug", "Dragon", "Ghost", "Dark", "Steel", "Fairy"];
-    if (Number(arg)) {
-      pkdexTypeRes = pokedex.id(Number(arg)).get();
-      pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    } else if (typesArray.indexOf(arg.split(' ')[0]) >= 0) {
-      let typeDuo = arg.split(' ');
-      let typeChart = getTypeWeaknesses(typeDuo[0], typeDuo[1]);
-      let typeDescript = dex.formatTypeOutput(typeChart);
-      message.channel.send("**" + typeDuo.join('/') + '**\n' + typeDescript);
-      return;
-    } else {
-      pkdexTypeRes = pokedex.name(arg).get();
-      pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    }
-    if (pkdexTypeRes.length === 0) {
-      message.channel.send('Sorry, I don\'t get it');
+      message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
       return;
     }
-    pkdexTypeRes.forEach(typeResult => {
-      let typeMessage = dex.multiFormTypes(typeResult);
-      message.channel.send(typeMessage);
-    })
-  } else if (cmd === 'ability' || cmd === 'ha') {
-    let pkdexTypeRes;
-    arg.shift();
-    arg = dex.capitalize(arg);
-    if (Number(arg)) {
-      pkdexTypeRes = pokedex.id(Number(arg)).get();
-    } else {
-      pkdexTypeRes = pokedex.name(arg).get();
-    }
-    pkdexTypeRes = JSON.parse(pkdexTypeRes);
-    if (pkdexTypeRes.length === 0) {
-      message.channel.send('Sorry, I\'m confused...');
-      return;
-    } 
-    pkdexTypeRes.forEach(result => {
-      let abilityArr = result.ability;
-      let abilityText = [];
-      let form = "";
-      form = result.formName ? ": " + result.formName + "\n": "\n" ;
-      for (let i = 0; i < abilityArr.length; i++) {
-        if (abilityArr[i].hidden === true) {
-          abilityText.unshift("HA: " + abilityArr[i].name);
-        } else {
-          abilityText.push(i + ": " + abilityArr[i].name)
-        }
+    padNum = pkmn[0].id;
+    padNum = padNum.padStart(3, '0');
+    if (pkmn[0].localId) {
+      if (cmd === 'dex') {
+        let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmnName}/`);
+      } else {
+        if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
+        if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
+        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
       }
-      message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
-    })
+    } else {
+      if (cmd === 'dex') {
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
+      } else {
+        if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
+        if (cmd === 'sprite') { urlModifier = 'sunmoon/pokemon'; }
+        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
+      }
+    }
+  } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
+    let pkdexTypeRes;
+    arg.shift();
+    arg = dex.capitalize(arg);
+    if (cmd === 'type') {
+      let typesArray = ["Normal", "Fire", "Fighting", "Water", "Flying", "Grass", "Poison", "Electric", "Ground", "Psychic", "Rock", "Ice", "Bug", "Dragon", "Ghost", "Dark", "Steel", "Fairy"];
+      if (Number(arg)) {
+        pkdexTypeRes = pokedex.id(Number(arg)).get();
+        pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      } else if (typesArray.indexOf(arg.split(' ')[0]) >= 0) {
+        let typeDuo = arg.split(' ');
+        let typeChart = getTypeWeaknesses(typeDuo[0], typeDuo[1]);
+        let typeDescript = dex.formatTypeOutput(typeChart);
+        message.channel.send("**" + typeDuo.join('/') + '**\n' + typeDescript);
+        return;
+      } else {
+        pkdexTypeRes = pokedex.name(arg).get();
+        pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      }
+      if (pkdexTypeRes.length === 0) {
+        message.channel.send('Sorry, I don\'t get it');
+        return;
+      }
+      pkdexTypeRes.forEach(typeResult => {
+        let typeMessage = dex.multiFormTypes(typeResult);
+        message.channel.send(typeMessage);
+      })
+    }
+    if (cmd === 'ability' || cmd === 'ha') {
+      if (Number(arg)) {
+        pkdexTypeRes = pokedex.id(Number(arg)).get();
+      } else {
+        pkdexTypeRes = pokedex.name(arg).get();
+      }
+      pkdexTypeRes = JSON.parse(pkdexTypeRes);
+      if (pkdexTypeRes.length === 0) {
+        message.channel.send('Sorry, I\'m confused...');
+        return;
+      } 
+      pkdexTypeRes.forEach(result => {
+        let abilityArr = result.ability;
+        let abilityText = [];
+        let form = "";
+        form = result.formName ? ": " + result.formName + "\n": "\n" ;
+        for (let i = 0; i < abilityArr.length; i++) {
+          if (abilityArr[i].hidden === true) {
+            abilityText.unshift("HA: " + abilityArr[i].name);
+          } else {
+            abilityText.push(i + ": " + abilityArr[i].name)
+          }
+        }
+        message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
+      })
+    }
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
-      raid: "Ping the @raid notification group for Max Raid Battles", 
+      raid: "- Pings the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
       ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
       ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`"
+      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
+      sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
+      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite"
     };
     if (!arg[1]) {
-      message.channel.send('Available commands are `role`, `raid`, `time`, `dex`, `ability`, `ha`, and `type`! Use `!help [command]` to get more info on the command.');
+      let commandDexKeys = '';
+      for (var key in commandDex) {
+        commandDexKeys += `\`${key}\` ${commandDex[key]}\n`
+      }
+      message.channel.send('Available commands are \n' + commandDexKeys + '\nUse `!help [command]` to get more info on the command.');
     } else {
       if (commandDex[arg[1]]) {
         message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
@@ -529,6 +598,24 @@ client.on('message', message => {
       }
     }
   }
+});
+
+/* Raid emoji assignment */
+const raidEmojiAssignment = function(reaction, user) {
+  if (reaction.message.id ==='658214917027004436') {
+    let member = reaction.message.channel.guild.members.get(user.id);
+    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+    let botCommandsChannel = client.channels.get('423705492225916929');
+    botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+  }
+};
+
+client.on('messageReactionAdd', (reaction, user) => {
+  raidEmojiAssignment(reaction, user);
+});
+
+client.on('messageReactionRemove', (reaction, user) => {
+  raidEmojiAssignment(reaction, user);
 });
 
 client.login(TOKEN);
