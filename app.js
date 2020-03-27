@@ -47,6 +47,7 @@ const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
+const mori = require('./dialogue.json');
 
 function getChannel(channel) {
   var target = null;
@@ -61,6 +62,7 @@ function getChannel(channel) {
   }
 }
 
+/* RNG: random number generator */
 function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
@@ -289,25 +291,42 @@ client.on('message', message => {
       const angreh = client.emojis.find(emoji => emoji.name === "ping");
       const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
       const psy = client.emojis.find(emoji => emoji.name === "psy");
-      var angryMoriArray = ['ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy, scream];
-      var mildMoriArray = [deeplyconcerned, psy, 
+      var angryMoriArray = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
+      var mildMoriArray = [scream, deeplyconcerned, psy, 
         'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
         'https://tenor.com/view/cats-kittens-gif-8595392', 
         'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
         'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
-        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803', scream];
+        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803',
+        'Um... do you want a cup of tea to calm down?', 
+        'Yeah, fuck you! (Am I doing this right?)',
+        'https://tenor.com/view/catkitty-sad-eyes-courtneyp-snow-gif-16648576',
+        'https://tenor.com/view/puppy-love-hi-dont-leave-cute-gif-12851514',
+        'https://tenor.com/view/puppy-love-golden-retriever-all-you-need-is-love-gif-13117096',
+        'https://tenor.com/view/animal-turtle-flap-cut-small-gif-4517332'
+      ];
       var msg;
       var int;
-      if (swear[message.author.id] === 1) {
-        int = rand(8);
-      }
-      int = rand(14);
+      var resTable;
       if (message.guild.id === pokeGuild) {
-        msg = angryMoriArray[int];
+        resTable = angryMoriArray;
       }
       if (message.guild.id === theCompany) {
-        msg = mildMoriArray[int];
+        resTable = mildMoriArray;
       }
+      if (swear[message.author.id] === 1) {
+        int = rand(resTable.length);
+        if (int === 0) {
+          int = rand(resTable.lenth);
+        }
+        msg = resTable[rand(int)];
+      } else {
+        int = rand(resTable.length * 2);
+        if (int === 0) {
+          int = rand(resTable.lenth * 2);
+        }
+      }
+      msg = resTable[int];
       if (msg) {
         message.channel.send(`${msg}`);
         if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
@@ -440,11 +459,10 @@ client.on('message', message => {
       chicago: "America/Chicago",
       miami: "America/New_York"
     };
-    const timeExcuseArray = [`I don't really have internet at work.`, `I'm bad at geography.`,`I don't have any others memorized.`, `... well, I dunno, can't you check on your own phone?`, `my work internet is pretty heavily filtered.`,`because I haven't been paid yet and I dunno, do I look like I would know?`];
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     var location = zones[cmdArg.toLowerCase()];
     if (!location) {
-      let timeExcuse = timeExcuseArray[rand(timeExcuseArray.length)];
+      let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
       message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
       return;
     }
