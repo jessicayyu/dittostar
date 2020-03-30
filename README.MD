@@ -20,10 +20,13 @@ See [this page for the bot commands and config](./commands.md). Currently suppor
 | role | *raid* | Sets role to a specified role |  
 | raid | *[number] [text]* | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
 | time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
-| dex | *pokemon name* | Returns a link to the Serebii Sword & Shield Pokedex for the specified Pokemon |  
+| dex | *pokemon name or num* | Returns a link to the Serebii Pokedex page for the specified Pokemon |  
+| num | *pokemon name or num* | `dex` command but with link previews off | 
 | ability | *pokemon name* | Returns the abilities for that Pokemon species in chat | 
 | ha | *pokemon name* | Same as the `ability` command above. |
 | type | *pokemon name OR pokedex number OR typings* | Returns type weakness match-up | 
+| shiny | *pokemon name or pokedex num* | Returns shiny sprite |  
+| sprite | *pokemon name or pokedex num* | Returns Pokemon sprite | 
 
 ## Helper Functions
 
