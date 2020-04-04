@@ -576,6 +576,27 @@ client.on('message', message => {
         message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
       })
     }
+  } else if (cmd === 'pkgo') {
+    var findRole = message.member.roles.find(r => r.name === "Moderator");
+    if (!findRole) {
+      message.channel.send("I don't have to take orders from *you*.");
+      return;
+    }
+    if (cooldown.has(message.author.id)) {
+      message.channel.send('Hey, slow down, please.');
+      console.log('cooldown ' + cmd);
+      return;
+    }
+    let index = prefix.length + cmd.length + 1;
+    let msg = message.content.slice(index);
+    let valorChan = client.channels.get('432213973354545155');
+    msg = msg.split('<br>');
+    const embed = new Discord.RichEmbed()
+    .setThumbnail('https://i.imgur.com/CVKiJFG.png')
+    .setTitle(msg[0])
+    .setDescription(msg[1]);
+    mainChannel().send('<@&462725108998340615>', embed);
+    valorChan.send(embed);
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
