@@ -158,7 +158,7 @@ var checkPosts = function() {
             }
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter"]);
+            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter", "youtube"]);
             if (matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
@@ -293,18 +293,10 @@ client.on('message', message => {
       const psy = client.emojis.find(emoji => emoji.name === "psy");
       var angryMoriArray = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
       var mildMoriArray = [scream, deeplyconcerned, psy, 
-        'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
-        'https://tenor.com/view/cats-kittens-gif-8595392', 
-        'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
-        'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
-        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803',
         'Um... do you want a cup of tea to calm down?', 
-        'Yeah, fuck you! (Am I doing this right?)',
-        'https://tenor.com/view/catkitty-sad-eyes-courtneyp-snow-gif-16648576',
-        'https://tenor.com/view/puppy-love-hi-dont-leave-cute-gif-12851514',
-        'https://tenor.com/view/puppy-love-golden-retriever-all-you-need-is-love-gif-13117096',
-        'https://tenor.com/view/animal-turtle-flap-cut-small-gif-4517332'
+        'Yeah, fuck you! (Am I doing this right?)'
       ];
+      mildMoriArray = mildMoriArray.concat(mori.mildMoriGifs);
       var msg;
       var int;
       var resTable;
@@ -317,7 +309,7 @@ client.on('message', message => {
       if (swear[message.author.id] === 1) {
         int = rand(resTable.length);
         if (int === 0) {
-          int = rand(resTable.lenth);
+          int = rand(resTable.length);
         }
         msg = resTable[rand(int)];
       } else {
@@ -328,7 +320,13 @@ client.on('message', message => {
       }
       msg = resTable[int];
       if (msg) {
-        message.channel.send(`${msg}`);
+        if (message.guild.id === theCompany && int > 4) {
+          msg = new Discord.RichEmbed()
+            .setImage(resTable[int]);
+            message.channel.send(msg);
+        } else {
+          message.channel.send(`${msg}`);
+        }
         if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
           message.channel.send('\\*reaches for her hammer\\*');
         }
@@ -484,7 +482,7 @@ client.on('message', message => {
         console.log(error.response);
         message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
       });
-  } else if (cmd === 'dex' || cmd === 'sprite' || cmd === 'shiny') {
+  } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
@@ -501,17 +499,21 @@ client.on('message', message => {
     padNum = pkmn[0].id;
     padNum = padNum.padStart(3, '0');
     if (pkmn[0].localId) {
-      if (cmd === 'dex') {
+      if (cmd === 'dex' || cmd === 'num') {
         let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
-        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-swsh/${pkmnName}/`);
+        let link = `https://www.serebii.net/pokedex-swsh/${pkmnName}/`;
+        if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-swsh/${pkmnName}/>`; }
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
       } else {
         if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
         if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
         message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
       }
     } else {
-      if (cmd === 'dex') {
-        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: https://www.serebii.net/pokedex-sm/${padNum}.shtml`);
+      if (cmd === 'dex' || cmd === 'num') {
+        let link = `https://www.serebii.net/pokedex-sm/${padNum}.shtml`;
+        if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-sm/${padNum}.shtml>`; }
+        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
       } else {
         if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
         if (cmd === 'sprite') { urlModifier = 'sunmoon/pokemon'; }
@@ -572,12 +574,34 @@ client.on('message', message => {
         message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
       })
     }
+  } else if (cmd === 'pkgo') {
+    var findRole = message.member.roles.find(r => r.name === "Moderator");
+    if (!findRole) {
+      message.channel.send("I don't have to take orders from *you*.");
+      return;
+    }
+    if (cooldown.has(message.author.id)) {
+      message.channel.send('Hey, slow down, please.');
+      console.log('cooldown ' + cmd);
+      return;
+    }
+    let index = prefix.length + cmd.length + 1;
+    let msg = message.content.slice(index);
+    let valorChan = client.channels.get('432213973354545155');
+    msg = msg.split('<br>');
+    const embed = new Discord.RichEmbed()
+    .setThumbnail('https://i.imgur.com/CVKiJFG.png')
+    .setTitle(msg[0])
+    .setDescription(msg[1]);
+    mainChannel().send('<@&462725108998340615>', embed);
+    valorChan.send(embed);
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
       raid: "- Pings the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
+      num: "[ pokemon name ] - `dex` command, but with link previews disabled: URL only",
       ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
       ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
