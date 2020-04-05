@@ -293,18 +293,10 @@ client.on('message', message => {
       const psy = client.emojis.find(emoji => emoji.name === "psy");
       var angryMoriArray = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
       var mildMoriArray = [scream, deeplyconcerned, psy, 
-        'https://tenor.com/view/positive-bear-relax-stay-positive-positive-attitude-gif-5484463', 
-        'https://tenor.com/view/cats-kittens-gif-8595392', 
-        'https://tenor.com/view/worried-kermit-kermit-the-frog-muppets-stress-gif-7121337', 
-        'https://tenor.com/view/shocked-you-talking-to-me-dumbfounded-lost-for-words-huh-gif-14558010', 
-        'https://tenor.com/view/thirsty-dry-sloth-gif-4035803',
         'Um... do you want a cup of tea to calm down?', 
-        'Yeah, fuck you! (Am I doing this right?)',
-        'https://tenor.com/view/catkitty-sad-eyes-courtneyp-snow-gif-16648576',
-        'https://tenor.com/view/puppy-love-hi-dont-leave-cute-gif-12851514',
-        'https://tenor.com/view/puppy-love-golden-retriever-all-you-need-is-love-gif-13117096',
-        'https://tenor.com/view/animal-turtle-flap-cut-small-gif-4517332'
+        'Yeah, fuck you! (Am I doing this right?)'
       ];
+      mildMoriArray = mildMoriArray.concat(mori.mildMoriGifs);
       var msg;
       var int;
       var resTable;
@@ -317,7 +309,7 @@ client.on('message', message => {
       if (swear[message.author.id] === 1) {
         int = rand(resTable.length);
         if (int === 0) {
-          int = rand(resTable.lenth);
+          int = rand(resTable.length);
         }
         msg = resTable[rand(int)];
       } else {
@@ -328,7 +320,13 @@ client.on('message', message => {
       }
       msg = resTable[int];
       if (msg) {
-        message.channel.send(`${msg}`);
+        if (message.guild.id === theCompany && int > 4) {
+          msg = new Discord.RichEmbed()
+            .setImage(resTable[int]);
+            message.channel.send(msg);
+        } else {
+          message.channel.send(`${msg}`);
+        }
         if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
           message.channel.send('\\*reaches for her hammer\\*');
         }
