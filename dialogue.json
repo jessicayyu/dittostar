@@ -1,4 +1,18 @@
 {
+    "timeZones": {
+        "sydney": "Australia/Sydney",
+        "amsterdam": "Europe/Amsterdam",
+        "tokyo": "Asia/Tokyo",
+        "california": "America/Los_Angeles",
+        "portland": "America/Los_Angeles",
+        "chicago": "America/Chicago",
+        "miami": "America/New_York",
+        "new york": "America/New_York",
+        "san francisco": "America/Los_Angeles",
+        "vienna": "Europe/Vienna",
+        "seoul": "Asia/Seoul",
+        "london": "Europe/London"
+      },
     "timeExcuse": [
         "I don't really have internet at work.", 
         "I'm bad at geography.",
