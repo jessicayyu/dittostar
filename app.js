@@ -462,11 +462,11 @@ client.on('message', message => {
         var timeData = moment().utcOffset(response.data.datetime);
         let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + dex.capitalize(cmdArg) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
         message.channel.send(msg);
-        var RNG = rand(10);
-        if (RNG < 2) {
-          var sassArray = ["You could use your own phone, you know.", "You're already on the internet, just Google it."]
+        let timeSassLength = mori.timeSass.length;
+        var RNG = rand(timeSassLength * 5);
+        if (RNG < timeSassLength) {
           setTimeout(() => {
-            message.channel.send(sassArray[RNG]);
+            message.channel.send(mori.timeSass[RNG]);
           }, 2000);
         } 
       })
