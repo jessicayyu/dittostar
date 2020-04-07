@@ -48,6 +48,7 @@ const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
 const mori = require('./dialogue.json');
+const pokeJobs = require('./pokejobs.json');
 
 function getChannel(channel) {
   var target = null;
@@ -256,7 +257,7 @@ client.on('guildMemberAdd', member => {
     `Hell~loo ${member}! Take a seat anywhere, this is the main room.`
   ];
   if (!channel) return;
-  let greeting = greets[rand(6)];
+  let greeting = greets[rand(7)];
   channel.send(greeting);
   if (member.guild.id === pokeGuild) {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
@@ -388,6 +389,7 @@ client.on('message', message => {
   var role;
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
+  let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
   if (cmd === 'ping') {
     message.channel.send('pong!');
   } else if (cmd === 'raid') {
@@ -448,16 +450,7 @@ client.on('message', message => {
     if (!arg[1]) {
       message.channel.send("Umm... what? You want to know the time where?");
     }
-    const zones = {
-      sydney: "Australia/Sydney",
-      amsterdam: "Europe/Amsterdam",
-      tokyo: "Asia/Tokyo",
-      california: "America/Los_Angeles",
-      portland: "America/Los_Angeles",
-      chicago: "America/Chicago",
-      miami: "America/New_York"
-    };
-    let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+    const zones = mori.timeZones;
     var location = zones[cmdArg.toLowerCase()];
     if (!location) {
       let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
@@ -468,13 +461,13 @@ client.on('message', message => {
       .then((response) => {
         console.log(response.data.datetime, location);
         var timeData = moment().utcOffset(response.data.datetime);
-        let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + cmdArg.slice(0,1).toUpperCase() + cmdArg.slice(1) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
+        let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + dex.capitalize(cmdArg) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
         message.channel.send(msg);
-        var RNG = rand(10);
-        if (RNG < 2) {
-          var sassArray = ["You could use your own phone, you know.", "You're already on the internet, just Google it."]
+        let timeSassLength = mori.timeSass.length;
+        var RNG = rand(timeSassLength * 5);
+        if (RNG < timeSassLength) {
           setTimeout(() => {
-            message.channel.send(sassArray[RNG]);
+            message.channel.send(mori.timeSass[RNG]);
           }, 2000);
         } 
       })
@@ -483,7 +476,6 @@ client.on('message', message => {
         message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
       });
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
-    let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
       pkmn = pokedex.id(Number(cmdArg)).get();
@@ -595,6 +587,14 @@ client.on('message', message => {
     .setDescription(msg[1]);
     mainChannel().send('<@&462725108998340615>', embed);
     valorChan.send(embed);
+  } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
+    cmdArg = cmdArg.replace(/[?!]/g, '');
+    cmdArg = cmdArg[0].toUpperCase() + cmdArg.slice(1).toLowerCase();
+    let msg = pokeJobs[cmdArg];
+    if (!msg) {
+      msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+    }
+    message.channel.send(msg);
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",

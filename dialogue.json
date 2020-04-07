@@ -1,4 +1,18 @@
 {
+    "timeZones": {
+        "sydney": "Australia/Sydney",
+        "amsterdam": "Europe/Amsterdam",
+        "tokyo": "Asia/Tokyo",
+        "california": "America/Los_Angeles",
+        "portland": "America/Los_Angeles",
+        "chicago": "America/Chicago",
+        "miami": "America/New_York",
+        "new york": "America/New_York",
+        "san francisco": "America/Los_Angeles",
+        "vienna": "Europe/Vienna",
+        "seoul": "Asia/Seoul",
+        "london": "Europe/London"
+      },
     "timeExcuse": [
         "I don't really have internet at work.", 
         "I'm bad at geography.",
@@ -6,6 +20,13 @@
         "... well, I dunno, can't you check on your own phone?", 
         "my work internet is pretty heavily filtered.",
         "because I haven't been paid yet and I dunno, do I look like I would know?"
+    ],
+    "timeSass": [
+        "You could use your own phone, you know.",
+        "You're already on the internet, just Google it.",
+        "... why did you ask me over the internet instead of using your own phone?",
+        "Oh no, my phone is down to 3% battery now.",
+        "Hmmm. Who're you stalking?"
     ],
     "mildMoriGifs": [
         "https://media1.tenor.com/images/a3ba0942fdaf264d6562206a178c3ab6/tenor.gif", 
