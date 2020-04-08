@@ -614,7 +614,8 @@ client.on('message', message => {
       ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
       sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
-      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite"
+      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
+      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
     };
     if (!arg[1]) {
       let commandDexKeys = '';
