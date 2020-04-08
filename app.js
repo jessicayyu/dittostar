@@ -581,6 +581,14 @@ client.on('message', message => {
     let msg = message.content.slice(index);
     let valorChan = client.channels.get('432213973354545155');
     msg = msg.split('<br>');
+    if (msg[0].length > 256) {
+      message.channel.send('Sorry, your title is too long, I can\'t send that.');
+      return;
+    }
+    if (msg.length > 2) {
+      message.channel.send(`Your message has too  many <br> tags, there should be only 1 to indicate title and message. I'm noting a ${msg.length}-way split here.`);
+      return;
+    }
     const embed = new Discord.RichEmbed()
     .setThumbnail('https://i.imgur.com/CVKiJFG.png')
     .setTitle(msg[0])
