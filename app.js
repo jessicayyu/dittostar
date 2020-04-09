@@ -368,6 +368,11 @@ client.on('message', message => {
       }, 300000);
     }
   }
+  if (message.content === '(╯°□°)╯︵ ┻━┻' || message.content === '(╯°□°）╯︵ ┻━┻') {
+    setTimeout(() => {
+      message.channel.send('┬─┬ ノ( ゜-゜ノ)');
+    }, 3000);
+  }
   /* Remove Discord invites */
   if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
     if (message.guild.id === pokeGuild) {
@@ -590,9 +595,9 @@ client.on('message', message => {
       return;
     }
     const embed = new Discord.RichEmbed()
-    .setThumbnail('https://i.imgur.com/CVKiJFG.png')
-    .setTitle(msg[0])
-    .setDescription(msg[1]);
+      .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
+      .setColor('#21cea1')
+      .setDescription(msg[1]);
     mainChannel().send('<@&462725108998340615>', embed);
     valorChan.send(embed);
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
