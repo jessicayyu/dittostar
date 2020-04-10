@@ -242,6 +242,29 @@ var commentFeed = checkComments();
 setTimeout(commentFeed, 15000);
 setInterval(commentFeed, 120000);
 
+var pushPost = function(ids) {
+  ids.forEach(id => {
+    if (id !== '' && id.match(/\w{6}/i)) {
+      r.getSubmission(id).fetch()
+        .then((post) => {
+          let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+          let embed = new Discord.RichEmbed()
+            .setColor(postColors[post.link_flair_css_class])
+            .setTitle(post.title)
+            .setURL(post.url)
+            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+            .setThumbnail("https://i.imgur.com/71bnPgK.png")
+            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
+          mainChannel().send(embed);
+          feedChannel().send(embed);
+        })
+        .catch(console.error);
+    } else {
+      console.log(`${id} not a valid post`)
+    }
+  })
+}
+
 client.on('guildMemberAdd', member => {
   let channel = member.guild.channels.find(ch => ch.name === 'chat-main');
   if (member.guild.id === '633473228739837984') {
@@ -435,7 +458,7 @@ client.on('message', message => {
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'giveaways') {
+  } else if (cmd === 'giveaways' || cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -446,11 +469,24 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     }
-    postFeed(true);
+    if (cmd === 'giveaways') {
+      postFeed(true);
+    }
+    if (cmd === 'pushpost') {
+      if (cmdArg.includes('.com')) {
+        cmdArg = cmdArg.match(/\/(\w{6})\//gi);
+        for (let x = 0; x < cmdArg.length; x++) {
+          cmdArg[x] = cmdArg[x].slice(1, cmdArg[x].length - 1);
+        }
+      } else {
+        cmdArg = cmdArg.match(/\w{6}/gi);
+      }
+      pushPost(cmdArg);
+    }
     cooldown.add(message.author.id);
     setTimeout(() => {
       cooldown.delete(message.author.id);
-    }, 180000);
+    }, 120000);
   } else if (cmd === 'time') {
     if (!arg[1]) {
       message.channel.send("Umm... what? You want to know the time where?");
