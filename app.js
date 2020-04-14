@@ -638,10 +638,27 @@ client.on('message', message => {
     valorChan.send(embed);
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     cmdArg = cmdArg.replace(/[?!]/g, '');
-    cmdArg = cmdArg[0].toUpperCase() + cmdArg.slice(1).toLowerCase();
+    cmdArg = cmdArg.toLowerCase();
     let msg = pokeJobs[cmdArg];
     if (!msg) {
-      msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+      msg = '';
+      let count = 0;
+      let keyLowerCase;
+      for (var key in pokeJobs) {
+        keyLowerCase = key.toLowerCase();
+        if (keyLowerCase.includes(cmdArg)) {
+          if (count < 3) {
+            msg += `**${key}**\n${pokeJobs[key]}\n`;
+          }
+          count++;
+        }
+      }
+      if (msg === '') {
+        msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+      }
+      if (count > 3) {
+        msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
+      }
     }
     message.channel.send(msg);
   } else if (cmd === 'help') {
