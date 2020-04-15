@@ -660,7 +660,15 @@ client.on('message', message => {
         msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
       }
     }
-    message.channel.send(msg);
+    message.channel.send(msg); 
+  } else if (cmd === 'nature') {
+    cmdArg = dex.capitalize(cmdArg);
+    let statEffect = mori.natures[cmdArg];
+    if (statEffect.length > 0) {
+      message.channel.send(`${cmdArg}: +${mori.natures[cmdArg][0]}, -${mori.natures[cmdArg][1]}`);
+    } else {
+      message.channel.send('Ummm, say what?');
+    }
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
@@ -673,6 +681,7 @@ client.on('message', message => {
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
       sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
       shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
+      nature: "[ nature ] - Returns the stat effects of the nature",
       pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
     };
     if (!arg[1]) {
