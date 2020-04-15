@@ -242,6 +242,29 @@ var commentFeed = checkComments();
 setTimeout(commentFeed, 15000);
 setInterval(commentFeed, 120000);
 
+var pushPost = function(ids) {
+  ids.forEach(id => {
+    if (id !== '' && id.match(/\w{6}/i)) {
+      r.getSubmission(id).fetch()
+        .then((post) => {
+          let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+          let embed = new Discord.RichEmbed()
+            .setColor(postColors[post.link_flair_css_class])
+            .setTitle(post.title)
+            .setURL(post.url)
+            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+            .setThumbnail("https://i.imgur.com/71bnPgK.png")
+            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
+          mainChannel().send(embed);
+          feedChannel().send(embed);
+        })
+        .catch(console.error);
+    } else {
+      console.log(`${id} not a valid post`)
+    }
+  })
+}
+
 client.on('guildMemberAdd', member => {
   let channel = member.guild.channels.find(ch => ch.name === 'chat-main');
   if (member.guild.id === '633473228739837984') {
@@ -368,6 +391,11 @@ client.on('message', message => {
       }, 300000);
     }
   }
+  if (message.content === '(╯°□°)╯︵ ┻━┻' || message.content === '(╯°□°）╯︵ ┻━┻') {
+    setTimeout(() => {
+      message.channel.send('┬─┬ ノ( ゜-゜ノ)');
+    }, 3000);
+  }
   /* Remove Discord invites */
   if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
     if (message.guild.id === pokeGuild) {
@@ -430,7 +458,7 @@ client.on('message', message => {
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'giveaways') {
+  } else if (cmd === 'giveaways' || cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -441,11 +469,24 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     }
-    postFeed(true);
+    if (cmd === 'giveaways') {
+      postFeed(true);
+    }
+    if (cmd === 'pushpost') {
+      if (cmdArg.includes('.com')) {
+        cmdArg = cmdArg.match(/\/(\w{6})\//gi);
+        for (let x = 0; x < cmdArg.length; x++) {
+          cmdArg[x] = cmdArg[x].slice(1, cmdArg[x].length - 1);
+        }
+      } else {
+        cmdArg = cmdArg.match(/\w{6}/gi);
+      }
+      pushPost(cmdArg);
+    }
     cooldown.add(message.author.id);
     setTimeout(() => {
       cooldown.delete(message.author.id);
-    }, 180000);
+    }, 120000);
   } else if (cmd === 'time') {
     if (!arg[1]) {
       message.channel.send("Umm... what? You want to know the time where?");
@@ -581,18 +622,43 @@ client.on('message', message => {
     let msg = message.content.slice(index);
     let valorChan = client.channels.get('432213973354545155');
     msg = msg.split('<br>');
+    if (msg[0].length > 256) {
+      message.channel.send('Sorry, your title is too long, I can\'t send that.');
+      return;
+    }
+    if (msg.length > 2) {
+      message.channel.send(`Your message has too  many <br> tags, there should be only 1 to indicate title and message. I'm noting a ${msg.length}-way split here.`);
+      return;
+    }
     const embed = new Discord.RichEmbed()
-    .setThumbnail('https://i.imgur.com/CVKiJFG.png')
-    .setTitle(msg[0])
-    .setDescription(msg[1]);
+      .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
+      .setColor('#21cea1')
+      .setDescription(msg[1]);
     mainChannel().send('<@&462725108998340615>', embed);
     valorChan.send(embed);
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     cmdArg = cmdArg.replace(/[?!]/g, '');
-    cmdArg = cmdArg[0].toUpperCase() + cmdArg.slice(1).toLowerCase();
+    cmdArg = cmdArg.toLowerCase();
     let msg = pokeJobs[cmdArg];
     if (!msg) {
-      msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+      msg = '';
+      let count = 0;
+      let keyLowerCase;
+      for (var key in pokeJobs) {
+        keyLowerCase = key.toLowerCase();
+        if (keyLowerCase.includes(cmdArg)) {
+          if (count < 3) {
+            msg += `**${key}**\n${pokeJobs[key]}\n`;
+          }
+          count++;
+        }
+      }
+      if (msg === '') {
+        msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+      }
+      if (count > 3) {
+        msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
+      }
     }
     message.channel.send(msg);
   } else if (cmd === 'help') {
@@ -606,7 +672,8 @@ client.on('message', message => {
       ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
       sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
-      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite"
+      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
+      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
     };
     if (!arg[1]) {
       let commandDexKeys = '';

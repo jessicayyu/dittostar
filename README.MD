@@ -12,21 +12,17 @@ DittoStar is a tool for subreddit moderators who also have a Discord presence. D
 * NodeJS 13.2.0
 
 ## Commands
-See [this page for the bot commands and config](./commands.md). Currently supported commands include: 
+See [this page for the bot commands and config](./commands.md), including moderator-only commands. Currently supported commands include: 
 
 | Command | Argument | Description |  
 |-|-|-|  
-| ping | | Responds with `pong!` |
 | role | *raid* | Sets role to a specified role |  
 | raid | *[number] [text]* | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
-| time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
-| dex | *pokemon name or num* | Returns a link to the Serebii Pokedex page for the specified Pokemon |  
-| num | *pokemon name or num* | `dex` command but with link previews off | 
-| ability | *pokemon name* | Returns the abilities for that Pokemon species in chat | 
-| ha | *pokemon name* | Same as the `ability` command above. |
+| dex | *pokemon name or num* | Returns a link to the Serebii Pokedex page for the specified Pokemon |   
 | type | *pokemon name OR pokedex number OR typings* | Returns type weakness match-up | 
-| shiny | *pokemon name or pokedex num* | Returns shiny sprite |  
-| sprite | *pokemon name or pokedex num* | Returns Pokemon sprite | 
+| pokejobs | *task title* | Returns desired type and full description of PokeJob |  
+| time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
+| . . . | . . . | Additional commands on the full [commands page](./commands.md), including moderator commands. |
 
 ## Helper Functions
 
