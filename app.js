@@ -305,9 +305,24 @@ client.on('message', message => {
       message.delete(90000);
     }
   }
-  let mute = message.guild.roles.find(r => r.name === "mute");
-  /* curse words censor */
   if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+    let mute = message.guild.roles.find(r => r.name === "mute");
+    /* Remove Discord invites */
+    if (message.guild.id === pokeGuild) {
+      if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
+        let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+        if (!modCheck) {
+          const embed = new Discord.RichEmbed()
+            .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+            .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+          testingChannel().send(embed);
+          message.delete();
+          message.member.addRole(mute);
+          watch.unmute(message, 180);
+        }
+      }
+    }
+    /* curse words censor */
     const censorArray = [/fuck/i, /cunt/i];
     const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
     const deleteImmediately = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
@@ -395,21 +410,6 @@ client.on('message', message => {
     setTimeout(() => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 3000);
-  }
-  /* Remove Discord invites */
-  if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
-    if (message.guild.id === pokeGuild) {
-      let modCheck = message.member.roles.find(r => r.name === 'Moderator');
-      if (!modCheck) {
-        const embed = new Discord.RichEmbed()
-          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-          .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
-        testingChannel().send(embed);
-        message.delete();
-        message.member.addRole(mute);
-        watch.unmute(message, 180);
-      }
-    }
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
