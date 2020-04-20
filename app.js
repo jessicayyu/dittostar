@@ -451,14 +451,15 @@ client.on('message', message => {
         });
     }
   } else if (cmd === 'role') {
-    if (arg[1] === 'raid') {
+    /* role assignment commands */
+    if (arg[1] === 'raid' || arg[1] === 'loadga') {
       if (message.guild.id !== pokeGuild) {
         return
       }
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'giveaways' || cmd === 'pushpost') {
+  } else if (cmd === 'loadga' || cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -469,7 +470,7 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     }
-    if (cmd === 'giveaways') {
+    if (cmd === 'loadga') {
       postFeed(true);
     }
     if (cmd === 'pushpost') {
@@ -634,7 +635,14 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
-    mainChannel().send('<@&462725108998340615>', embed);
+    let pkgoRole = '462725108998340615';
+    message.guild.roles.get(pkgoRole).setMentionable(true)
+      .then(() => {
+        mainChannel().send('<@&462725108998340615>', embed)
+          .then(() => {
+            message.guild.roles.get(pkgoRole).setMentionable(false);
+          });
+        });
     valorChan.send(embed);
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     cmdArg = cmdArg.replace(/[?!]/g, '');
@@ -668,6 +676,36 @@ client.on('message', message => {
       message.channel.send(`${cmdArg}: +${mori.natures[cmdArg][0]}, -${mori.natures[cmdArg][1]}`);
     } else {
       message.channel.send('Ummm, say what?');
+    }
+  } else if (cmd === 'giveaway' || cmd === 'giveaways') {
+    if (message.guild.id === pokeGuild) {
+      if (cooldown.has(message.author.id)) {
+        message.channel.send('Hey, slow down, please.');
+        console.log('cooldown ' + cmd);
+        return;
+      }
+      let privCheck = message.member.roles.find(r => {
+        if (r.name === 'Giveaway Access' || r.name === 'Moderator' || r.name.includes('Medal')) {
+          return true;
+        }
+      });
+      if (privCheck) {
+        let giveawaysChannel = client.channels.get('424061085180755968');
+        role = '701688890863648789';
+        message.guild.roles.get(role).setMentionable(true)
+        .then(() => {
+          giveawaysChannel.send('<@&' + role + '> ' + cmdArg)
+            .then(() => {
+              message.guild.roles.get(role).setMentionable(false);
+            });
+          cooldown.add(message.author.id);
+          setTimeout(() => {
+            cooldown.delete(message.author.id);
+          }, 30000);
+        });
+      } else {
+        message.channel.send('Hmm, this says you don\'t have permission. Maybe talk to one of my managers.')
+      }
     }
   } else if (cmd === 'help') {
     const commandDex = {
@@ -703,10 +741,18 @@ client.on('message', message => {
 /* Raid emoji assignment */
 const raidEmojiAssignment = function(reaction, user) {
   if (reaction.message.id ==='658214917027004436') {
-    let member = reaction.message.channel.guild.members.get(user.id);
-    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-    let botCommandsChannel = client.channels.get('423705492225916929');
-    botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    if (reaction.emoji.name === 'gmax') {
+      let member = reaction.message.channel.guild.members.get(user.id);
+      let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('423705492225916929');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
+    if (reaction.emoji.name === '💝') {
+      let member = reaction.message.channel.guild.members.get(user.id);
+      let roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('423705492225916929');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
   }
 };
 

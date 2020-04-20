@@ -29,7 +29,7 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 
 | Command | Argument | Description |  
 |-|-|-|  
-| giveaways | | Manual check for giveaways within the last 10 posts. |
+| loadga | | Manual check for giveaways within the last 10 posts. |
 | pkgo | *title \<br\> description* | Pushes an embed with given title and description to 2 designated channels. Markup accepted. |
 | pushpost | *urls or post ids* | Manual announcement of new subreddit post |
 
