@@ -452,7 +452,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'loadga') {
+    if (arg[1] === 'raid' || arg[1] === 'giveaways') {
       if (message.guild.id !== pokeGuild) {
         return
       }
@@ -635,6 +635,7 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
+    valorChan.send(embed);
     let pkgoRole = '462725108998340615';
     message.guild.roles.get(pkgoRole).setMentionable(true)
       .then(() => {
@@ -643,7 +644,6 @@ client.on('message', message => {
             message.guild.roles.get(pkgoRole).setMentionable(false);
           });
         });
-    valorChan.send(embed);
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     cmdArg = cmdArg.replace(/[?!]/g, '');
     cmdArg = cmdArg.toLowerCase();
@@ -677,7 +677,7 @@ client.on('message', message => {
     } else {
       message.channel.send('Ummm, say what?');
     }
-  } else if (cmd === 'giveaway' || cmd === 'giveaways') {
+  } else if (cmd === 'ga') {
     if (message.guild.id === pokeGuild) {
       if (cooldown.has(message.author.id)) {
         message.channel.send('Hey, slow down, please.');
@@ -701,7 +701,7 @@ client.on('message', message => {
           cooldown.add(message.author.id);
           setTimeout(() => {
             cooldown.delete(message.author.id);
-          }, 30000);
+          }, 45000);
         });
       } else {
         message.channel.send('Hmm, this says you don\'t have permission. Maybe talk to one of my managers.')
