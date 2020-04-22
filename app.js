@@ -305,9 +305,24 @@ client.on('message', message => {
       message.delete(90000);
     }
   }
-  let mute = message.guild.roles.find(r => r.name === "mute");
-  /* curse words censor */
   if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+    let mute = message.guild.roles.find(r => r.name === "mute");
+    /* Remove Discord invites */
+    if (message.guild.id === pokeGuild) {
+      if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
+        let modCheck = message.member.roles.find(r => r.name === 'Moderator');
+        if (!modCheck) {
+          const embed = new Discord.RichEmbed()
+            .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+            .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+          testingChannel().send(embed);
+          message.delete();
+          message.member.addRole(mute);
+          watch.unmute(message, 180);
+        }
+      }
+    }
+    /* curse words censor */
     const censorArray = [/fuck/i, /cunt/i];
     const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
     const deleteImmediately = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
@@ -396,21 +411,6 @@ client.on('message', message => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 3000);
   }
-  /* Remove Discord invites */
-  if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
-    if (message.guild.id === pokeGuild) {
-      let modCheck = message.member.roles.find(r => r.name === 'Moderator');
-      if (!modCheck) {
-        const embed = new Discord.RichEmbed()
-          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-          .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
-        testingChannel().send(embed);
-        message.delete();
-        message.member.addRole(mute);
-        watch.unmute(message, 180);
-      }
-    }
-  }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
   }
@@ -451,14 +451,15 @@ client.on('message', message => {
         });
     }
   } else if (cmd === 'role') {
-    if (arg[1] === 'raid') {
+    /* role assignment commands */
+    if (arg[1] === 'raid' || arg[1] === 'giveaways') {
       if (message.guild.id !== pokeGuild) {
         return
       }
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'giveaways' || cmd === 'pushpost') {
+  } else if (cmd === 'loadga' || cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -469,7 +470,7 @@ client.on('message', message => {
       console.log('cooldown ' + cmd);
       return;
     }
-    if (cmd === 'giveaways') {
+    if (cmd === 'loadga') {
       postFeed(true);
     }
     if (cmd === 'pushpost') {
@@ -634,8 +635,15 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
-    mainChannel().send('<@&462725108998340615>', embed);
     valorChan.send(embed);
+    let pkgoRole = '462725108998340615';
+    message.guild.roles.get(pkgoRole).setMentionable(true)
+      .then(() => {
+        mainChannel().send('<@&462725108998340615>', embed)
+          .then(() => {
+            message.guild.roles.get(pkgoRole).setMentionable(false);
+          });
+        });
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     cmdArg = cmdArg.replace(/[?!]/g, '');
     cmdArg = cmdArg.toLowerCase();
@@ -660,7 +668,45 @@ client.on('message', message => {
         msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
       }
     }
-    message.channel.send(msg);
+    message.channel.send(msg); 
+  } else if (cmd === 'nature') {
+    cmdArg = dex.capitalize(cmdArg);
+    let statEffect = mori.natures[cmdArg];
+    if (statEffect.length > 0) {
+      message.channel.send(`${cmdArg}: +${mori.natures[cmdArg][0]}, -${mori.natures[cmdArg][1]}`);
+    } else {
+      message.channel.send('Ummm, say what?');
+    }
+  } else if (cmd === 'ga') {
+    if (message.guild.id === pokeGuild) {
+      if (cooldown.has(message.author.id)) {
+        message.channel.send('Hey, slow down, please.');
+        console.log('cooldown ' + cmd);
+        return;
+      }
+      let privCheck = message.member.roles.find(r => {
+        if (r.name === 'Giveaway Access' || r.name === 'Moderator' || r.name.includes('Medal')) {
+          return true;
+        }
+      });
+      if (privCheck) {
+        let giveawaysChannel = client.channels.get('424061085180755968');
+        role = '701688890863648789';
+        message.guild.roles.get(role).setMentionable(true)
+        .then(() => {
+          giveawaysChannel.send('<@&' + role + '> ' + cmdArg)
+            .then(() => {
+              message.guild.roles.get(role).setMentionable(false);
+            });
+          cooldown.add(message.author.id);
+          setTimeout(() => {
+            cooldown.delete(message.author.id);
+          }, 45000);
+        });
+      } else {
+        message.channel.send('Hmm, this says you don\'t have permission. Maybe talk to one of my managers.')
+      }
+    }
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ raid ] - set your role to @raid for raid notifications",
@@ -673,6 +719,7 @@ client.on('message', message => {
       type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
       sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
       shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
+      nature: "[ nature ] - Returns the stat effects of the nature",
       pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
     };
     if (!arg[1]) {
@@ -694,10 +741,18 @@ client.on('message', message => {
 /* Raid emoji assignment */
 const raidEmojiAssignment = function(reaction, user) {
   if (reaction.message.id ==='658214917027004436') {
-    let member = reaction.message.channel.guild.members.get(user.id);
-    let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-    let botCommandsChannel = client.channels.get('423705492225916929');
-    botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    if (reaction.emoji.name === 'gmax') {
+      let member = reaction.message.channel.guild.members.get(user.id);
+      let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('423705492225916929');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
+    if (reaction.emoji.name === '💝') {
+      let member = reaction.message.channel.guild.members.get(user.id);
+      let roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('423705492225916929');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
   }
 };
 
