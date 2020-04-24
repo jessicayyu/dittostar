@@ -58,7 +58,7 @@ var toggleRole = function(role, guild, user) {
     user.addRole(findRole)
       .catch(console.error)
       .then(() => {
-        if (guild === pokeGuild) {
+        if (guild.id === pokeGuild) {
           /* role organizing - Trainers grouping */
           let groupRole = guild.roles.get('691796497125212230');
           user.addRole(groupRole)
