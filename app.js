@@ -452,7 +452,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'giveaways') {
+    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo') {
       if (message.guild.id !== pokeGuild) {
         return
       }
@@ -712,7 +712,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'help') {
     const commandDex = {
-      role: "[ raid ] - set your role to @raid for raid notifications",
+      role: "[ giveaways, raid, pokemongo ] - set your role to subscribe to notifications",
       raid: "- Pings the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
