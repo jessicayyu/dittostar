@@ -627,7 +627,7 @@ client.on('message', message => {
       message.channel.send('Sorry, your title is too long, I can\'t send that.');
       return;
     }
-    if (msg.length > 2) {
+    if (msg.length > 3) {
       message.channel.send(`Your message has too  many <br> tags, there should be only 1 to indicate title and message. I'm noting a ${msg.length}-way split here.`);
       return;
     }
@@ -635,6 +635,9 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
+    if (msg[2].endsWith('.png') || msg[2].endsWith('.jpg')) {
+      embed.setImage(msg[2]);
+    }
     valorChan.send(embed);
     let pkgoRole = '462725108998340615';
     message.guild.roles.get(pkgoRole).setMentionable(true)
