@@ -635,7 +635,7 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
-    if (msg[2].endsWith('.png') || msg[2].endsWith('.jpg')) {
+    if (msg[2] && (msg[2].endsWith('.png') || msg[2].endsWith('.jpg'))) {
       embed.setImage(msg[2]);
     }
     valorChan.send(embed);
