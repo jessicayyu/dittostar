@@ -452,7 +452,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'giveaways') {
+    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo') {
       if (message.guild.id !== pokeGuild) {
         return
       }
@@ -627,7 +627,7 @@ client.on('message', message => {
       message.channel.send('Sorry, your title is too long, I can\'t send that.');
       return;
     }
-    if (msg.length > 2) {
+    if (msg.length > 3) {
       message.channel.send(`Your message has too  many <br> tags, there should be only 1 to indicate title and message. I'm noting a ${msg.length}-way split here.`);
       return;
     }
@@ -635,6 +635,9 @@ client.on('message', message => {
       .setAuthor(msg[0], 'https://i.imgur.com/ocVIblw.png')
       .setColor('#21cea1')
       .setDescription(msg[1]);
+    if (msg[2] && (msg[2].endsWith('.png') || msg[2].endsWith('.jpg'))) {
+      embed.setImage(msg[2]);
+    }
     valorChan.send(embed);
     let pkgoRole = '462725108998340615';
     message.guild.roles.get(pkgoRole).setMentionable(true)
@@ -709,7 +712,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'help') {
     const commandDex = {
-      role: "[ raid ] - set your role to @raid for raid notifications",
+      role: "[ giveaways, raid, pokemongo ] - set your role to subscribe to notifications",
       raid: "- Pings the @raid notification group for Max Raid Battles", 
       time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
       dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
