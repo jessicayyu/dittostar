@@ -710,6 +710,21 @@ client.on('message', message => {
         message.channel.send('Hmm, this says you don\'t have permission. Maybe talk to one of my managers.')
       }
     }
+  } else if (cmd === 'sym' || cmd === 'symbols') {
+    const symbols = {
+      star: '★',
+      cross: '✚',
+      heart: '\♥',
+      flower: '✿',
+      music: '♫ ♪'
+    };
+    if (!cmdArg) {
+      message.channel.send('★ ✚ \♥ ✿ ♫ ♪');
+      return;
+    } 
+    if (symbols[cmdArg]) {
+      message.channel.send(symbols[cmdArg]);
+    }
   } else if (cmd === 'help') {
     const commandDex = {
       role: "[ giveaways, raid, pokemongo ] - set your role to subscribe to notifications",
@@ -723,7 +738,9 @@ client.on('message', message => {
       sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
       shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
       nature: "[ nature ] - Returns the stat effects of the nature",
-      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
+      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob",
+      symbols: "[symbol desired] - Prints ★ ✚ \♥ ✿ ♫ ♪ or the desired symbol",
+      sym: "[symbol desired] - Prints ★ ✚ \♥ ✿ ♫ ♪ or the desired symbol"
     };
     if (!arg[1]) {
       let commandDexKeys = '';
