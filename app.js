@@ -159,13 +159,14 @@ var checkPosts = function() {
             }
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter", "youtube"]);
+            let matchers = watch.checkKeywords(post.selftext, ["shiny","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter", "youtube"]);
             if (matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
               console.log(i, post.selftext.slice(0, 150));
               let embedWordFound = new Discord.RichEmbed()
                 .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                .setTitle(post.title)
                 .setThumbnail("https://i.imgur.com/vXeJfVh.png")
                 .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
               testingChannel().send(embedWordFound);
@@ -608,7 +609,7 @@ client.on('message', message => {
         message.channel.send(`**#${result.id} ${result.name}${form}**` + abilityText.join(', '));
       })
     }
-  } else if (cmd === 'pkgo') {
+  } else if (cmd === 'pkgo' || cmd === 'pkgo2') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -638,7 +639,9 @@ client.on('message', message => {
     if (msg[2] && (msg[2].endsWith('.png') || msg[2].endsWith('.jpg'))) {
       embed.setImage(msg[2]);
     }
-    valorChan.send(embed);
+    if (cmd !== 'pkgo2') {
+      valorChan.send(embed);
+    }
     let pkgoRole = '462725108998340615';
     message.guild.roles.get(pkgoRole).setMentionable(true)
       .then(() => {
@@ -714,12 +717,12 @@ client.on('message', message => {
     const symbols = {
       star: '★',
       cross: '✚',
-      heart: '\♥',
+      heart: '\\♥',
       flower: '✿',
       music: '♫ ♪'
     };
     if (!cmdArg) {
-      message.channel.send('★ ✚ \♥ ✿ ♫ ♪');
+      message.channel.send('★ ✚ \\♥ ✿ ♫ ♪');
       return;
     } 
     if (symbols[cmdArg]) {
@@ -739,8 +742,8 @@ client.on('message', message => {
       shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
       nature: "[ nature ] - Returns the stat effects of the nature",
       pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob",
-      symbols: "[symbol desired] - Prints ★ ✚ \♥ ✿ ♫ ♪ or the desired symbol",
-      sym: "[symbol desired] - Prints ★ ✚ \♥ ✿ ♫ ♪ or the desired symbol"
+      symbols: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
+      sym: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol"
     };
     if (!arg[1]) {
       let commandDexKeys = '';
