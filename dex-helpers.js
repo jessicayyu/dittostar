@@ -90,9 +90,19 @@ const multiFormTypes = function(dexResult) {
   return typeOutputMsg;
 };
 
+const checkGalarDex = function(pokemonObj) {
+  for (let i = 0; i < pokemonObj.length; i++) {
+    if (pokemonObj[i].localId) {
+      return true;
+    }
+  }
+  return false;
+};
+
 module.exports = {
   capitalize: capitalize,
   formatTypeOutput: formatTypeOutput, 
   checkDexForms: checkDexForms,
-  multiFormTypes: multiFormTypes
+  multiFormTypes: multiFormTypes,
+  checkGalarDex: checkGalarDex
 };

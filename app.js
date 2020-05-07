@@ -533,7 +533,7 @@ client.on('message', message => {
     }
     padNum = pkmn[0].id;
     padNum = padNum.padStart(3, '0');
-    if (pkmn[0].localId) {
+    if (dex.checkGalarDex(pkmn)) {
       if (cmd === 'dex' || cmd === 'num') {
         let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
         let link = `https://www.serebii.net/pokedex-swsh/${pkmnName}/`;
