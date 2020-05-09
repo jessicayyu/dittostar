@@ -50,6 +50,9 @@ var swear = {};
 const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
 
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/dittodb', {useNewUrlParser: true});
+
 function getChannel(channel) {
   var target = null;
   var getChannelCounter = 0;
