@@ -51,7 +51,14 @@ const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/dittodb', {useNewUrlParser: true});
+mongoose.connect('mongodb://dittostar:' + process.env.DB_PASSWORD + '@localhost/ditto', {useNewUrlParser: true, useUnifiedTopology: true});
+var Schema = mongoose.Schema;
+var memberSchema = new Schema({
+  id: Number,
+  friendcode: String,
+  timezone: String
+});
+var Member = mongoose.model('Member', memberSchema);
 
 function getChannel(channel) {
   var target = null;
@@ -497,30 +504,20 @@ client.on('message', message => {
       message.channel.send("Umm... what? You want to know the time where?");
     }
     const zones = mori.timeZones;
-    var location = zones[cmdArg.toLowerCase()];
-    if (!location) {
-      let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
-      message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
-      return;
-    }
-    axios.get("http://worldtimeapi.org/api/timezone/" + location)
-      .then((response) => {
-        console.log(response.data.datetime, location);
-        var timeData = moment().utcOffset(response.data.datetime);
-        let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + dex.capitalize(cmdArg) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
-        message.channel.send(msg);
-        let timeSassLength = mori.timeSass.length;
-        var RNG = rand(timeSassLength * 5);
-        if (RNG < timeSassLength) {
-          setTimeout(() => {
-            message.channel.send(mori.timeSass[RNG]);
-          }, 2000);
-        } 
+    if (message.mentions.users.size) {
+      let userID = message.mentions.users.first().id;
+      userID = userID.toString();
+      Member.findOne({userid: userID}, function (err, data) {
+        if (err) return console.error(err);
+        if (data === null) return console.log(data);
+        console.log(data);
+        location = data.timezone;
+        watch.timezoneCheck(location, message);
       })
-      .catch(error => {
-        console.log(error.response);
-        message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
-      });
+    } else {
+      location = zones[cmdArg.toLowerCase()];
+      watch.timezoneCheck(location, message);
+    }
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
