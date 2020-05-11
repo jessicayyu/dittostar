@@ -38,6 +38,7 @@ const r = new snoowrap({
   password: process.env.REDDIT_PASS
 });
 
+const db = require('./db.js');
 const moment = require('moment');
 moment().format();
 const Pokedex = require('pokedex.js');
@@ -50,15 +51,7 @@ var swear = {};
 const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://dittostar:' + process.env.DB_PASSWORD + '@localhost/ditto', {useNewUrlParser: true, useUnifiedTopology: true});
-var Schema = mongoose.Schema;
-var memberSchema = new Schema({
-  id: Number,
-  friendcode: String,
-  timezone: String
-});
-var Member = mongoose.model('Member', memberSchema);
+
 
 function getChannel(channel) {
   var target = null;
@@ -507,10 +500,9 @@ client.on('message', message => {
     if (message.mentions.users.size) {
       let userID = message.mentions.users.first().id;
       userID = userID.toString();
-      Member.findOne({userid: userID}, function (err, data) {
+      db.Member.findOne({userid: userID}, function (err, data) {
         if (err) return console.error(err);
         if (data === null) return console.log(data);
-        console.log(data);
         location = data.timezone;
         watch.timezoneCheck(location, message);
       })
