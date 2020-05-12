@@ -25,6 +25,11 @@ var memberSchema = new Schema({
 var Member = mongoose.model('Member', memberSchema);
 
 const writeField = async function(field, textEntry, message) {
+  /*
+  param field: string, the field that will be updated in the database entry
+  param textEntry: string, what will be entered in the specified field
+  param message: message object 
+  */
   let profile = await Member.findOne({userid: message.author.id});
   if (profile === null) {
     profile = new Member({

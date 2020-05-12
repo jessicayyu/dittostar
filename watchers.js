@@ -80,6 +80,10 @@ var toggleRole = function(role, guild, user) {
 };
 
 var timezoneCheck = function (location, message) {
+  /*
+  param location: string, the location to be queried at the time zone api
+  param message: message object
+  */
   if (!location) {
     let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
     message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
