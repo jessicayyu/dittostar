@@ -413,7 +413,7 @@ client.on('message', message => {
   if (message.content === '(╯°□°)╯︵ ┻━┻' || message.content === '(╯°□°）╯︵ ┻━┻') {
     setTimeout(() => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
-    }, 3000);
+    }, 5000);
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
@@ -746,36 +746,75 @@ client.on('message', message => {
       message.channel.send(symbols[cmdArg]);
     }
   } else if (cmd === 'help') {
-    const commandDex = {
-      role: "[ giveaways, raid, pokemongo ] - set your role to subscribe to notifications",
-      raid: "- Pings the @raid notification group for Max Raid Battles", 
-      time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
-      dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
-      num: "[ pokemon name ] - `dex` command, but with link previews disabled: URL only",
-      ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
-      sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
-      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
-      nature: "[ nature ] - Returns the stat effects of the nature",
-      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob",
-      symbols: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
-      sym: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol"
-    };
-    if (!arg[1]) {
-      let commandDexKeys = '';
+    const commandDex = mori.commandDex;
+    const commandDexDetail = mori.commandDexDetail;
+    const query = arg[1];
+    let commandDexKeys = '';
+    if (!query || query === 'all') {
       for (var key in commandDex) {
-        commandDexKeys += `\`${key}\` ${commandDex[key]}\n`
+        commandDexKeys += `**${key} commands**:\n`
+        if (query === 'all') { 
+          for (var cmd in commandDex[key]) {
+            commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
+          }
+        }
+        if (!query) {
+          let commandArray = Object.keys(commandDex[key]);
+          commandArray = commandArray.join(', ');
+          commandDexKeys += commandArray + '\n';
+        }
       }
-      message.channel.send('Available commands are \n' + commandDexKeys + '\nUse `!help [command]` to get more info on the command.');
-    } else {
-      if (commandDex[arg[1]]) {
-        message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
-      } else {
-        message.channel.send("Sorry, I don't understand.");
+      message.channel.send('Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). Available commands are: \n' + commandDexKeys);
+      return;
+    } 
+    if (commandDex[query]) {
+      commandDexKeys += `**${query} commands:**\n`
+      for (var cmd in commandDex[query]) {
+        commandDexKeys += `\`${cmd}\` ${commandDex[query][cmd]}\n`
       }
+      message.channel.send(commandDexKeys);
+      return;
+    } 
+    if (commandDexDetail[query]) {
+      message.channel.send(commandDexDetail[query]);
+      return;
     }
-  }
+    if (!commandDexDetail[query]) {
+      for (var key in commandDex) {
+        if (commandDex[key][query]) {
+          message.channel.send(prefix + query + ' ' + commandDex[key][query]);
+          return;
+        }
+      }
+    } 
+    message.channel.send("Sorry, I don't understand.");
+  } else if (cmd === 'lenny') {
+    message.channel.send('( ͡° ͜ʖ ͡°)');
+  } else if (cmd === 'stare') {
+    message.channel.send('ಠ\\_\\_\\_ಠ');
+  } else if (cmd === 'shrug') {
+    message.channel.send('¯\\_(ツ)_/¯');
+  } else if (cmd === 'denko') {
+    message.channel.send('(´・ω・`)');
+  } else if (cmd === 'tableflip') {
+    message.channel.send('(╯°□°）╯︵ ┻━┻');
+  } else if (cmd === 'magic') {
+    message.channel.send('(ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧:');
+  } else if (cmd === 'events') {
+    message.channel.send('https://www.reddit.com/r/pokemontrades/wiki/events');
+  } else if (cmd === 'ballsprites') {
+    const embed = new Discord.RichEmbed()
+      .setImage('https://cdn.discordapp.com/attachments/402606280218378240/404499239046086666/ballsprites.PNG')
+    message.channel.send(embed);
+  } else if (cmd === 'viv' || cmd === 'vivillon') {
+    const embed = new Discord.RichEmbed()
+      .setImage('http://i.imgur.com/wiuiZZR.png')
+    message.channel.send(embed);
+  } else if (cmd === 'mori') {
+    const embed = new Discord.RichEmbed()
+      .setImage('https://i.imgur.com/qTF3UOi.jpg')
+    message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
+  } 
 });
 
 /* Raid emoji assignment */
