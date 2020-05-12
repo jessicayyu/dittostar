@@ -418,12 +418,29 @@ client.on('message', message => {
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
   }
+  /* Bot commands, command line */
   var role;
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
   if (cmd === 'ping') {
     message.channel.send('pong!');
+  } else if (cmd === 'fc') {
+    let userID;
+    if (!cmdArg) {
+      userID = message.author.id;
+    } else if (message.mentions.users.size) {
+      userID = message.mentions.users.first().id.toString();
+    } else {
+      message.channel.send('You gotta specify a person if you want me to check their friend code...');
+      return;
+    }
+    db.Member.findOne({userid: userID}, function (err, data) {
+      if (err) return console.error(err);
+      if (data === null) return console.log(data);
+      let friendcode = data.friendcode;
+      message.channel.send(friendcode);
+    })
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
       message.channel.send('Hey, slow down, please.');

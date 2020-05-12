@@ -35,7 +35,12 @@ See [this page for the bot commands and config](./commands.md), including modera
 DittoStar uses MongoDB to store user information. 
 * Database: ditto
 * Collection: members
-`sudo service mongod start`
+
+Start:
+```
+sudo service mongod start
+mongo -u username -p --authenticationDatabase ditto
+```
 
 ## Authors
 

@@ -8,3 +8,4 @@ config.json
 pokedexjs-bugs.txt
 pokejobs_orig.json
 *-raw.txt
+/example/
