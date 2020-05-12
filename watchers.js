@@ -1,5 +1,14 @@
 const Discord = require('discord.js');
 const { pokeGuild } = require('./config.json');
+const axios = require('axios');
+const moment = require('moment');
+moment().format();
+const mori = require('./dialogue.json');
+const dex = require('./dex-helpers');
+
+function rand(max, min = 0) {
+  return min + Math.floor(Math.random() * Math.floor(max));
+}
 
 var checkKeywords = function(input, array) {
 /*  param input: usually the message content.
@@ -70,9 +79,41 @@ var toggleRole = function(role, guild, user) {
   return result;
 };
 
+var timezoneCheck = function (location, message) {
+  /*
+  param location: string, the location to be queried at the time zone api
+  param message: message object
+  */
+  if (!location) {
+    let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
+    message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
+  }
+  axios.get("http://worldtimeapi.org/api/timezone/" + location)
+    .then((response) => {
+      console.log(response.data.datetime, location);
+      var timeData = moment().utcOffset(response.data.datetime);
+      let locationCity = location.split('/')[1].split('_').join(' ');
+      let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + locationCity + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
+      message.channel.send(msg);
+      let timeSassLength = mori.timeSass.length;
+      var RNG = rand(timeSassLength * 5);
+      if (RNG < timeSassLength) {
+        setTimeout(() => {
+          message.channel.send(mori.timeSass[RNG]);
+        }, 2000);
+      } 
+    })
+    .catch(error => {
+      console.log(error.response);
+      // error.response
+      message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
+    });
+};
+
 module.exports = {
   checkKeywords: checkKeywords,
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
-  toggleRole: toggleRole
+  toggleRole: toggleRole,
+  timezoneCheck: timezoneCheck,
 };

@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const moment = require('moment');
+moment().format();
+console.log('Starting ' + moment().format("MMM D h:mm:ss A"));
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
@@ -15,12 +18,7 @@ var feedChannel;
 client.on('error', console.error);
 
 client.on('ready', () => {
-  let timeStart = new Date();
-  if (timeStart.getMinutes() < 10) {
-    timeStart = timeStart.getHours() + ':0' + timeStart.getMinutes();
-  } else {
-    timeStart = timeStart.getHours() + ':' + timeStart.getMinutes();
-  }
+  let timeStart = moment().format("MMM D h:mm:ss A");
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
   testingChannel = getChannel('423338578597380106');
   mainChannel = getChannel('232062367951749121');
@@ -38,8 +36,7 @@ const r = new snoowrap({
   password: process.env.REDDIT_PASS
 });
 
-const moment = require('moment');
-moment().format();
+const db = require('./db.js');
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
@@ -49,6 +46,8 @@ var cooldown = new Set();
 var swear = {};
 const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
+
+
 
 function getChannel(channel) {
   var target = null;
@@ -410,17 +409,42 @@ client.on('message', message => {
   if (message.content === '(╯°□°)╯︵ ┻━┻' || message.content === '(╯°□°）╯︵ ┻━┻') {
     setTimeout(() => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
-    }, 3000);
+    }, 5000);
   }
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
   }
+  /* Bot commands, command line */
   var role;
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
   if (cmd === 'ping') {
     message.channel.send('pong!');
+  } else if (cmd === 'fc' || cmd === 'friendcode') {
+    let userID;
+    if (!cmdArg) {
+      userID = message.author.id;
+    } else if (message.mentions.users.size) {
+      userID = message.mentions.users.first().id.toString();
+    } else {
+      message.channel.send('You gotta specify a person if you want me to check their friend code...');
+      return;
+    }
+    db.Member.findOne({userid: userID}, function (err, data) {
+      if (err) return console.error(err);
+      if (data === null) {
+        message.channel.send(`I don't see anything in my notes about that.`)
+        return;
+      };
+      let friendcode = data.friendcode;
+      message.channel.send(friendcode);
+    })
+  } else if (cmd === 'set') {
+    if (arg[1] === 'fc') {
+      let fcText = message.content.slice(prefix.length + 7);
+      db.writeField('friendcode', fcText, message);
+    }
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
       message.channel.send('Hey, slow down, please.');
@@ -494,30 +518,19 @@ client.on('message', message => {
       message.channel.send("Umm... what? You want to know the time where?");
     }
     const zones = mori.timeZones;
-    var location = zones[cmdArg.toLowerCase()];
-    if (!location) {
-      let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
-      message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
-      return;
-    }
-    axios.get("http://worldtimeapi.org/api/timezone/" + location)
-      .then((response) => {
-        console.log(response.data.datetime, location);
-        var timeData = moment().utcOffset(response.data.datetime);
-        let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + dex.capitalize(cmdArg) + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
-        message.channel.send(msg);
-        let timeSassLength = mori.timeSass.length;
-        var RNG = rand(timeSassLength * 5);
-        if (RNG < timeSassLength) {
-          setTimeout(() => {
-            message.channel.send(mori.timeSass[RNG]);
-          }, 2000);
-        } 
+    if (message.mentions.users.size) {
+      let userID = message.mentions.users.first().id;
+      userID = userID.toString();
+      db.Member.findOne({userid: userID}, function (err, data) {
+        if (err) return console.error(err);
+        if (data === null) return console.log(data);
+        location = data.timezone;
+        watch.timezoneCheck(location, message);
       })
-      .catch(error => {
-        console.log(error.response);
-        message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
-      });
+    } else {
+      location = zones[cmdArg.toLowerCase()];
+      watch.timezoneCheck(location, message);
+    }
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
@@ -729,36 +742,82 @@ client.on('message', message => {
       message.channel.send(symbols[cmdArg]);
     }
   } else if (cmd === 'help') {
-    const commandDex = {
-      role: "[ giveaways, raid, pokemongo ] - set your role to subscribe to notifications",
-      raid: "- Pings the @raid notification group for Max Raid Battles", 
-      time: "[ location name ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
-      dex: "[ pokemon name ] - Get the Serebii link to that Pokemon's page",
-      num: "[ pokemon name ] - `dex` command, but with link previews disabled: URL only",
-      ability: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      ha: "[ pokemon name ] - Get the abilities of the Pokemon species",
-      type: "[ pokemon name OR number OR typings ] - Get the type weaknesses for a Pokemon\nex: `!type water flying` or `!type gyarados`",
-      sprite: "[ pokemon name OR number ] - Shows the Pokemon sprite",
-      shiny: "[ pokemon name OR number ] - Shows the shiny Pokemon sprite",
-      nature: "[ nature ] - Returns the stat effects of the nature",
-      pokejobs: "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob",
-      symbols: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
-      sym: "[symbol desired] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol"
-    };
-    if (!arg[1]) {
-      let commandDexKeys = '';
+    const commandDex = mori.commandDex;
+    const commandDexDetail = mori.commandDexDetail;
+    const query = arg[1];
+    let commandDexKeys = '';
+    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). \nAvailable commands are: \n';
+    if (!query) {
+      commandDexKeys += commandIntro;
       for (var key in commandDex) {
-        commandDexKeys += `\`${key}\` ${commandDex[key]}\n`
+        commandDexKeys += `**${key} commands**:\n`
+        let commandArray = Object.keys(commandDex[key]);
+        commandArray = commandArray.join(', ');
+        commandDexKeys += commandArray + '\n';
       }
-      message.channel.send('Available commands are \n' + commandDexKeys + '\nUse `!help [command]` to get more info on the command.');
-    } else {
-      if (commandDex[arg[1]]) {
-        message.channel.send(arg[1] + ' ' + commandDex[arg[1]]);
-      } else {
-        message.channel.send("Sorry, I don't understand.");
-      }
+      message.channel.send(commandDexKeys);
+      return;
     }
-  }
+    if (query === 'all') {
+      message.channel.send(commandIntro);
+      for (var key in commandDex) {
+        commandDexKeys += `**${key} commands**:\n`
+        for (var cmd in commandDex[key]) {
+          commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
+        }
+        message.channel.send(commandDexKeys);
+        commandDexKeys = '';
+      }
+      return;
+    } 
+    if (commandDex[query]) {
+      commandDexKeys += `**${query} commands:**\n`
+      for (var cmd in commandDex[query]) {
+        commandDexKeys += `\`${cmd}\` ${commandDex[query][cmd]}\n`
+      }
+      message.channel.send(commandDexKeys);
+      return;
+    } 
+    if (commandDexDetail[query]) {
+      message.channel.send(commandDexDetail[query]);
+      return;
+    }
+    if (!commandDexDetail[query]) {
+      for (var key in commandDex) {
+        if (commandDex[key][query]) {
+          message.channel.send(prefix + query + ' ' + commandDex[key][query]);
+          return;
+        }
+      }
+    } 
+    message.channel.send("Sorry, I don't understand.");
+  } else if (cmd === 'lenny') {
+    message.channel.send('( ͡° ͜ʖ ͡°)');
+  } else if (cmd === 'stare') {
+    message.channel.send('ಠ\\_\\_\\_ಠ');
+  } else if (cmd === 'shrug') {
+    message.channel.send('¯\\_(ツ)_/¯');
+  } else if (cmd === 'denko') {
+    message.channel.send('(´・ω・`)');
+  } else if (cmd === 'tableflip') {
+    message.channel.send('(╯°□°）╯︵ ┻━┻');
+  } else if (cmd === 'magic') {
+    message.channel.send('(ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧:');
+  } else if (cmd === 'events') {
+    message.channel.send('https://www.reddit.com/r/pokemontrades/wiki/events');
+  } else if (cmd === 'ballsprites') {
+    const embed = new Discord.RichEmbed()
+      .setImage('https://cdn.discordapp.com/attachments/402606280218378240/404499239046086666/ballsprites.PNG')
+    message.channel.send(embed);
+  } else if (cmd === 'viv' || cmd === 'vivillon') {
+    const embed = new Discord.RichEmbed()
+      .setImage('http://i.imgur.com/wiuiZZR.png')
+    message.channel.send(embed);
+  } else if (cmd === 'mori') {
+    const embed = new Discord.RichEmbed()
+      .setImage('https://i.imgur.com/qTF3UOi.jpg')
+    message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
+  } 
 });
 
 /* Raid emoji assignment */

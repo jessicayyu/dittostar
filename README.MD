@@ -31,6 +31,17 @@ See [this page for the bot commands and config](./commands.md), including modera
 * checkKeywordsRegex(input, array) - Check text matches using regex
 * unmute(message, seconds) - Unmute user (Discord)
 
+## MongoDB
+DittoStar uses MongoDB to store user information. 
+* Database: ditto
+* Collection: members
+
+Start:
+```
+sudo service mongod start
+mongo -u username -p --authenticationDatabase ditto
+```
+
 ## Authors
 
 * **Jessica Yu** - [Github](https://github.com/jessicayyu)
