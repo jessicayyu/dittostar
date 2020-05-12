@@ -437,10 +437,18 @@ client.on('message', message => {
     }
     db.Member.findOne({userid: userID}, function (err, data) {
       if (err) return console.error(err);
-      if (data === null) return console.log(data);
+      if (data === null) {
+        message.channel.send(`I don't see anything in my notes about that.`)
+        return;
+      };
       let friendcode = data.friendcode;
       message.channel.send(friendcode);
     })
+  } else if (cmd === 'set') {
+    if (arg[1] === 'fc') {
+      let fcText = message.content.slice(prefix.length + 7);
+      db.writeField('friendcode', fcText, message);
+    }
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
       message.channel.send('Hey, slow down, please.');

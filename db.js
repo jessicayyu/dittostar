@@ -19,11 +19,30 @@ var Schema = mongoose.Schema;
 var memberSchema = new Schema({
   userid: String,
   friendcode: String,
-  timezone: String
+  timezone: String,
+  nick: String,
 });
 var Member = mongoose.model('Member', memberSchema);
+
+const writeField = async function(field, textEntry, message) {
+  let profile = await Member.findOne({userid: message.author.id});
+  if (profile === null) {
+    profile = new Member({
+      userid: message.author.id,
+      nick: message.member.nickname,
+      [field]: textEntry
+    });
+  } else {
+    profile[field] = textEntry;
+  }
+  await profile.save((err, saveData) => {
+    if (err) return console.error(err);
+    message.channel.send('\\*jots down notes\\* Okay, got it.');
+  });
+};
 
 module.exports = {
   dbConnect,
   Member,
+  writeField
 };
