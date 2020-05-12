@@ -2,12 +2,26 @@ require('dotenv').config();
 
 const moment = require('moment');
 moment().format();
-console.log('Starting ' + moment().format("MMM D h:mm:ss A"));
+
+var initStartupTimer = function () {
+  let start;
+  return function () {
+    if (start) {
+      let duration = process.hrtime(start);
+      let output = `${moment().format("h:mm:ss A")}. \n\x1b[33mStartup took ${duration[0]} seconds\x1b[0m.`;
+      return output;
+    }
+    start = process.hrtime();
+    console.log('\x1b[33mStarting, ' + moment().format("MMM D h:mm:ss A") + '\x1b[0m.');
+    return;
+  }
+};
+let startupTimer = initStartupTimer();
+startupTimer();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const { prefix, subreddit, discordInvite, pokeGuild, theCompany } = require('./config.json');
-const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 
@@ -18,7 +32,7 @@ var feedChannel;
 client.on('error', console.error);
 
 client.on('ready', () => {
-  let timeStart = moment().format("MMM D h:mm:ss A");
+  let timeStart = startupTimer();
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
   testingChannel = getChannel('423338578597380106');
   mainChannel = getChannel('232062367951749121');
@@ -40,14 +54,13 @@ const db = require('./db.js');
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
+const axios = require('axios');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
 const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
-
-
 
 function getChannel(channel) {
   var target = null;
@@ -292,6 +305,10 @@ const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /* Discord message responses */  
 client.on('message', message => {
+  if (!message || !message.guild) { 
+    console.log('No message, or no message.guild', message);
+    return 
+  }
   if (message.type === 'GUILD_MEMBER_JOIN') {
     if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
       console.log(message.guild.name + ' ' + message.guild.id);
