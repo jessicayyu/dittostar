@@ -88,14 +88,18 @@
         "discord": {
             "role": "[ giveaways | raid | pokemongo ] - set your role to subscribe to notifications",
             "fc": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
+            "friendcode": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
             "set": "[ fc ] [ friend code text ] - Saves a friend code to be used in `!fc`",
             "raid": "- Pings the @raid notification group for Max Raid Battles", 
             "time": "[ location name | @user ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
             "symbols": "[ *(optional) symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
             "sym": "[ *symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
-            "ga": "Pings the people subscribed to @giveaways to announce a Discord-only giveaway"
+            "ga": "Pings the people subscribed to @giveaways to announce a Discord-only giveaway",
+            "mori": "Mori's employee photo"
         },
         "reference": {
+            "ballsprites": "shows a picture of all the Pokeball mini-sprites",
+            "events": "Link to /r/PokemonTrades's events wiki page",
             "dex": "[ pokemon name | pokdex number ] - Get the Serebii link to that Pokemon's page",
             "num": "[ pokemon name | pokdex number ] - `dex` command, but with link previews disabled: URL only",
             "ability": "[ pokemon name | pokdex number ] - Get the abilities of the Pokemon species",
@@ -104,13 +108,17 @@
             "sprite": "[ pokemon name | number ] - Shows the Pokemon sprite",
             "shiny": "[ pokemon name | number ] - Shows the shiny Pokemon sprite",
             "nature": "[ nature ] - Returns the stat effects of the nature",
-            "pokejobs": "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob"
+            "pokejobs": "[ task title ] - Responds with the desired Pokemon type, and full description of the PokeJob",
+            "vivillon": "shows a picture of all Vivillon patterns",
+            "viv": "shows a picture of all Vivillon patterns"
         },
         "emoticons": {
+            "denko": "(´・ω・\\`)",
             "lenny": "( ͡° ͜ʖ ͡°)",
+            "magic": "(ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧:",
             "stare": "ಠ\\_\\_\\_ಠ",
             "shrug": "¯\\_(ツ)_/¯",
-            "denko": "(´・ω・`)"
+            "tableflip": "Classic Kevin."
         }
     },
     "commandDexDetail": {

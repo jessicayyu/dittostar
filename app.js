@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+const moment = require('moment');
+moment().format();
+console.log('Starting ' + moment().format("MMM D h:mm:ss A"));
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
@@ -15,12 +18,7 @@ var feedChannel;
 client.on('error', console.error);
 
 client.on('ready', () => {
-  let timeStart = new Date();
-  if (timeStart.getMinutes() < 10) {
-    timeStart = timeStart.getHours() + ':0' + timeStart.getMinutes();
-  } else {
-    timeStart = timeStart.getHours() + ':' + timeStart.getMinutes();
-  }
+  let timeStart = moment().format("MMM D h:mm:ss A");
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
   testingChannel = getChannel('423338578597380106');
   mainChannel = getChannel('232062367951749121');
@@ -39,8 +37,6 @@ const r = new snoowrap({
 });
 
 const db = require('./db.js');
-const moment = require('moment');
-moment().format();
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
@@ -425,7 +421,7 @@ client.on('message', message => {
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
   if (cmd === 'ping') {
     message.channel.send('pong!');
-  } else if (cmd === 'fc') {
+  } else if (cmd === 'fc' || cmd === 'friendcode') {
     let userID;
     if (!cmdArg) {
       userID = message.author.id;
@@ -750,21 +746,28 @@ client.on('message', message => {
     const commandDexDetail = mori.commandDexDetail;
     const query = arg[1];
     let commandDexKeys = '';
-    if (!query || query === 'all') {
+    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). \nAvailable commands are: \n';
+    if (!query) {
+      commandDexKeys += commandIntro;
       for (var key in commandDex) {
         commandDexKeys += `**${key} commands**:\n`
-        if (query === 'all') { 
-          for (var cmd in commandDex[key]) {
-            commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
-          }
-        }
-        if (!query) {
-          let commandArray = Object.keys(commandDex[key]);
-          commandArray = commandArray.join(', ');
-          commandDexKeys += commandArray + '\n';
-        }
+        let commandArray = Object.keys(commandDex[key]);
+        commandArray = commandArray.join(', ');
+        commandDexKeys += commandArray + '\n';
       }
-      message.channel.send('Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). Available commands are: \n' + commandDexKeys);
+      message.channel.send(commandDexKeys);
+      return;
+    }
+    if (query === 'all') {
+      message.channel.send(commandIntro);
+      for (var key in commandDex) {
+        commandDexKeys += `**${key} commands**:\n`
+        for (var cmd in commandDex[key]) {
+          commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
+        }
+        message.channel.send(commandDexKeys);
+        commandDexKeys = '';
+      }
       return;
     } 
     if (commandDex[query]) {
