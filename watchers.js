@@ -67,8 +67,8 @@ var toggleRole = function(role, guild, user) {
     user.addRole(findRole)
       .catch(console.error)
       .then(() => {
+        /* role organizing - Trainers grouping */
         if (guild.id === pokeGuild) {
-          /* role organizing - Trainers grouping */
           let groupRole = guild.roles.get('691796497125212230');
           user.addRole(groupRole)
             .catch(console.error)
@@ -79,14 +79,20 @@ var toggleRole = function(role, guild, user) {
   return result;
 };
 
+var applyRole = function(role, guild, user) {
+  var findRole = guild.roles.find(r => r.name === role);
+  user.addRole(findRole)
+    .catch(console.error)
+};
+
 var timezoneCheck = function (location, message) {
-  /*
-  param location: string, the location to be queried at the time zone api
-  param message: message object
-  */
+/*  Returns the local time of the given location.
+    param location: string, the location to be queried at the time zone api
+    param message: message object */
   if (!location) {
     let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
     message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
+    return;
   }
   axios.get("http://worldtimeapi.org/api/timezone/" + location)
     .then((response) => {
@@ -105,7 +111,6 @@ var timezoneCheck = function (location, message) {
     })
     .catch(error => {
       console.log(error.response);
-      // error.response
       message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
     });
 };
@@ -115,5 +120,6 @@ module.exports = {
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
   toggleRole: toggleRole,
+  applyRole: applyRole,
   timezoneCheck: timezoneCheck,
 };
