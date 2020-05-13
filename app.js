@@ -560,23 +560,31 @@ client.on('message', message => {
       message.channel.send("Umm... what? You want to know the time where?");
       return;
     }
-    const zones = mori.timeZones;
+    let location = mori.timeZones[cmdArg.toLowerCase()];
+    if (location) { 
+      watch.timezoneCheck(location, message); 
+      return;
+    } 
+    let userID;
+    let query = 'userid';
     if (message.mentions.users.size) {
-      let userID = message.mentions.users.first().id;
+      userID = message.mentions.users.first().id;
       userID = userID.toString();
-      db.Member.findOne({userid: userID}, function (err, data) {
-        if (err) return console.error(err);
-        if (!data || !data.timezone) {
-          message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
-        } else {
-          location = data.timezone;
-          watch.timezoneCheck(location, message);
-        }
-      })
     } else {
-      location = zones[cmdArg.toLowerCase()];
-      watch.timezoneCheck(location, message);
+      userID = cmdArg.toLowerCase();
+      query = 'reddit';
     }
+    db.Member.findOne({[query]: userID}, function (err, data) {
+      if (err) return console.error(err);
+      if (!data) {
+        message.channel.send('Sorry, nobody matches this in my database.')
+      } else if (!data.timezone) {
+        message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
+      } else {
+        location = data.timezone;
+        watch.timezoneCheck(location, message);
+      }
+    })
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
