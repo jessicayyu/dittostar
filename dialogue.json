@@ -19,7 +19,7 @@
         "I don't have any others memorized.", 
         "... well, I dunno, can't you check on your own phone?", 
         "my work internet is pretty heavily filtered.",
-        "because I haven't been paid yet and I dunno, do I look like I would know?"
+        "I haven't been paid yet and I dunno, do I look like I would know?"
     ],
     "timeSass": [
         "You could use your own phone, you know.",
@@ -89,7 +89,7 @@
             "role": "[ giveaways | raid | pokemongo ] - set your role to subscribe to notifications",
             "fc": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
             "friendcode": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
-            "set": "[ fc ] [ friend code text ] - Saves a friend code to be used in `!fc`",
+            "set": "[ fc | time ] [ friend code or location ] - Saves a friend code to be used in `!fc`",
             "raid": "- Pings the @raid notification group for Max Raid Battles", 
             "time": "[ location name | @user ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
             "symbols": "[ *(optional) symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
@@ -123,7 +123,7 @@
     },
     "commandDexDetail": {
         "type": "`!type [ pokemon name | pokedex number | typings ]`\n`!type Gyarados` - returns Gyarados's type weaknesses.\n`!type water electric` returns type-matchups for a Pokemon with Water-Electric duo typings.",
-        "set": "!set [ fc | time ] [ text ]\n`!set fc 0000-0000-0000 | Ash (Sw)` - Sets friend code to desired text.\n`!set time America/Los_Angeles` - WIP: Location must be saved in the precise format.",
+        "set": "!set [ fc | time ] [ text ]\n`!set fc 0000-0000-0000 | Ash (Sw)` - Sets friend code to desired text.\n`!set time America/Los_Angeles` - Location must be saved in the correct format specified by <http://worldtimeapi.org/timezones>",
         "symbols": "`!symbols` - displays ★ ✚ \\♥ ✿ ♫ ♪, can be used to retrieve individual symbols.\n`!symbols star` will return only the star symbol."
     }
 }

@@ -17,13 +17,14 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 #### Discord Commands
 | Command | Argument | Description |  
 |-|-|-|  
-| friendcode | *@user* | Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. |  
-| fc | *@user* | Same command as `friendcode` | Saves a friend code to be used in `!fc` |
-| ga | *optional text* | Pings the people subscribed to @giveaways to announce a Discord-only giveaway, must have @giveawayaccess authorization |
+| friendcode | [ *@user* ] | Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. |  
+| fc | [ *@user* ] | Same command as `friendcode` | Saves a friend code to be used in `!fc` |
+| ga | [ *optional text* ] | Pings the people subscribed to @giveaways to announce a Discord-only giveaway, must have @giveawayaccess authorization |
 | ping | | Responds with `pong!` |
 | role | *raid* | Sets role to a specified role |  
-| raid | *[number] [text]* | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
-| set | *fc* [*friend code text*] | 
+| raid | [ *number* ] [ *text* ] | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
+| set | fc [ friend code text ] | Saves text for later retrieval. |  
+| | time [ Region/City ] | Saves time zone for later retrieval, must be in correct format from http://worldtimeapi.org/timezones | 
 | time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
 
 #### Reference Commands
