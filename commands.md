@@ -8,29 +8,59 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 
 [< Return to the ReadMe main page](./README.MD)
 
-### Table of existing commands
+### Table of existing commands  
+* Discord Commands
+* Reference Commands
+* Emoticons
+* Moderator Commands
 
+#### Discord Commands
 | Command | Argument | Description |  
 |-|-|-|  
+| friendcode | *@user* | Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. |  
+| fc | *@user* | Same command as `friendcode` | Saves a friend code to be used in `!fc` |
+| ga | *optional text* | Pings the people subscribed to @giveaways to announce a Discord-only giveaway, must have @giveawayaccess authorization |
 | ping | | Responds with `pong!` |
 | role | *raid* | Sets role to a specified role |  
 | raid | *[number] [text]* | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
+| set | *fc* [*friend code text*] | 
 | time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
-| dex | *pokemon name or num* | Returns a link to the Serebii Pokedex page for the specified Pokemon |  
-| num | *pokemon name or num* | `dex` command but with link previews off | 
-| ability | *pokemon name* | Returns the abilities for that Pokemon species in chat | 
-| ha | *pokemon name* | Same as the `ability` command above. |
-| type | *pokemon name OR pokedex number OR typings* | Returns type weakness match-up | 
-| shiny | *pokemon name or pokedex num* | Returns shiny sprite |  
-| sprite | *pokemon name or pokedex num* | Returns Pokemon sprite |  
-| pokejobs | *task title* | Returns desired type and full description of PokeJob |  
 
-### Moderator-only commands
+#### Reference Commands
+| Command | Argument | Description |  
+|-|-|-|  
+| ability | *pokemon name* | Returns the abilities for that Pokemon species in chat | 
+| ha | *pokemon name* | Same as the `ability` command above, short for "hidden ability". |
+| dex | *pokemon name \| num* | Returns a link to the Serebii Pokedex page for the specified Pokemon |  
+| events | | Links to the /r/PokemonTrades's events wiki page |
+| nature | *nature* | Returns the stats effect of the specified nature. |
+| num | *pokemon name \| num* | `dex` command but with link previews off | 
+| pokejobs | *task title* | Returns desired type and full description of PokeJob |  
+| shiny | *pokemon name \| pokedex num* | Returns shiny sprite |  
+| sprite | *pokemon name \| pokedex num* | Returns Pokemon sprite |  
+| symbols | *symbol name* | Prints ★ ✚ \\♥ ✿ ♫ ♪ or the specified symbol |  
+| sym | *symbol name* | Same as `symbols` |
+| type | *pokemon name \| pokedex number \| typings* | Returns type weakness match-up | 
+| vivillon || Shows a picture of all Vivillon patterns |
+| viv || Shows a picture of all Vivillon patterns |
+
+#### Emoticons 
+| Command | Description |  
+|-|-|  
+| denko | (´・ω・\`) |
+| lenny | ( ͡° ͜ʖ ͡°) |
+| magic | (ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧: |
+| stare | ಠ\_\_\_ಠ |
+| shrug | ¯\_(ツ)_/¯ |
+| tableflip | (╯°□°）╯︵ ┻━┻ |
+
+#### Moderator-only commands
 
 | Command | Argument | Description |  
 |-|-|-|  
 | loadga | | Manual check for giveaways within the last 10 posts. |
-| pkgo | *title \<br\> description* | Pushes an embed with given title and description to 2 designated channels. Markup accepted. |
-| pushpost | *urls or post ids* | Manual announcement of new subreddit post |
+| pkgo | title, description, *image* | Pushes an embed with given title and description to 2 designated channels. Markup accepted. Title, description, and image must be separated by `<br>`, image is optional. |
+| pushpost | urls \| post ids | Manual announcement of new subreddit post |
+
 
 [< Return to the ReadMe main page](./README.MD)
