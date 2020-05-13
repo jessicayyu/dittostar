@@ -458,9 +458,30 @@ client.on('message', message => {
       message.channel.send(friendcode);
     })
   } else if (cmd === 'set') {
-    if (arg[1] === 'fc') {
-      let fcText = message.content.slice(prefix.length + 7);
-      db.writeField('friendcode', fcText, message);
+    if (!arg[1]) {
+      message.channel.send('What did you want to set? `time` or `fc`?');
+      return;
+    }
+    let textEntry = message.content.slice(prefix.length + cmd.length + arg[1].length + 2);
+    if (arg[1] === 'fc' || arg[1] === 'friendccode') {
+      db.writeField('friendcode', textEntry, message);
+      if (message.guild.id === pokeGuild) {
+        watch.applyRole('Trainers', message.guild, message.member);
+      }
+    }
+    if (arg[1] === 'time') {
+      axios.get("http://worldtimeapi.org/api/timezone/" + textEntry)
+        .then((response) => {
+          db.writeField('timezone', textEntry, message);
+          watch.applyRole('Trainers', message.guild, message.member);
+        })
+        .catch((err) => {
+          console.error('Set time error: ' + err.response.data.error);
+          message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
+        });
+      if (message.guild.id === pokeGuild) {
+        watch.applyRole('Trainers', message.guild, message.member);
+      }
     }
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
@@ -533,6 +554,7 @@ client.on('message', message => {
   } else if (cmd === 'time') {
     if (!arg[1]) {
       message.channel.send("Umm... what? You want to know the time where?");
+      return;
     }
     const zones = mori.timeZones;
     if (message.mentions.users.size) {
@@ -540,9 +562,12 @@ client.on('message', message => {
       userID = userID.toString();
       db.Member.findOne({userid: userID}, function (err, data) {
         if (err) return console.error(err);
-        if (data === null) return console.log(data);
-        location = data.timezone;
-        watch.timezoneCheck(location, message);
+        if (!data || !data.timezone) {
+          message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
+        } else {
+          location = data.timezone;
+          watch.timezoneCheck(location, message);
+        }
       })
     } else {
       location = zones[cmdArg.toLowerCase()];
