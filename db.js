@@ -21,6 +21,7 @@ var memberSchema = new Schema({
   friendcode: String,
   timezone: String,
   nick: String,
+  reddit: String
 });
 var Member = mongoose.model('Member', memberSchema);
 

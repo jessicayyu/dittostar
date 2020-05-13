@@ -440,22 +440,26 @@ client.on('message', message => {
     message.channel.send('pong!');
   } else if (cmd === 'fc' || cmd === 'friendcode') {
     let userID;
+    let query = 'userid';
     if (!cmdArg) {
       userID = message.author.id;
     } else if (message.mentions.users.size) {
       userID = message.mentions.users.first().id.toString();
-    } else {
-      message.channel.send('You gotta specify a person if you want me to check their friend code...');
-      return;
+    } else { 
+      userID = cmdArg.toLowerCase();
+      query = 'reddit'; 
     }
-    db.Member.findOne({userid: userID}, function (err, data) {
+    db.Member.findOne({ [query]: userID }, function (err, data) {
       if (err) return console.error(err);
-      if (data === null) {
-        message.channel.send(`I don't see anything in my notes about that.`)
+      if (!data) {
+        message.channel.send(`I don't see anything registered for that person.`);
         return;
-      };
-      let friendcode = data.friendcode;
-      message.channel.send(friendcode);
+      } else if (!data.friendcode) {
+        message.channel.send('Hmm, they\'re registered but have no friend code data.');
+      }
+      if (data.friendcode) {
+        message.channel.send(data.friendcode);
+      }
     })
   } else if (cmd === 'set') {
     if (!arg[1]) {
@@ -463,11 +467,11 @@ client.on('message', message => {
       return;
     }
     let textEntry = message.content.slice(prefix.length + cmd.length + arg[1].length + 2);
-    if (arg[1] === 'fc' || arg[1] === 'friendccode') {
+    if (arg[1] === 'fc' || arg[1] === 'friendcode') {
       db.writeField('friendcode', textEntry, message);
-      if (message.guild.id === pokeGuild) {
-        watch.applyRole('Trainers', message.guild, message.member);
-      }
+    }
+    if (arg[1] === 'reddit' || arg[1] === 'Reddit') {
+      db.writeField('reddit', textEntry.toLowerCase(), message);
     }
     if (arg[1] === 'time') {
       axios.get("http://worldtimeapi.org/api/timezone/" + textEntry)
@@ -479,9 +483,9 @@ client.on('message', message => {
           console.error('Set time error: ' + err.response.data.error);
           message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
         });
-      if (message.guild.id === pokeGuild) {
-        watch.applyRole('Trainers', message.guild, message.member);
-      }
+    }
+    if (message.guild.id === pokeGuild) {
+      watch.applyRole('Trainers', message.guild, message.member);
     }
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
