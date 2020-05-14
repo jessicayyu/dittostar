@@ -14,13 +14,14 @@ var checkKeywords = function(input, array) {
 /*  param input: usually the message content.
     param array: array of strings it will be checked against.
     output: the matching string, or bool false. If "mod" appears more than once, all matches will be included in a single string. */
+  let text = input.toLowerCase();  
   for (let i = 0; i < array.length; i++) {
-    if (input.includes(array[i])) {
+    if (text.includes(array[i])) {
       if (array[i] !== "mod") { 
         return array[i]; 
       } 
       /* if mod is a match, check against regex for false positives */
-      let matchers = input.match(/\bmods?\b/gi);
+      let matchers = text.match(/\bmods?\b/gi);
       if (matchers) {
           return matchers.join(', ');
       }
@@ -67,8 +68,8 @@ var toggleRole = function(role, guild, user) {
     user.addRole(findRole)
       .catch(console.error)
       .then(() => {
+        /* role organizing - Trainers grouping */
         if (guild.id === pokeGuild) {
-          /* role organizing - Trainers grouping */
           let groupRole = guild.roles.get('691796497125212230');
           user.addRole(groupRole)
             .catch(console.error)
@@ -79,21 +80,27 @@ var toggleRole = function(role, guild, user) {
   return result;
 };
 
+var applyRole = function(role, guild, user) {
+  var findRole = guild.roles.find(r => r.name === role);
+  user.addRole(findRole)
+    .catch(console.error)
+};
+
 var timezoneCheck = function (location, message) {
-  /*
-  param location: string, the location to be queried at the time zone api
-  param message: message object
-  */
+/*  Returns the local time of the given location.
+    param location: string, the location to be queried at the time zone api
+    param message: message object */
   if (!location) {
     let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
     message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
+    return;
   }
   axios.get("http://worldtimeapi.org/api/timezone/" + location)
     .then((response) => {
       console.log(response.data.datetime, location);
       var timeData = moment().utcOffset(response.data.datetime);
-      let locationCity = location.split('/')[1].split('_').join(' ');
-      let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + locationCity + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
+      var locationCity = location.split('/')[1].split('_').join(' ');
+      let msg = "My phone says it's " + timeData.format("h:mm a") + " in their local time right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ". Time zone: " + locationCity + ".";
       message.channel.send(msg);
       let timeSassLength = mori.timeSass.length;
       var RNG = rand(timeSassLength * 5);
@@ -105,7 +112,6 @@ var timezoneCheck = function (location, message) {
     })
     .catch(error => {
       console.log(error.response);
-      // error.response
       message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
     });
 };
@@ -115,5 +121,6 @@ module.exports = {
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
   toggleRole: toggleRole,
+  applyRole: applyRole,
   timezoneCheck: timezoneCheck,
 };

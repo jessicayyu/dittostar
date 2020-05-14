@@ -7,6 +7,10 @@ DittoStar is a tool for subreddit moderators who also have a Discord presence. D
     npm install
     npm start
 
+The Reddit Feed can be run separately, if config.json is set to `runFeedInApp: false`. In that case, run it using:
+  
+    npm run feed
+
 ## Prerequisites
 
 * NodeJS 13.2.0
@@ -41,6 +45,15 @@ Start:
 sudo service mongod start
 mongo -u username -p --authenticationDatabase ditto
 ```
+
+## pm2
+pm2 can be used to automatically restart the app if it goes down.  
+  
+    pm2 start app.js --exp-backoff-restart-delay=100
+
+The Reddit Feed can be run separately, if config.json is set to `runFeedInApp: false`. Optional: `--name feed` for display purposes in the pm2 console.
+  
+    pm2 start app-feed.js --name feed --exp-backoff-restart-delay=100
 
 ## Authors
 

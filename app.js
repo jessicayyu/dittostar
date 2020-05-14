@@ -2,44 +2,18 @@ require('dotenv').config();
 
 const moment = require('moment');
 moment().format();
-console.log('Starting ' + moment().format("MMM D h:mm:ss A"));
-const snoowrap = require('snoowrap');
-const Discord = require('discord.js');
-const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-const { prefix, subreddit, discordInvite, pokeGuild, theCompany } = require('./config.json');
-const axios = require('axios');
 
-const TOKEN = process.env.DISCORD_TOKEN;
+const configJSON = require('./config.json');
+const { prefix, subreddit, pokeGuild, theCompany } = configJSON;
 
-var testingChannel;
-var mainChannel;
-var feedChannel;
-
-client.on('error', console.error);
-
-client.on('ready', () => {
-  let timeStart = moment().format("MMM D h:mm:ss A");
-  console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
-  testingChannel = getChannel('423338578597380106');
-  mainChannel = getChannel('232062367951749121');
-  feedChannel = getChannel('690017722821640199');
-  let emojiChannel = client.channels.get('399407103959236618');
-  emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
-    .catch(console.error);
-});
-
-const r = new snoowrap({
-  userAgent: 'MoriConnect',
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  username: process.env.REDDIT_USER,
-  password: process.env.REDDIT_PASS
-});
+const feed = require('./feed.js');
+const { client, testingChannel, mainChannel, feedChannel } = feed;
 
 const db = require('./db.js');
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
+const axios = require('axios');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
@@ -47,222 +21,24 @@ var swear = {};
 const mori = require('./dialogue.json');
 const pokeJobs = require('./pokejobs.json');
 
-
-
-function getChannel(channel) {
-  var target = null;
-  var getChannelCounter = 0;
-  return function () {
-    while (!target) { 
-      target = client.channels.get(channel);
-      getChannelCounter++;
-      console.log('Get channel attempt ' + getChannelCounter);
-    }
-    return target;
-  }
-}
-
 /* RNG: random number generator */
 function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
 
-var getModmail = function() {
-  var timeNow = moment();
-  return function() {
-    r.getSubreddit(subreddit)
-      .getNewModmailConversations({limit:5})
-      .map((modmail) => {
-        const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
-        if (timeCheck) {
-          return;
-        } 
-        if (modmail.messages[0].author.name.name !== "AutoModerator" && modmail.messages[0].author.name.isMod) { 
-          return; 
-        } 
-        console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
-        const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
-        let body = "";
-        if (modmail.messages[0].bodyMarkdown.length > 100) {
-          body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
-        } else {
-          body = modmail.messages[0].bodyMarkdown;
-        }
-        const embed = new Discord.RichEmbed()
-          .setTitle("Modmail: " + modmail.subject)
-          .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
-          .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
-          .setColor("#ff4500")
-          .setDescription(body + "\n" + timestamp);
-        testingChannel().send(embed);
-        timeNow = moment();
-      })
-      .catch(console.error);
-  }
-};
+if (configJSON.runFeedInApp) {
+  const modmailFeed = feed.getModmail();
+  const postFeed = feed.checkPosts();
+  const commentFeed = feed.checkComments();
 
-const postColors = {
-  'giveaway': '#1a9eb4', 
-  'hcgiveaway': '#c894de',
-  'contest': '#f479b5',
-  'mod': '#fd0100',
-  'ddisc':'#ff7d4d',
-  'question':'#2852bc',
-  'info': '#cccccc',
-};
+  setTimeout(modmailFeed, 10000);
+  setInterval(modmailFeed, 180000);
 
-const postLinkClasses = Object.keys(postColors);
+  setTimeout(postFeed, 10000);
+  setInterval(postFeed, 90000);
 
-var checkPosts = function() {
-  var options = { limit:5, sort: "new"};
-  var last;
-  return function(bool = false) {
-    if (bool) {
-      options = { limit: 10, sort: "new"};
-      last = "0";
-      setTimeout(() => {
-        options.limit = 5;
-      }, 3000);
-    }
-    r.getNew(subreddit, options)
-      .then((posts) => {
-        if (!last) {
-          last = posts[0].name;
-          return;
-        }
-        let now = moment();
-        if (now.minute() % 2 === 0) {
-          console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
-        }
-        posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
-          let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-            console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
-
-            let embed = new Discord.RichEmbed()
-              .setColor(postColors[post.link_flair_css_class])
-              .setTitle(post.title)
-              .setURL(post.url)
-              .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-              .setThumbnail("https://i.imgur.com/71bnPgK.png")
-              .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['info','question'].indexOf(post.link_flair_css_class) >= 0) {
-              testingChannel().send(embed);
-              if (post.link_flair_css_class === 'info') { 
-                mainChannel().send(embed);
-                feedChannel().send(embed);
-              }
-            } else {
-              mainChannel().send(embed);
-              feedChannel().send(embed);
-            }
-          }
-          if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["shiny","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter", "youtube"]);
-            if (matchers) {
-              let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
-              console.log("Post has watched keyword: " + post.url);
-              console.log(i, post.selftext.slice(0, 150));
-              let embedWordFound = new Discord.RichEmbed()
-                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                .setTitle(post.title)
-                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
-              testingChannel().send(embedWordFound);
-            }
-          }
-          if (i === 0) {
-            last = post.name;
-          }
-          return post;
-        })
-      })
-      .catch(console.error);
-  }
-};
-
-var modmailFeed = getModmail();
-setTimeout(modmailFeed, 10000);
-setInterval(modmailFeed, 180000);
-
-var postFeed = checkPosts();
-setTimeout(postFeed, 10000);
-setInterval(postFeed, 90000);
-
-var checkComments = function() {
-  var options = { limit:20, sort: "new"};
-  var last;
-  return function() {
-    r.getNewComments(subreddit, options)
-      .then((comments) => {
-        if (!last) {
-          last = comments[0].id;
-          return;
-        }
-        let now = moment();
-        if (now.minute() % 1 === 0) {
-          console.log(now.format("MMM D h:mm A") + ' comment feed ' + last);
-        }
-        comments.filter(comment => comment.id > last)
-        .map((comment, i) => {
-          let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
-          if (!comment.distinguished) {
-            let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legend","mythical","paypal","ebay"]);
-            if (matchers) {
-              let linkID = comment.link_id.split('_')[1];
-              r.getSubmission(linkID).fetch()
-                .then((submission) => {
-                  return submission.link_flair_css_class;
-                })
-                .then((flair) => {
-                  if (matchers.includes('mod') || postLinkClasses.indexOf(flair) < 0) {
-                    let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
-                    console.log("Comment match: " + matchers + " " + comment.permalink);
-                    const embed = new Discord.RichEmbed()
-                      .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
-                      .setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                      .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + "?context=5)");
-                    testingChannel().send(embed);
-                  }
-                })
-                .catch(console.error);
-            } 
-          }
-          if (i === 0) {
-            last = comment.id;
-          }
-          return comment;
-        })
-      })
-      .catch(console.error);
-  }
-}
-
-var commentFeed = checkComments();
-setTimeout(commentFeed, 15000);
-setInterval(commentFeed, 120000);
-
-var pushPost = function(ids) {
-  ids.forEach(id => {
-    if (id !== '' && id.match(/\w{6}/i)) {
-      r.getSubmission(id).fetch()
-        .then((post) => {
-          let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          let embed = new Discord.RichEmbed()
-            .setColor(postColors[post.link_flair_css_class])
-            .setTitle(post.title)
-            .setURL(post.url)
-            .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-            .setThumbnail("https://i.imgur.com/71bnPgK.png")
-            .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-          mainChannel().send(embed);
-          feedChannel().send(embed);
-        })
-        .catch(console.error);
-    } else {
-      console.log(`${id} not a valid post`)
-    }
-  })
+  setTimeout(commentFeed, 15000);
+  setInterval(commentFeed, 120000);
 }
 
 client.on('guildMemberAdd', member => {
@@ -292,6 +68,10 @@ const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /* Discord message responses */  
 client.on('message', message => {
+  if (!message || !message.guild) { 
+    console.log('No message, or no message.guild', message);
+    return 
+  }
   if (message.type === 'GUILD_MEMBER_JOIN') {
     if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
       console.log(message.guild.name + ' ' + message.guild.id);
@@ -309,7 +89,7 @@ client.on('message', message => {
     let mute = message.guild.roles.find(r => r.name === "mute");
     /* Remove Discord invites */
     if (message.guild.id === pokeGuild) {
-      if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(discordInvite)) {
+      if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(configJSON.discordInvite)) {
         let modCheck = message.member.roles.find(r => r.name === 'Moderator');
         if (!modCheck) {
           const embed = new Discord.RichEmbed()
@@ -423,27 +203,52 @@ client.on('message', message => {
     message.channel.send('pong!');
   } else if (cmd === 'fc' || cmd === 'friendcode') {
     let userID;
+    let query = 'userid';
     if (!cmdArg) {
       userID = message.author.id;
     } else if (message.mentions.users.size) {
       userID = message.mentions.users.first().id.toString();
-    } else {
-      message.channel.send('You gotta specify a person if you want me to check their friend code...');
-      return;
+    } else { 
+      userID = cmdArg.toLowerCase();
+      query = 'reddit'; 
     }
-    db.Member.findOne({userid: userID}, function (err, data) {
+    db.Member.findOne({ [query]: userID }, function (err, data) {
       if (err) return console.error(err);
-      if (data === null) {
-        message.channel.send(`I don't see anything in my notes about that.`)
+      if (!data) {
+        message.channel.send(`I don't see anything registered for that person.`);
         return;
-      };
-      let friendcode = data.friendcode;
-      message.channel.send(friendcode);
+      } else if (!data.friendcode) {
+        message.channel.send('Hmm, they\'re registered but have no friend code data.');
+      }
+      if (data.friendcode) {
+        message.channel.send(data.friendcode);
+      }
     })
   } else if (cmd === 'set') {
-    if (arg[1] === 'fc') {
-      let fcText = message.content.slice(prefix.length + 7);
-      db.writeField('friendcode', fcText, message);
+    if (!arg[1]) {
+      message.channel.send('What did you want to set? `time` or `fc`?');
+      return;
+    }
+    let textEntry = message.content.slice(prefix.length + cmd.length + arg[1].length + 2);
+    if (arg[1] === 'fc' || arg[1] === 'friendcode') {
+      db.writeField('friendcode', textEntry, message);
+    }
+    if (arg[1] === 'reddit' || arg[1] === 'Reddit') {
+      db.writeField('reddit', textEntry.toLowerCase(), message);
+    }
+    if (arg[1] === 'time') {
+      axios.get("http://worldtimeapi.org/api/timezone/" + textEntry)
+        .then((response) => {
+          db.writeField('timezone', textEntry, message);
+          watch.applyRole('Trainers', message.guild, message.member);
+        })
+        .catch((err) => {
+          console.error('Set time error: ' + err.response.data.error);
+          message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
+        });
+    }
+    if (message.guild.id === pokeGuild) {
+      watch.applyRole('Trainers', message.guild, message.member);
     }
   } else if (cmd === 'raid') {
     if (cooldown.has(message.author.id)) {
@@ -496,7 +301,7 @@ client.on('message', message => {
       return;
     }
     if (cmd === 'loadga') {
-      postFeed(true);
+      feed.postFeed(true);
     }
     if (cmd === 'pushpost') {
       if (cmdArg.includes('.com')) {
@@ -507,7 +312,7 @@ client.on('message', message => {
       } else {
         cmdArg = cmdArg.match(/\w{6}/gi);
       }
-      pushPost(cmdArg);
+      feed.pushPost(cmdArg);
     }
     cooldown.add(message.author.id);
     setTimeout(() => {
@@ -516,21 +321,33 @@ client.on('message', message => {
   } else if (cmd === 'time') {
     if (!arg[1]) {
       message.channel.send("Umm... what? You want to know the time where?");
+      return;
     }
-    const zones = mori.timeZones;
+    let location = mori.timeZones[cmdArg.toLowerCase()];
+    if (location) { 
+      watch.timezoneCheck(location, message); 
+      return;
+    } 
+    let userID;
+    let query = 'userid';
     if (message.mentions.users.size) {
-      let userID = message.mentions.users.first().id;
+      userID = message.mentions.users.first().id;
       userID = userID.toString();
-      db.Member.findOne({userid: userID}, function (err, data) {
-        if (err) return console.error(err);
-        if (data === null) return console.log(data);
+    } else {
+      userID = cmdArg.toLowerCase();
+      query = 'reddit';
+    }
+    db.Member.findOne({[query]: userID}, function (err, data) {
+      if (err) return console.error(err);
+      if (!data) {
+        message.channel.send('Sorry, nobody matches this in my database.')
+      } else if (!data.timezone) {
+        message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
+      } else {
         location = data.timezone;
         watch.timezoneCheck(location, message);
-      })
-    } else {
-      location = zones[cmdArg.toLowerCase()];
-      watch.timezoneCheck(location, message);
-    }
+      }
+    })
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
@@ -846,4 +663,18 @@ client.on('messageReactionRemove', (reaction, user) => {
   raidEmojiAssignment(reaction, user);
 });
 
-client.login(TOKEN);
+const statusFunction = function () {
+  let x = 0;
+  return function() {
+    if (x) {
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
+    }
+    if (x === 0) { x++; }
+    let time = moment().format("MMM D h:mm:ss A");
+    process.stdout.write("Bot last check-in: " + time);
+  }
+}
+const statusDisplay = statusFunction();
+setInterval(statusDisplay, 180000)
+
