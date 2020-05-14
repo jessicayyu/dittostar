@@ -98,8 +98,8 @@ var timezoneCheck = function (location, message) {
     .then((response) => {
       console.log(response.data.datetime, location);
       var timeData = moment().utcOffset(response.data.datetime);
-      let locationCity = location.split('/')[1].split('_').join(' ');
-      let msg = "My phone says it's " + timeData.format("h:mm a") + " in " + locationCity + " right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ".";
+      var locationCity = location.split('/')[1].split('_').join(' ');
+      let msg = "My phone says it's " + timeData.format("h:mm a") + " in their local time right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ". Time zone: " + locationCity + ".";
       message.channel.send(msg);
       let timeSassLength = mori.timeSass.length;
       var RNG = rand(timeSassLength * 5);

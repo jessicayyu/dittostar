@@ -25,7 +25,7 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 | raid | [ *number* ] [ *text* ] | Alerts the `@raid` permission group and follows with whatever text was given as the arguments. If x number precedes text, it will output the raid as a `x★` raid tier. |  
 | set | fc [ friend code text ] | Saves text for later retrieval. |  
 | | time [ Region/City ] | Saves time zone for later retrieval, must be in correct format from http://worldtimeapi.org/timezones | 
-| time | *location* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` |  
+| time | *location* \| *@user* \| *reddit* | Finds local time of any of the following: ```Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo``` or the local time if the user in question has registered a time zone. Can query by Reddit username if registered. |  
 
 #### Reference Commands
 | Command | Argument | Description |  

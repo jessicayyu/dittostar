@@ -87,11 +87,11 @@
     "commandDex": {
         "discord": {
             "role": "[ giveaways | raid | pokemongo ] - set your role to subscribe to notifications",
-            "fc": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
-            "friendcode": "[ *(optional) @user* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
+            "fc": "[ *(optional) @user* | *Reddit username* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code.",
+            "friendcode": "[ *(optional) @user* | *Reddit username* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. Can search by Reddit username if registered.",
             "set": "[ fc | time ] [ friend code or location ] - Saves a friend code to be used in `!fc`",
             "raid": "- Pings the @raid notification group for Max Raid Battles", 
-            "time": "[ location name | @user ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`",
+            "time": "[ location name | @user | Reddit username ] - Finds local time of any of the following: Amsterdam, Chicago, Miami, Portland, Sydney, Tokyo\nex: `!time Tokyo`. Can search by pinging Discord user, or by Reddit username, if registered",
             "symbols": "[ *(optional) symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
             "sym": "[ *symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
             "ga": "Pings the people subscribed to @giveaways to announce a Discord-only giveaway",
