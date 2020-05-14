@@ -14,13 +14,14 @@ var checkKeywords = function(input, array) {
 /*  param input: usually the message content.
     param array: array of strings it will be checked against.
     output: the matching string, or bool false. If "mod" appears more than once, all matches will be included in a single string. */
+  let text = input.toLowerCase();  
   for (let i = 0; i < array.length; i++) {
-    if (input.includes(array[i])) {
+    if (text.includes(array[i])) {
       if (array[i] !== "mod") { 
         return array[i]; 
       } 
       /* if mod is a match, check against regex for false positives */
-      let matchers = input.match(/\bmods?\b/gi);
+      let matchers = text.match(/\bmods?\b/gi);
       if (matchers) {
           return matchers.join(', ');
       }

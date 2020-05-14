@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "feed": "node app-feed.js",
     "test": "test"
   },
   "repository": {
