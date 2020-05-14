@@ -3,7 +3,7 @@ require('dotenv').config();
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { prefix } = require('./config.json');
+const { subreddit, discordInvite } = require('./config.json');
 const axios = require('axios');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -24,10 +24,18 @@ const r = new snoowrap({
     password: process.env.REDDIT_PASS
 });
 
+const db = require('./db.js');
 const moment = require('moment');
 moment().format();
 
+const dex = require('./dex-helpers');
+const watch = require('./watchers.js');
 var cooldown = new Set();
+var swear = {};
+const mori = require('./dialogue.json');
+// const pokeJobs = require('./pokejobs.json');
+
+const prefix = '$';
 
 function getChannel(channel) {
     var target = null;
@@ -47,45 +55,73 @@ function rand(max, min = 0) {
 }
 
 client.on('message', message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) {
-        return
+  if (!message.content.startsWith(prefix) || message.author.bot) {
+    return
+  }
+  var arg = message.content.slice(1).split(/ +/);
+  var cmd = arg[0];
+  let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+  var location, msg;
+  if (cmd === 'time') {
+    if (!arg[1]) {
+      message.channel.send("Umm... what? You want to know the time where?");
     }
-    var arg = message.content.slice(1).split(' ');
-    var cmd = arg[0];
-    if (cmd === 'ping') {
-        message.channel.send('pong!');
-    } else if (cmd === 'raid') {
-        if (cooldown.has(message.author.id)) {
-            message.channel.send('Hey, slow down, please.');
-            console.log('cooldown');
-            return;
-        } else {
-            var role = "657365039979692032";
-            const index = prefix.length + cmd.length + 1;
-            message.guild.roles.get(role).setMentionable(true)
-                .then(() => {
-                    message.channel.send('<@&' + role + '> ' + message.content.slice(index))
-                        .then(() => {
-                            message.guild.roles.get(role).setMentionable(false);
-                        });
-                    cooldown.add(message.author.id);
-                    setTimeout(() => {
-                        cooldown.delete(message.author.id);
-                    }, 15000);
-                });
-        }
-    } else if (cmd === 'role') {
-        if (arg[1] === 'raid') {
-           var findRole = message.member.roles.find(r => r.id === '657365039979692032');
-           if (findRole) {
-                message.member.removeRole('657365039979692032')
-                    .then(message.channel.send('Role removed!'));
-           } else {
-                message.member.addRole('657365039979692032')
-                    .then(message.channel.send('Role added!'));
-           }
-        }
+    const zones = mori.timeZones;
+    if (message.mentions.users.size) {
+      let userID = message.mentions.users.first().id;
+      userID = userID.toString();
+      db.Member.findOne({userid: userID}, function (err, data) {
+        if (err) return console.error(err);
+        if (data === null) return console.log(data);
+        location = data.timezone;
+        watch.timezoneCheck(location, message);
+      })
+    } else {
+      location = zones[cmdArg.toLowerCase()];
+      watch.timezoneCheck(location, message);
     }
+  } else if (cmd === 'set') {
+    if (arg[1] === 'fc') {
+      let fcText = message.content.slice(prefix.length + 7);
+      db.writeField('friendcode', fcText, message);
+    }
+  }
 });
+
+var getModqueue = function() {
+    var timeNow = moment();
+    return function() {
+      r.getSubreddit(subreddit)
+        .getModqueue({limit:5})
+        .map((modmail) => {
+          const timeCheck = moment(modmail.lastUserUpdate).isBefore(timeNow) || false;
+          if (timeCheck) {
+            // return;
+          } 
+          console.log(modmail);
+        //   console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
+        //   const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
+        //   let body = "";
+        //   if (modmail.messages[0].bodyMarkdown.length > 100) {
+        //     body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
+        //   } else {
+        //     body = modmail.messages[0].bodyMarkdown;
+        //   }
+        //   const embed = new Discord.RichEmbed()
+        //     .setTitle("Modmail: " + modmail.subject)
+        //     .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
+        //     .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
+        //     .setColor("#ff4500")
+        //     .setDescription(body + "\n" + timestamp);
+        //   testingChannel().send(embed);
+          timeNow = moment();
+        })
+        .catch(console.error);
+    }
+};
+
+// var modqueueFeed = getModqueue();
+// setTimeout(modqueueFeed, 3000);
+// setInterval(modqueueFeed, 60000);
 
 client.login(TOKEN);
