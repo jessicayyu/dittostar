@@ -666,7 +666,7 @@ client.on('messageReactionRemove', (reaction, user) => {
 const statusFunction = function () {
   let x = 0;
   return function() {
-    if (!x) {
+    if (x) {
       process.stdout.clearLine();
       process.stdout.cursorTo(0);
     }
