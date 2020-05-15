@@ -1,4 +1,5 @@
 require('dotenv').config();
+process.env.UV_THREADPOOL_SIZE = 128;
 
 const moment = require('moment');
 moment().format();

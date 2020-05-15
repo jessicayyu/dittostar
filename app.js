@@ -20,8 +20,8 @@ const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
-const mori = require('./dialogue.json');
-const pokeJobs = require('./pokejobs.json');
+const mori = require('./ref/dialogue.json');
+const pokeJobs = require('./ref/pokejobs.json');
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
@@ -678,5 +678,5 @@ const statusFunction = function () {
   }
 }
 const statusDisplay = statusFunction();
-setInterval(statusDisplay, 30000)
+setInterval(statusDisplay, 1800000)
 
