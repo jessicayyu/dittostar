@@ -1,6 +1,7 @@
 supersecret.text
 personaluse.txt
 *.env
+!example.env
 node_modules
 example*.js
 error*
