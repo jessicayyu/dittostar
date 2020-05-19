@@ -4,11 +4,11 @@ const { mongoURI } = require('./config.json');
 var mongoose = require('mongoose');
 var mongoOptions = {
   user: 'dittostar',
-  pass: mongoURI,
+  pass: process.env.DB_PASSWORD,
   useNewUrlParser: true, 
   useUnifiedTopology: true
 };
-mongoose.connect(process.env.MONGO_URI, mongoOptions)
+mongoose.connect(mongoURI, mongoOptions)
   .catch(console.error);
 
 var dbConnect = mongoose.connection;
