@@ -44,7 +44,11 @@ const writeField = async function(field, textEntry, message) {
   }
   await profile.save((err, saveData) => {
     if (err) return console.error(err);
-    message.channel.send('\\*jots down notes\\* Okay, got it.');
+    if (textEntry == '') {
+      message.channel.send('Oh? Okay, deleting that entry.');
+    } else {
+      message.channel.send('\\*jots down notes\\* Okay, got it.');
+    }
   });
 };
 
