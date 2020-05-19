@@ -4,8 +4,8 @@
   "description": "Moderator tool assisting in miscellaneous tasks. Crossposts links from the subreddit to the Discord and notifies moderators.",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "feed": "node app-feed.js",
+    "start": "title Moribot && node app.js",
+    "feed": "title Feed Reader && node app-feed.js",
     "test": "test"
   },
   "repository": {

@@ -10,6 +10,7 @@ const feed = require('./feed.js');
 const { client, testingChannel, mainChannel, feedChannel } = feed;
 
 const db = require('./db.js');
+const Discord = require('discord.js');
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
@@ -678,5 +679,5 @@ const statusFunction = function () {
   }
 }
 const statusDisplay = statusFunction();
-setInterval(statusDisplay, 1800000)
+setInterval(statusDisplay, configJSON.statusRefresh * 60000)
 
