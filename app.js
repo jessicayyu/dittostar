@@ -23,11 +23,27 @@ var cooldown = new Set();
 var swear = {};
 const mori = require('./ref/dialogue.json');
 const pokeJobs = require('./ref/pokejobs.json');
+let setStandby = false;
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
+
+const statusFunction = function () {
+  let x = 0;
+  return function() {
+    if (x) {
+      readline.clearLine();
+      readline.cursorTo(process.stdout, 0);
+    }
+    if (x === 0) { x++; }
+    let time = moment().format("MMM D h:mm:ss A");
+    process.stdout.write("Bot last check-in: " + time);
+  }
+}
+const statusDisplay = statusFunction();
+setInterval(statusDisplay, configJSON.statusRefresh * 60000);
 
 if (configJSON.runFeedInApp) {
   const modmailFeed = feed.getModmail();
@@ -235,17 +251,16 @@ client.on('message', message => {
     let textEntry = message.content.slice(prefix.length + cmd.length + arg[1].length + 2);
     if (arg[1] === 'fc' || arg[1] === 'friendcode') {
       db.writeField('friendcode', textEntry, message).catch(console.error);
-      watch.applyRole('Trainers', message.guild, message.member);
-      watch.applyRole('Friend Code Registered', message.guild, message.member);
+      if (message.guild.id === pokeGuild) {
+        watch.applyRole('Friend Code Registered', message.guild, message.member);
+      }
     }
     if (arg[1] === 'reddit' || arg[1] === 'Reddit') {
       db.writeField('reddit', textEntry.toLowerCase(), message).catch(console.error);
-      watch.applyRole('Trainers', message.guild, message.member);
     }
     if (arg[1] === 'time') {
       if (!arg[2]) {
         db.writeField('timezone', '', message);
-        message.channel.send('Time zone removed.');
         return;
       }
       axios.get("http://worldtimeapi.org/api/timezone/" + textEntry)
@@ -359,6 +374,29 @@ client.on('message', message => {
         watch.timezoneCheck(location, message);
       }
     })
+  } else if (cmd === 'reddit') {
+    let query, userIDorName;
+    if (message.mentions.users.size) {
+      userIDorName = message.mentions.users.first().id;
+      userIDorName = userIDorName.toString();
+      query = 'userid'
+    } else {
+      userIDorName = message.content.slice(prefix.length + cmd.length + 1);
+      userIDorName = userIDorName.toLowerCase();
+      query = 'reddit';
+    }
+    db.Member.findOne({ [query]: userIDorName}, function (err, data) {
+      if (err) return console.error(err);
+      if (!data) {
+        message.channel.send('Sorry, nobody matches this in my database.');
+        return;
+      }
+      if (!data.userid || !data.reddit) {
+        message.channel.send('Well, I know the person, but they didn\'t register that info with me.')
+        return;
+      }
+      message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
+    });
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     let pkmn, urlModifier, padNum;
     if (Number(cmdArg)) { 
@@ -619,6 +657,20 @@ client.on('message', message => {
       }
     } 
     message.channel.send("Sorry, I don't understand.");
+  } else if (cmd === 'standby') {
+    if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
+      if (arg[2] === 'true' || arg[2] === 'on') {
+        setStandby = true;
+        message.channel.send('I\'ll take a break, then.')
+      }
+      if (arg[2] === 'false' || arg[2] === 'off') {
+        setStandby = false;
+        message.channel.send('Okay, going to work.')
+      }
+      console.log('standby ' + setStandby);
+    } else {
+      message.channel.send('You\'re not my boss.');
+    }
   } else if (cmd === 'lenny') {
     message.channel.send('( ͡° ͜ʖ ͡°)');
   } else if (cmd === 'stare') {
@@ -674,18 +726,4 @@ client.on('messageReactionRemove', (reaction, user) => {
   raidEmojiAssignment(reaction, user);
 });
 
-const statusFunction = function () {
-  let x = 0;
-  return function() {
-    if (x) {
-      readline.clearLine();
-      readline.cursorTo(process.stdout, 0);
-    }
-    if (x === 0) { x++; }
-    let time = moment().format("MMM D h:mm:ss A");
-    process.stdout.write("Bot last check-in: " + time);
-  }
-}
-const statusDisplay = statusFunction();
-setInterval(statusDisplay, configJSON.statusRefresh * 60000)
 

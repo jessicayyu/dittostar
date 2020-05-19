@@ -82,6 +82,11 @@ var toggleRole = function(role, guild, user) {
 
 var applyRole = function(role, guild, user) {
   var findRole = guild.roles.find(r => r.name === role);
+  if (!findRole) {
+    let time = moment().format("MMM D h:mm:ss A");
+    console.log(`${time} - ${role} not found.`);
+    return;
+  }
   user.addRole(findRole)
     .catch(console.error)
 };
