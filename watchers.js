@@ -3,7 +3,7 @@ const { pokeGuild } = require('./config.json');
 const axios = require('axios');
 const moment = require('moment');
 moment().format();
-const mori = require('./dialogue.json');
+const mori = require('./ref/dialogue.json');
 const dex = require('./dex-helpers');
 
 function rand(max, min = 0) {

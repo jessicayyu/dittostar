@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { mongoURI } = require('./config.json');
 
 var mongoose = require('mongoose');
 var mongoOptions = {
@@ -7,7 +8,7 @@ var mongoOptions = {
   useNewUrlParser: true, 
   useUnifiedTopology: true
 };
-mongoose.connect('mongodb://localhost:27017/ditto', mongoOptions)
+mongoose.connect(mongoURI, mongoOptions)
   .catch(console.error);
 
 var dbConnect = mongoose.connection;

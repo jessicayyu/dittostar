@@ -2,7 +2,15 @@
 
 DittoStar is a tool for subreddit moderators who also have a Discord presence. DittoStar retrieves information such as new modmail, relevant posts, etc and cross-posts them to Discord into specified channels.
 
+## Prerequisites
+
+* NodeJS 13.2.0
+* NPM
+
 ### Installing
+Enter your relevant authentication keys and configurations in the following files: `.env` and `config.json`. Example files `example.env` and `config.example.json` have been included.
+  
+Run the following commands: 
 
     npm install
     npm start
@@ -10,10 +18,6 @@ DittoStar is a tool for subreddit moderators who also have a Discord presence. D
 The Reddit Feed can be run separately, if config.json is set to `runFeedInApp: false`. In that case, run it using:
   
     npm run feed
-
-## Prerequisites
-
-* NodeJS 13.2.0
 
 ## Commands
 See [this page for the bot commands and config](./commands.md), including moderator-only commands. Currently supported commands include: 
@@ -49,11 +53,13 @@ mongo -u username -p --authenticationDatabase ditto
 ## pm2
 pm2 can be used to automatically restart the app if it goes down.  
   
-    pm2 start app.js --exp-backoff-restart-delay=100
+    pm2 start app.js
 
 The Reddit Feed can be run separately, if config.json is set to `runFeedInApp: false`. Optional: `--name feed` for display purposes in the pm2 console.
   
-    pm2 start app-feed.js --name feed --exp-backoff-restart-delay=100
+    pm2 start app-feed.js --name feed
+
+File `ecosystem.config.js` specifies restart strategies and can be modified for static restart times.
 
 ## Authors
 

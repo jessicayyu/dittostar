@@ -14,12 +14,14 @@ const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
 const { getTypeWeaknesses } = require('poke-types');
 const axios = require('axios');
+const readline = require('readline');
+
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
-const mori = require('./dialogue.json');
-const pokeJobs = require('./pokejobs.json');
+const mori = require('./ref/dialogue.json');
+const pokeJobs = require('./ref/pokejobs.json');
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
@@ -667,8 +669,8 @@ const statusFunction = function () {
   let x = 0;
   return function() {
     if (x) {
-      process.stdout.clearLine();
-      process.stdout.cursorTo(0);
+      readline.clearLine();
+      readline.cursorTo(process.stdout, 0);
     }
     if (x === 0) { x++; }
     let time = moment().format("MMM D h:mm:ss A");
@@ -676,5 +678,5 @@ const statusFunction = function () {
   }
 }
 const statusDisplay = statusFunction();
-setInterval(statusDisplay, 180000)
+setInterval(statusDisplay, 1800000)
 

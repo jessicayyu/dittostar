@@ -1,6 +1,7 @@
 supersecret.text
 personaluse.txt
 *.env
+!example.env
 node_modules
 example*.js
 error*
@@ -10,3 +11,5 @@ pokejobs_orig.json
 *-raw.txt
 /example/
 app2.js
+*.pem
+/dump/
