@@ -234,12 +234,20 @@ client.on('message', message => {
     }
     let textEntry = message.content.slice(prefix.length + cmd.length + arg[1].length + 2);
     if (arg[1] === 'fc' || arg[1] === 'friendcode') {
-      db.writeField('friendcode', textEntry, message);
+      db.writeField('friendcode', textEntry, message).catch(console.error);
+      watch.applyRole('Trainers', message.guild, message.member);
+      watch.applyRole('Friend Code Registered', message.guild, message.member);
     }
     if (arg[1] === 'reddit' || arg[1] === 'Reddit') {
-      db.writeField('reddit', textEntry.toLowerCase(), message);
+      db.writeField('reddit', textEntry.toLowerCase(), message).catch(console.error);
+      watch.applyRole('Trainers', message.guild, message.member);
     }
     if (arg[1] === 'time') {
+      if (!arg[2]) {
+        db.writeField('timezone', '', message);
+        message.channel.send('Time zone removed.');
+        return;
+      }
       axios.get("http://worldtimeapi.org/api/timezone/" + textEntry)
         .then((response) => {
           db.writeField('timezone', textEntry, message);
