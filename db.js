@@ -1,13 +1,14 @@
 require('dotenv').config();
+const { mongoURI } = require('./config.json');
 
 var mongoose = require('mongoose');
 var mongoOptions = {
   user: 'dittostar',
-  pass: process.env.DB_PASSWORD,
+  pass: mongoURI,
   useNewUrlParser: true, 
   useUnifiedTopology: true
 };
-mongoose.connect('mongodb://13.57.249.31:27017/ditto', mongoOptions)
+mongoose.connect(process.env.MONGO_URI, mongoOptions)
   .catch(console.error);
 
 var dbConnect = mongoose.connection;

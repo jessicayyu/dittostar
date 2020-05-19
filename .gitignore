@@ -12,3 +12,4 @@ pokejobs_orig.json
 /example/
 app2.js
 *.pem
+/dump/

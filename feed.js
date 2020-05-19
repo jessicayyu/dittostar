@@ -153,11 +153,10 @@ var checkPosts = function() {
         }
         posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+          const embed = new Discord.RichEmbed()
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
-
-            let embed = new Discord.RichEmbed()
-              .setColor(postColors[post.link_flair_css_class])
+            embed.setColor(postColors[post.link_flair_css_class])
               .setTitle(post.title)
               .setURL(post.url)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
@@ -180,12 +179,9 @@ var checkPosts = function() {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
               console.log(i, post.selftext.slice(0, 150));
-              let embedWordFound = new Discord.RichEmbed()
-                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                .setTitle(post.title)
-                .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+              embed.setThumbnail("https://i.imgur.com/vXeJfVh.png")
                 .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
-              testingChannel().send(embedWordFound);
+              testingChannel().send(embed);
             }
           }
           if (i === 0) {
