@@ -61,6 +61,7 @@ if (configJSON.runFeedInApp) {
 }
 
 client.on('guildMemberAdd', member => {
+  if (setStandby === true) { return;  }
   let channel = member.guild.channels.find(ch => ch.name === 'chat-main');
   if (member.guild.id === '633473228739837984') {
     channel = member.guild.channels.find(ch => ch.name === 'landing');
@@ -87,6 +88,27 @@ const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /* Discord message responses */  
 client.on('message', message => {
+  if (message.content.startsWith(prefix + 'standby')) {
+    let arg = message.content.slice(1).split(/ +/);
+    if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
+      if (arg[2] === 'true' || arg[2] === 'on') {
+        setStandby = true;
+        message.channel.send('I\'ll take a break, then.')
+      }
+      if (arg[2] === 'false' || arg[2] === 'off') {
+        setStandby = false;
+        message.channel.send('Okay, going to work.')
+      }
+    }
+    if (arg[1] !== configJSON.instance) {
+      console.log(`I am the ${configJSON.instance} instance.`);
+    } 
+    if (message.author.id !== configJSON.owner) {
+      message.channel.send('You\'re not my boss.');
+    }
+    return;
+  }
+  if (setStandby === true) { return; }
   if (!message || !message.guild) { 
     console.log('No message, or no message.guild', message);
     return 
@@ -657,20 +679,6 @@ client.on('message', message => {
       }
     } 
     message.channel.send("Sorry, I don't understand.");
-  } else if (cmd === 'standby') {
-    if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
-      if (arg[2] === 'true' || arg[2] === 'on') {
-        setStandby = true;
-        message.channel.send('I\'ll take a break, then.')
-      }
-      if (arg[2] === 'false' || arg[2] === 'off') {
-        setStandby = false;
-        message.channel.send('Okay, going to work.')
-      }
-      console.log('standby ' + setStandby);
-    } else {
-      message.channel.send('You\'re not my boss.');
-    }
   } else if (cmd === 'lenny') {
     message.channel.send('( ͡° ͜ʖ ͡°)');
   } else if (cmd === 'stare') {
@@ -719,10 +727,12 @@ const raidEmojiAssignment = function(reaction, user) {
 };
 
 client.on('messageReactionAdd', (reaction, user) => {
+  if (setStandby === true) { return; }
   raidEmojiAssignment(reaction, user);
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
+  if (setStandby === true) { return; }
   raidEmojiAssignment(reaction, user);
 });
 
