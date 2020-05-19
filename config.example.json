@@ -1,7 +1,12 @@
 {
   "prefix": "!",
+  "owner": "discordID",
   "subreddit": "subreddit",
+  "instance": "name",
   "discordInvite": "inviteCodeHere",
   "pokeGuild": "guildID",
-  "theCompany": "guildID"
+  "theCompany": "guildID",
+  "mongoURI": "URI",
+  "runFeedInApp": true,
+  "statusRefresh": 5
 }
