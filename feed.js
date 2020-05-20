@@ -124,8 +124,13 @@ const postColors = {
   'contest': '#f479b5',
   'mod': '#fd0100',
   'ddisc':'#ff7d4d',
-  'question':'#2852bc',
   'info': '#cccccc',
+};
+
+const postColorsEtc = {
+  'request': '#349e48',
+  'tradeback': '#349e48',
+  'question':'#2852bc',
 };
 
 const postLinkClasses = Object.keys(postColors);
@@ -151,7 +156,7 @@ var checkPosts = function() {
         if (now.minute() % 2 === 0) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
-        posts.filter(post => (post.name > last && post.link_flair_css_class)).map((post, i) => {
+        posts.filter(post => (post.name > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed()
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
@@ -162,25 +167,26 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            if (['info','question'].indexOf(post.link_flair_css_class) >= 0) {
-              testingChannel().send(embed);
-              if (post.link_flair_css_class === 'info') { 
-                mainChannel().send(embed);
-                feedChannel().send(embed);
-              }
-            } else {
-              mainChannel().send(embed);
-              feedChannel().send(embed);
-            }
+            mainChannel().send(embed);
+            feedChannel().send(embed);
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["shiny","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "instagram", "twitter", "youtube"]);
-            if (matchers) {
+            let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube"]);
+            if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
               console.log(i, post.selftext.slice(0, 150));
-              embed.setThumbnail("https://i.imgur.com/vXeJfVh.png")
-                .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+              /* Checks if post was previously picked up, ex: giveaways, announcements */
+              if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
+                embed.setThumbnail("https://i.imgur.com/vXeJfVh.png")
+              } else {
+                embed.setColor(postColorsEtc[post.link_flair_css_class])
+                  .setTitle(post.title)
+                  .setURL(post.url)
+                  .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                  .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+              }
+              embed.setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
               testingChannel().send(embed);
             }
           }
@@ -212,17 +218,18 @@ var checkComments = function() {
         .map((comment, i) => {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished) {
-            let matchers = watch.checkKeywords(comment.body, ["mod","shiny","legend","mythical","paypal","ebay"]);
-            if (matchers) {
+            let alwaysAlert = watch.checkKeywords(comment.body, ["mod","paypal","ebay","venmo"]);
+            let rule2Match = watch.checkKeywords(comment.body, ["shiny","legend","mythical"]);
+            if (alwaysAlert || rule2Match) {
               let linkID = comment.link_id.split('_')[1];
               r.getSubmission(linkID).fetch()
                 .then((submission) => {
                   return submission.link_flair_css_class;
                 })
                 .then((flair) => {
-                  // If mods are mentioned, always show comment.
+                  // If mods or any other alwaysAlert word is mentioned, always show comment.
                   // Otherwise, show comment if it's not from one of the approved post types.
-                  if (matchers.includes('mod') || matchers === 'paypal' || matchers === 'ebay' || postLinkClasses.indexOf(flair) < 0) {
+                  if (alwaysAlert || (rule2Match && postLinkClasses.indexOf(flair) < 0)) {
                     let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
                     console.log("Comment match: " + matchers + " " + comment.permalink);
                     const embed = new Discord.RichEmbed()
