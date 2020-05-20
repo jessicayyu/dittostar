@@ -229,6 +229,7 @@ var checkComments = function() {
                 .then((flair) => {
                   // If mods or any other alwaysAlert word is mentioned, always show comment.
                   // Otherwise, show comment if it's not from one of the approved post types.
+                  let matchers = alwaysAlert ? alwaysAlert : rule2Match;
                   if (alwaysAlert || (rule2Match && postLinkClasses.indexOf(flair) < 0)) {
                     let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
                     console.log("Comment match: " + matchers + " " + comment.permalink);
