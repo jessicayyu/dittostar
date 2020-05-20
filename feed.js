@@ -125,12 +125,12 @@ const postColors = {
   'mod': '#fd0100',
   'ddisc':'#ff7d4d',
   'info': '#cccccc',
+  'question':'#2852bc',
 };
 
 const postColorsEtc = {
   'request': '#349e48',
   'tradeback': '#349e48',
-  'question':'#2852bc',
 };
 
 const postLinkClasses = Object.keys(postColors);
@@ -167,8 +167,10 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-            mainChannel().send(embed);
-            feedChannel().send(embed);
+            if (post.link_flair_css_class !== 'question') { 
+              mainChannel().send(embed);
+              feedChannel().send(embed);
+             }
           }
           if (!post.distinguished && !post.stickied) {
             let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube"]);
