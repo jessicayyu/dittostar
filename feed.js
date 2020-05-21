@@ -134,6 +134,8 @@ const postColorsEtc = {
 };
 
 const postLinkClasses = Object.keys(postColors);
+// Referenced for both post and comment keyword alerting. 
+// postColors comment matches for Rule 2 words like shiny, legendary are ignored.
 
 var checkPosts = function() {
   var options = { limit:5, sort: "new"};
@@ -173,7 +175,7 @@ var checkPosts = function() {
              }
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube"]);
+            let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok"]);
             if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
