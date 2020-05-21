@@ -190,7 +190,7 @@ var checkPosts = function() {
                   .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                   .setThumbnail("https://i.imgur.com/vXeJfVh.png")
               }
-              embed.setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+              embed.setDescription(`[{ ${matchers} } mentioned at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
               testingChannel().send(embed);
             }
           }
