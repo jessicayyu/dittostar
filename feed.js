@@ -182,15 +182,15 @@ var checkPosts = function() {
               console.log(i, post.selftext.slice(0, 150));
               /* Checks if post was previously picked up, ex: giveaways, announcements */
               if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-                embed.setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                embed.setThumbnail("https://i.imgur.com/vXeJfVh.png");
               } else {
                 embed.setColor(postColorsEtc[post.link_flair_css_class])
                   .setTitle(post.title)
                   .setURL(post.url)
                   .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                  .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                  .setThumbnail("https://i.imgur.com/vXeJfVh.png");
               }
-              embed.setDescription(`[{ ${matchers} } mentioned at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
+              embed.setDescription(`[{ ${matchers} } at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
               testingChannel().send(embed);
             }
           }
