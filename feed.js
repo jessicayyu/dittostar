@@ -190,7 +190,11 @@ var checkPosts = function() {
                   .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                   .setThumbnail("https://i.imgur.com/vXeJfVh.png");
               }
-              embed.setDescription(`[{ ${matchers} } at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
+              if (matchers) {
+                embed.setDescription(`[{ ${matchers} } at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
+              } else {
+                embed.setDescription(`[${timestamp} at redd.it/${post.id}](https://redd.it/${post.id})\n${body}`);
+              }
               testingChannel().send(embed);
             }
           }
