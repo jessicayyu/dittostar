@@ -37,8 +37,8 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 | nature | *nature* | Returns the stats effect of the specified nature. |
 | num | *pokemon name \| num* | `dex` command but with link previews off | 
 | pokejobs | *task title* | Returns desired type and full description of PokeJob |  
-| shiny | *pokemon name \| pokedex num* | Returns shiny sprite |  
-| sprite | *pokemon name \| pokedex num* | Returns Pokemon sprite |  
+| shiny | *pokemon name \| pokedex num* | Returns shiny sprite. Can also check for forms, such as `!sprite alolan Meowth` or `!sprite female Pikachu` |  
+| sprite | *pokemon name \| pokedex num* | Returns Pokemon sprite. Can also check for forms, such as `!sprite alolan Meowth` or `!sprite female Pikachu` |  
 | symbols | *symbol name* | Prints ★ ✚ \\♥ ✿ ♫ ♪ or the specified symbol |  
 | sym | *symbol name* | Same as `symbols` |
 | type | *pokemon name \| pokedex number \| typings* | Returns type weakness match-up | 
