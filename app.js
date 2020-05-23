@@ -420,6 +420,8 @@ client.on('message', message => {
       message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
     });
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
+    var form;
+    let formCode = '';
     if (arg[2] && (cmd === 'sprite' || cmd === 'shiny')) {
       cmdArg = arg[2].toLowerCase();
       let spaceInName = watch.checkKeywords(message.content,['mime', 'rime', 'tapu', 'type']);        
@@ -434,7 +436,6 @@ client.on('message', message => {
           if (cmdArg === 'pikachu') { formCode = ''; }
         }
         if (form === 'female') { 
-          console.log('female form requested');
           formCode = '-f';
         }
         if (form.startsWith('crown')) { formCode = '-c' }
