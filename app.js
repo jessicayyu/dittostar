@@ -420,11 +420,52 @@ client.on('message', message => {
       message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
     });
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
+    if (arg[2] && (cmd === 'sprite' || cmd === 'shiny')) {
+      cmdArg = arg[2].toLowerCase();
+      let spaceInName = watch.checkKeywords(message.content,['mime', 'rime', 'tapu', 'type']);        
+      if (spaceInName) {
+        cmdArg = arg[arg.length-2] + " " + arg[arg.length-1];
+      }
+      // evaluate if there's a form name
+      if ((!spaceInName && arg.length === 3) || arg.length === 4) {
+        form = arg[1].toLowerCase();
+        if (form.includes('galar') || form.includes('alola')) {
+          formCode = form.includes('galar') ? '-g' : '-a';
+          if (cmdArg === 'pikachu') { formCode = ''; }
+        }
+        if (form === 'female') { 
+          console.log('female form requested');
+          formCode = '-f';
+        }
+        if (form.startsWith('crown')) { formCode = '-c' }
+        if (cmdArg === 'nidoran') { 
+          cmdArg = form === 'female'? 29 : 32;
+          formCode = '';
+        }
+        if (cmdArg === 'rotom') {
+          const rotom = {
+            heat: '-h',
+            wash: '-w',
+            frost: '-f',
+            fan: '-s',
+            mow: '-m',
+            normal: ''
+          };
+          formCode = rotom[form];
+        }
+      }
+    }
     let pkmn, urlModifier, padNum;
+    // pokedex.js reference will need to be used for both image and dex commands
+    // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
     if (Number(cmdArg)) { 
       pkmn = pokedex.id(Number(cmdArg)).get();
     } else {
       cmdArg = dex.capitalize(cmdArg);
+      if (cmdArg === 'Nidoran') { 
+        cmdArg = 'Nidoranf';
+        message.channel.send('Looking up female Nidoran, Pokedex number 29. For male, please request male Nidoran, or number 32.');
+      }
       pkmn = pokedex.name(cmdArg).get();
     }
     pkmn = JSON.parse(pkmn);
@@ -434,28 +475,33 @@ client.on('message', message => {
     }
     padNum = pkmn[0].id;
     padNum = padNum.padStart(3, '0');
-    if (dex.checkGalarDex(pkmn)) {
-      if (cmd === 'dex' || cmd === 'num') {
+    if (cmd === 'dex' || cmd === 'num') {
+      if (dex.checkGalarDex(pkmn)) {
         let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
         let link = `https://www.serebii.net/pokedex-swsh/${pkmnName}/`;
         if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-swsh/${pkmnName}/>`; }
         message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
       } else {
-        if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
-        if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
-        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
-      }
-    } else {
-      if (cmd === 'dex' || cmd === 'num') {
         let link = `https://www.serebii.net/pokedex-sm/${padNum}.shtml`;
         if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-sm/${padNum}.shtml>`; }
         message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
+      }
+    } else if (cmd === 'shiny' || cmd === 'sprite') {
+      if (dex.checkGalarDex(pkmn)) {
+        if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
+        if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
       } else {
         if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
         if (cmd === 'sprite') { urlModifier = 'sunmoon/pokemon'; }
-        message.channel.send(`https://www.serebii.net/${urlModifier}/${padNum}.png`);
       }
-    }
+      let url = `https://www.serebii.net/${urlModifier}/${padNum}${formCode}.png`;
+      axios.get(url)
+        .then((res) => { message.channel.send(url); })
+        .catch((error) => {
+          message.channel.send('Sorry, not finding anything for that.');
+          console.log(error.response.status);
+        });
+    } 
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
     let pkdexTypeRes;
     arg.shift();

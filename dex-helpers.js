@@ -1,8 +1,8 @@
 const { getTypeWeaknesses } = require('poke-types');
 
-//  input can be array or string
-//  returns properly string with first letter of each word capitalized
 const capitalize = function(inputText) {
+  //  input can be array or string
+  //  returns properly string with first letter of each word capitalized
   let temp;
   if (Array.isArray(inputText)) {
     temp = inputText;
@@ -20,9 +20,9 @@ const capitalize = function(inputText) {
   return temp;
 };
 
-/*  param typeResults: js object
-    output: formatted string */
 const formatTypeOutput = function(typeResults) {
+  /*  param typeResults: js object
+      output: formatted string */
   var typeFX = { 
     "ultra": [],
     "super": [],
@@ -56,9 +56,13 @@ const formatTypeOutput = function(typeResults) {
   return desc;
 };
 
-/*  param inputDexRes: array of objects
-    console logs form names    */
+const generations = [null,"Kanto","Johto","Hoenn","Sinnoh","Unova","Kalos","Alola","Galar"
+];
+
 const checkDexForms = function(inputDexRes) {
+  /*  Purpose: Debugging. Console logs all forms associated with Pokedex entry.
+      param inputDexRes: array of objects
+      console logs form names    */
   let getPokemonRes = [];
   if (inputDexRes.length > 1) {
     for (let i = 0; i < inputDexRes.length; i++) {
@@ -72,10 +76,10 @@ const checkDexForms = function(inputDexRes) {
   }
 };
 
-/*  Purpose: used in a .forEach() function to format each Pokemon form object in array
-    param dexResult: single object in array iteration of .forEach()
-    output: formatted string of the type weaknesses of that Pokemon form object  */
 const multiFormTypes = function(dexResult) {
+    /*  Purpose: used in a .forEach() function to format each Pokemon form object in array
+        param dexResult: single object in array iteration of .forEach()
+        output: formatted string of the type weaknesses of that Pokemon form object  */
   let typeChart;
   let form = dexResult.formName ? ' - ' + dexResult.formName : '';
   if (dexResult.type[1]) {
