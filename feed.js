@@ -44,15 +44,6 @@ client.on('ready', () => {
   let emojiChannel = client.channels.get('399407103959236618');
   emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
     .catch(console.error);
-  if (false) {
-    client.user.setPresence({
-      status: "idle", // online, idle
-      game: {
-          name: "Maintenance",  //The message shown
-          type: "PLAYING" 
-      }
-    });
-  }
 });
 
 client.login(TOKEN);
@@ -66,7 +57,7 @@ const r = new snoowrap({
   password: process.env.REDDIT_PASS
 });
 
-function getChannel(channel) {
+const getChannel = function(channel) {
   var target = null;
   var getChannelCounter = 0;
   return function () {
@@ -77,7 +68,7 @@ function getChannel(channel) {
     }
     return target;
   }
-}
+};
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
@@ -191,7 +182,7 @@ var checkPosts = function() {
                   .setThumbnail("https://i.imgur.com/vXeJfVh.png");
               }
               if (matchers) {
-                embed.setDescription(`[{ ${matchers} } at ${post.id} ${timestamp}](https://redd.it/${post.id})\n${body}`);
+                embed.setDescription(`{ ${matchers} } at ${post.id} [${timestamp}](https://redd.it/${post.id})\n${body}`);
               } else {
                 embed.setDescription(`[${timestamp} at redd.it/${post.id}](https://redd.it/${post.id})\n${body}`);
               }
@@ -284,11 +275,15 @@ var pushPost = function(ids) {
   })
 };
 
+const exportReady = async function(channel) {
+  return await channel;
+};
+
 module.exports = {
   client: client,
-  testingChannel: testingChannel,
-  mainChannel: mainChannel,
-  feedChannel: feedChannel,
+  testingChannel: getChannel('423338578597380106'),
+  mainChannel: getChannel('232062367951749121'),
+  feedChannel: getChannel('690017722821640199'),
   getChannel: getChannel,
   getModmail: getModmail,
   checkPosts: checkPosts,

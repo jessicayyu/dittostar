@@ -21,3 +21,16 @@ const findFormObj = function(query, dexResult) {
   }
   return false;
 };
+
+// set maintenance display status for Discord bot
+function setStatus(bool) {
+  if (bool) {
+    client.user.setPresence({
+      status: "idle", // online, idle
+      game: {
+          name: "Maintenance",  //The message shown
+          type: "PLAYING" 
+      }
+    });
+  }
+}
