@@ -571,6 +571,8 @@ client.on('message', message => {
     let index = prefix.length + cmd.length + 1;
     let msg = message.content.slice(index);
     let valorChan = client.channels.get('432213973354545155');
+    msg = msg.replace('<rarecandy>','<:rarecandy:713490232263049288>');
+    msg = msg.replace('<egg>','<:egg2:713490470373818468>');
     msg = msg.split('<br>');
     if (msg[0].length > 256) {
       message.channel.send('Sorry, your title is too long, I can\'t send that.');
