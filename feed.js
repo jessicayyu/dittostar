@@ -44,15 +44,6 @@ client.on('ready', () => {
   let emojiChannel = client.channels.get('399407103959236618');
   emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
     .catch(console.error);
-  if (false) {
-    client.user.setPresence({
-      status: "idle", // online, idle
-      game: {
-          name: "Maintenance",  //The message shown
-          type: "PLAYING" 
-      }
-    });
-  }
 });
 
 client.login(TOKEN);
@@ -66,7 +57,7 @@ const r = new snoowrap({
   password: process.env.REDDIT_PASS
 });
 
-function getChannel(channel) {
+const getChannel = function(channel) {
   var target = null;
   var getChannelCounter = 0;
   return function () {
@@ -77,7 +68,7 @@ function getChannel(channel) {
     }
     return target;
   }
-}
+};
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
@@ -134,6 +125,8 @@ const postColorsEtc = {
 };
 
 const postLinkClasses = Object.keys(postColors);
+// Referenced for both post and comment keyword alerting. 
+// postColors comment matches for Rule 2 words like shiny, legendary are ignored.
 
 var checkPosts = function() {
   var options = { limit:5, sort: "new"};
@@ -173,22 +166,26 @@ var checkPosts = function() {
              }
           }
           if (!post.distinguished && !post.stickied) {
-            let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube"]);
+            let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok"]);
             if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
               let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
               console.log("Post has watched keyword: " + post.url);
               console.log(i, post.selftext.slice(0, 150));
               /* Checks if post was previously picked up, ex: giveaways, announcements */
               if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-                embed.setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                embed.setThumbnail("https://i.imgur.com/vXeJfVh.png");
               } else {
                 embed.setColor(postColorsEtc[post.link_flair_css_class])
                   .setTitle(post.title)
                   .setURL(post.url)
                   .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                  .setThumbnail("https://i.imgur.com/vXeJfVh.png")
+                  .setThumbnail("https://i.imgur.com/vXeJfVh.png");
               }
-              embed.setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://redd.it/" + post.id + ")");
+              if (matchers) {
+                embed.setDescription(`{ ${matchers} } at ${post.id} [${timestamp}](https://redd.it/${post.id})\n${body}`);
+              } else {
+                embed.setDescription(`[${timestamp} at redd.it/${post.id}](https://redd.it/${post.id})\n${body}`);
+              }
               testingChannel().send(embed);
             }
           }
@@ -278,11 +275,15 @@ var pushPost = function(ids) {
   })
 };
 
+const exportReady = async function(channel) {
+  return await channel;
+};
+
 module.exports = {
   client: client,
-  testingChannel: testingChannel,
-  mainChannel: mainChannel,
-  feedChannel: feedChannel,
+  testingChannel: getChannel('423338578597380106'),
+  mainChannel: getChannel('232062367951749121'),
+  feedChannel: getChannel('690017722821640199'),
   getChannel: getChannel,
   getModmail: getModmail,
   checkPosts: checkPosts,
