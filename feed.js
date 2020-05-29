@@ -44,6 +44,9 @@ client.on('ready', () => {
   let emojiChannel = client.channels.get('399407103959236618');
   emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
     .catch(console.error);
+  modmailFeed();
+  postFeed();
+  commentFeed();
 });
 
 client.login(TOKEN);
@@ -275,9 +278,9 @@ var pushPost = function(ids) {
   })
 };
 
-const exportReady = async function(channel) {
-  return await channel;
-};
+const modmailFeed = getModmail();
+const postFeed = checkPosts();
+const commentFeed = checkComments();
 
 module.exports = {
   client: client,
@@ -285,8 +288,8 @@ module.exports = {
   mainChannel: getChannel('232062367951749121'),
   feedChannel: getChannel('690017722821640199'),
   getChannel: getChannel,
-  getModmail: getModmail,
-  checkPosts: checkPosts,
-  checkComments: checkComments,
+  modmailFeed: modmailFeed,
+  postFeed: postFeed,
+  commentFeed: commentFeed,
   pushPost: pushPost,
 };
