@@ -340,6 +340,7 @@ client.on('message', message => {
       return;
     }
     if (cmd === 'loadga') {
+      console.log(moment().format("h:mm:ssA") + ' Pulling all recent giveaways');
       feed.postFeed(true);
     }
     if (cmd === 'pushpost') {
