@@ -63,6 +63,7 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 | pkgo | title, description, *image* | Pushes an embed with given title and description to 2 designated channels. Markup accepted. Title, description, and image must be separated by `<br>`, image is optional. Can use custom Pokemon Go emojis from other servers using `<rarecandy>` and `<egg>` placeholders. |
 | pkgo2 | Same as `!pkgo` but only posts to the main server. |
 | pushpost | urls \| post ids | Manual announcement of new subreddit post |
+| standby | [ instance name ] | Tells [instance] to standby | 
 
 
 [< Return to the ReadMe main page](./README.MD)

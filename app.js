@@ -22,7 +22,6 @@ const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
 const mori = require('./ref/dialogue.json');
-const pokeJobs = require('./ref/pokejobs.json');
 let setStandby = false;
 
 /* RNG: random number generator */
@@ -593,35 +592,12 @@ client.on('message', message => {
           });
         });
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
-    cmdArg = cmdArg.replace(/[?!]/g, '');
-    cmdArg = cmdArg.toLowerCase();
-    let msg = pokeJobs[cmdArg];
-    if (!msg) {
-      msg = '';
-      let count = 0;
-      let keyLowerCase;
-      for (var key in pokeJobs) {
-        keyLowerCase = key.toLowerCase();
-        if (keyLowerCase.includes(cmdArg)) {
-          if (count < 3) {
-            msg += `**${key}**\n${pokeJobs[key]}\n`;
-          }
-          count++;
-        }
-      }
-      if (msg === '') {
-        msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
-      }
-      if (count > 3) {
-        msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
-      }
-    }
-    message.channel.send(msg); 
+    dex.checkPokeJobs(cmdArg, message);
   } else if (cmd === 'nature') {
-    cmdArg = dex.capitalize(cmdArg);
-    let statEffect = mori.natures[cmdArg];
+    stringInput = dex.capitalize(stringInput);
+    let statEffect = mori.natures[stringInput];
     if (statEffect.length > 0) {
-      message.channel.send(`${cmdArg}: +${mori.natures[cmdArg][0]}, -${mori.natures[cmdArg][1]}`);
+      message.channel.send(`${stringInput}: +${mori.natures[stringInput][0]}, -${mori.natures[stringInput][1]}`);
     } else {
       message.channel.send('Ummm, say what?');
     }
