@@ -359,34 +359,10 @@ client.on('message', message => {
     }, 120000);
   } else if (cmd === 'time') {
     if (!arg[1]) {
-      message.channel.send(`For yourself...? Try reading the timestamp next to your message.`);
+      message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    let location = mori.timeZones[cmdArg.toLowerCase()];
-    if (location) { 
-      watch.timezoneCheck(location, message); 
-      return;
-    } 
-    let userID;
-    let query = 'userid';
-    if (message.mentions.users.size) {
-      userID = message.mentions.users.first().id;
-      userID = userID.toString();
-    } else {
-      userID = cmdArg.toLowerCase();
-      query = 'reddit';
-    }
-    db.Member.findOne({[query]: userID}, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send('Sorry, nobody matches this in my database.')
-      } else if (!data.timezone) {
-        message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
-      } else {
-        location = data.timezone;
-        watch.timezoneCheck(location, message);
-      }
-    })
+    watch.timeCLI(cmdArg, message);
   } else if (cmd === 'reddit') {
     let query, userIDorName;
     if (message.mentions.users.size) {
