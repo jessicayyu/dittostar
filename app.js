@@ -22,7 +22,6 @@ const watch = require('./watchers.js');
 var cooldown = new Set();
 var swear = {};
 const mori = require('./ref/dialogue.json');
-const pokeJobs = require('./ref/pokejobs.json');
 let setStandby = false;
 
 /* RNG: random number generator */
@@ -298,26 +297,11 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      role = "657365039979692032";
-      let index;
-      let star = '';
-      if (Number(arg[1])) {
-        index = prefix.length + cmd.length + 3;
-        star = arg[1] + '★ ';
-      } else {
-        index = prefix.length + cmd.length + 1;
-      }
-      message.guild.roles.get(role).setMentionable(true)
-        .then(() => {
-          message.channel.send('<@&' + role + '> ' + star + message.content.slice(index))
-            .then(() => {
-              message.guild.roles.get(role).setMentionable(false);
-            });
-          cooldown.add(message.author.id);
-          setTimeout(() => {
-            cooldown.delete(message.author.id);
-          }, 15000);
-        });
+      watch.pingRaidRoleCLI(message);
+      cooldown.add(message.author.id);
+      setTimeout(() => {
+        cooldown.delete(message.author.id);
+      }, 15000);
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
@@ -360,34 +344,10 @@ client.on('message', message => {
     }, 120000);
   } else if (cmd === 'time') {
     if (!arg[1]) {
-      message.channel.send(`For yourself...? Try reading the timestamp next to your message.`);
+      message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    let location = mori.timeZones[cmdArg.toLowerCase()];
-    if (location) { 
-      watch.timezoneCheck(location, message); 
-      return;
-    } 
-    let userID;
-    let query = 'userid';
-    if (message.mentions.users.size) {
-      userID = message.mentions.users.first().id;
-      userID = userID.toString();
-    } else {
-      userID = cmdArg.toLowerCase();
-      query = 'reddit';
-    }
-    db.Member.findOne({[query]: userID}, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send('Sorry, nobody matches this in my database.')
-      } else if (!data.timezone) {
-        message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
-      } else {
-        location = data.timezone;
-        watch.timezoneCheck(location, message);
-      }
-    })
+    watch.timeCLI(cmdArg, message);
   } else if (cmd === 'reddit') {
     let query, userIDorName;
     if (message.mentions.users.size) {
@@ -593,35 +553,12 @@ client.on('message', message => {
           });
         });
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
-    cmdArg = cmdArg.replace(/[?!]/g, '');
-    cmdArg = cmdArg.toLowerCase();
-    let msg = pokeJobs[cmdArg];
-    if (!msg) {
-      msg = '';
-      let count = 0;
-      let keyLowerCase;
-      for (var key in pokeJobs) {
-        keyLowerCase = key.toLowerCase();
-        if (keyLowerCase.includes(cmdArg)) {
-          if (count < 3) {
-            msg += `**${key}**\n${pokeJobs[key]}\n`;
-          }
-          count++;
-        }
-      }
-      if (msg === '') {
-        msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
-      }
-      if (count > 3) {
-        msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
-      }
-    }
-    message.channel.send(msg); 
+    dex.checkPokeJobs(cmdArg, message);
   } else if (cmd === 'nature') {
-    cmdArg = dex.capitalize(cmdArg);
-    let statEffect = mori.natures[cmdArg];
+    stringInput = dex.capitalize(stringInput);
+    let statEffect = mori.natures[stringInput];
     if (statEffect.length > 0) {
-      message.channel.send(`${cmdArg}: +${mori.natures[cmdArg][0]}, -${mori.natures[cmdArg][1]}`);
+      message.channel.send(`${stringInput}: +${mori.natures[stringInput][0]}, -${mori.natures[stringInput][1]}`);
     } else {
       message.channel.send('Ummm, say what?');
     }

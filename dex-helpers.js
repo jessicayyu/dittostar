@@ -1,4 +1,5 @@
 const { getTypeWeaknesses } = require('poke-types');
+const pokeJobs = require('./ref/pokejobs.json');
 
 const capitalize = function(inputText) {
   //  input can be array or string
@@ -95,6 +96,8 @@ const multiFormTypes = function(dexResult) {
 };
 
 const checkGalarDex = function(pokemonObj) {
+  // check if Pokemon object shows they are in the Galardex
+  // returns boolean  
   for (let i = 0; i < pokemonObj.length; i++) {
     if (pokemonObj[i].localId) {
       return true;
@@ -103,10 +106,38 @@ const checkGalarDex = function(pokemonObj) {
   return false;
 };
 
+const checkPokeJobs = function(stringInput, message) {
+  stringInput = stringInput.replace(/[?!]/g, '');
+  stringInput = stringInput.toLowerCase();
+  let msg = pokeJobs[stringInput];
+  if (!msg) {
+    msg = '';
+    let count = 0;
+    let keyLowerCase;
+    for (var key in pokeJobs) {
+      keyLowerCase = key.toLowerCase();
+      if (keyLowerCase.includes(stringInput)) {
+        if (count < 3) {
+          msg += `**${key}**\n${pokeJobs[key]}\n`;
+        }
+        count++;
+      }
+    }
+    if (msg === '') {
+      msg = "Uhh, I dunno that PokeJobs description. Just give me the exact title, no typos please."
+    }
+    if (count > 3) {
+      msg += `. . . **and ${count - 3} more** Pokejobs match the description you gave me. Maybe you should try a longer search term.`;
+    }
+  }
+  message.channel.send(msg); 
+};
+
 module.exports = {
   capitalize: capitalize,
   formatTypeOutput: formatTypeOutput, 
   checkDexForms: checkDexForms,
   multiFormTypes: multiFormTypes,
-  checkGalarDex: checkGalarDex
+  checkGalarDex: checkGalarDex,
+  checkPokeJobs: checkPokeJobs
 };
