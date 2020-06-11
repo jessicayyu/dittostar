@@ -44,6 +44,14 @@ const statusFunction = function () {
 const statusDisplay = statusFunction();
 setInterval(statusDisplay, configJSON.statusRefresh * 60000);
 
+const setCooldown = function(user, seconds) {
+  let duration = seconds * 1000;
+  cooldown.add(user);
+  setTimeout(() => {
+    cooldown.delete(user);
+  }, duration);
+};
+
 if (configJSON.runFeedInApp) {
   setInterval(feed.modmailFeed, 180000);
   setInterval(feed.postFeed, 90000);
@@ -298,10 +306,7 @@ client.on('message', message => {
         return
       }
       watch.pingRaidRoleCLI(message);
-      cooldown.add(message.author.id);
-      setTimeout(() => {
-        cooldown.delete(message.author.id);
-      }, 15000);
+      setCooldown(message.author.id, 15);
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
