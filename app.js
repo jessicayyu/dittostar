@@ -297,26 +297,11 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      role = "657365039979692032";
-      let index;
-      let star = '';
-      if (Number(arg[1])) {
-        index = prefix.length + cmd.length + 3;
-        star = arg[1] + '★ ';
-      } else {
-        index = prefix.length + cmd.length + 1;
-      }
-      message.guild.roles.get(role).setMentionable(true)
-        .then(() => {
-          message.channel.send('<@&' + role + '> ' + star + message.content.slice(index))
-            .then(() => {
-              message.guild.roles.get(role).setMentionable(false);
-            });
-          cooldown.add(message.author.id);
-          setTimeout(() => {
-            cooldown.delete(message.author.id);
-          }, 15000);
-        });
+      watch.pingRaidRoleCLI(message);
+      cooldown.add(message.author.id);
+      setTimeout(() => {
+        cooldown.delete(message.author.id);
+      }, 15000);
     }
   } else if (cmd === 'role') {
     /* role assignment commands */

@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { pokeGuild } = require('./config.json');
+const { pokeGuild, prefix } = require('./config.json');
 const axios = require('axios');
 const moment = require('moment');
 moment().format();
@@ -164,6 +164,30 @@ var timeCLI = function(commandText, message) {
     })
 };
 
+const pingRaidRoleCLI = function(message) {
+/*  !raid command - pings the @raid role with info about a raid.
+    param message: the message object from Discord
+*/
+  let role = "657365039979692032";
+  let index;
+  let star = '';
+  let cmd = 'raid';
+  var arg = message.content.slice(1).split(/ +/);
+  if (Number(arg[1])) {
+    index = prefix.length + cmd.length + 3;
+    star = arg[1] + '★ ';
+  } else {
+    index = prefix.length + cmd.length + 1;
+  }
+  message.guild.roles.get(role).setMentionable(true)
+    .then(() => {
+      message.channel.send('<@&' + role + '> ' + star + message.content.slice(index))
+        .then(() => {
+          message.guild.roles.get(role).setMentionable(false);
+        });
+    });
+};
+
 module.exports = {
   checkKeywords: checkKeywords,
   checkKeywordsRegex: checkKeywordsRegex,
@@ -172,4 +196,5 @@ module.exports = {
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
   timeCLI: timeCLI,
+  pingRaidRoleCLI: pingRaidRoleCLI
 };
