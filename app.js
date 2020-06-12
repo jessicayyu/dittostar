@@ -354,28 +354,7 @@ client.on('message', message => {
     }
     watch.timeCLI(cmdArg, message);
   } else if (cmd === 'reddit') {
-    let query, userIDorName;
-    if (message.mentions.users.size) {
-      userIDorName = message.mentions.users.first().id;
-      userIDorName = userIDorName.toString();
-      query = 'userid'
-    } else {
-      userIDorName = message.content.slice(prefix.length + cmd.length + 1);
-      userIDorName = userIDorName.toLowerCase();
-      query = 'reddit';
-    }
-    db.Member.findOne({ [query]: userIDorName}, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send('Sorry, nobody matches this in my database.');
-        return;
-      }
-      if (!data.userid || !data.reddit) {
-        message.channel.send('Well, I know the person, but they didn\'t register that info with me.')
-        return;
-      }
-      message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
-    });
+    watch.redditCLI(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     var form;
     let formCode = '';
