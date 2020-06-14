@@ -134,14 +134,7 @@ const postLinkClasses = Object.keys(postColors);
 var checkPosts = function() {
   var options = { limit:5, sort: "new"};
   var last;
-  return function(bool = false) {
-    if (bool) {
-      options = { limit: 10, sort: "new"};
-      last = "0";
-      setTimeout(() => {
-        options.limit = 5;
-      }, 3000);
-    }
+  return function() {
     r.getNew(subreddit, options)
       .then((posts) => {
         if (!last) {

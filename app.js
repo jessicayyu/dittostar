@@ -171,9 +171,13 @@ client.on('message', message => {
         }
         msg = resTable[rand(int)];
       } else {
-        int = rand(resTable.length * 2);
+        let rate = 2;
+        if (message.guild.id === theCompany) {
+          rate = 8;
+        }
+        int = rand(resTable.length * rate);
         if (int === 0) {
-          int = rand(resTable.lenth * 2);
+          int = rand(resTable.lenth * rate);
         }
       }
       msg = resTable[int];
@@ -317,7 +321,7 @@ client.on('message', message => {
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'loadga' || cmd === 'pushpost') {
+  } else if (cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -327,10 +331,6 @@ client.on('message', message => {
       message.channel.send('Hey, slow down, please.');
       console.log('cooldown ' + cmd);
       return;
-    }
-    if (cmd === 'loadga') {
-      console.log(moment().format("h:mm:ssA") + ' Pulling all recent giveaways');
-      feed.postFeed(true);
     }
     if (cmd === 'pushpost') {
       if (cmdArg.includes('.com')) {
