@@ -1,5 +1,9 @@
 const { getTypeWeaknesses } = require('poke-types');
+const Pokedex = require('pokedex.js');
+const pokedex = new Pokedex('en');
+const axios = require('axios');
 const pokeJobs = require('./ref/pokejobs.json');
+const prefix = require('./config.json');
 
 const capitalize = function(inputText) {
   //  input can be array or string
@@ -19,6 +23,22 @@ const capitalize = function(inputText) {
   });
   temp = temp.join(' ');
   return temp;
+};
+
+const queryPokedex = function(input) {
+  /*  Queries pokedexJS for Pokemon info
+      @param input: string
+      Output: pkmn object
+  */
+  let pkmn;
+  if (Number(input)) { 
+    pkmn = pokedex.id(Number(input)).get();
+  } else {
+    input = capitalize(input);
+    pkmn = pokedex.name(input).get();
+  }
+  pkmn = JSON.parse(pkmn);
+  return pkmn;
 };
 
 const formatTypeOutput = function(typeResults) {
@@ -135,9 +155,10 @@ const checkPokeJobs = function(stringInput, message) {
 
 module.exports = {
   capitalize: capitalize,
+  queryPokedex, queryPokedex,
   formatTypeOutput: formatTypeOutput, 
   checkDexForms: checkDexForms,
   multiFormTypes: multiFormTypes,
   checkGalarDex: checkGalarDex,
-  checkPokeJobs: checkPokeJobs
+  checkPokeJobs: checkPokeJobs,
 };
