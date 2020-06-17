@@ -310,7 +310,7 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      watch.pingRaidRoleCLI(message);
+      cli.pingRaidRole(arg, message);
       setCooldown(message.author.id, 15);
     }
   } else if (cmd === 'role') {
@@ -353,9 +353,9 @@ client.on('message', message => {
       message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    watch.timeCLI(cmdArg, message);
+    cli.timeCmd(cmdArg, message);
   } else if (cmd === 'reddit') {
-    watch.redditCLI(message);
+    cli.redditCmd(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     cli.numDexSprite(cmd, arg, cmdArg, message);
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
