@@ -19,6 +19,7 @@ const readline = require('readline');
 
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
+const cli = require('./commandline.js');
 var cooldown = new Set();
 var swear = {};
 const mori = require('./ref/dialogue.json');
@@ -43,6 +44,14 @@ const statusFunction = function () {
 }
 const statusDisplay = statusFunction();
 setInterval(statusDisplay, configJSON.statusRefresh * 60000);
+
+const setCooldown = function(user, seconds) {
+  let duration = seconds * 1000;
+  cooldown.add(user);
+  setTimeout(() => {
+    cooldown.delete(user);
+  }, duration);
+};
 
 if (configJSON.runFeedInApp) {
   setInterval(feed.modmailFeed, 180000);
@@ -163,9 +172,13 @@ client.on('message', message => {
         }
         msg = resTable[rand(int)];
       } else {
-        int = rand(resTable.length * 2);
+        let rate = 2;
+        if (message.guild.id === theCompany) {
+          rate = 8;
+        }
+        int = rand(resTable.length * rate);
         if (int === 0) {
-          int = rand(resTable.lenth * 2);
+          int = rand(resTable.lenth * rate);
         }
       }
       msg = resTable[int];
@@ -297,11 +310,8 @@ client.on('message', message => {
       if (message.guild.id !== pokeGuild) {
         return
       }
-      watch.pingRaidRoleCLI(message);
-      cooldown.add(message.author.id);
-      setTimeout(() => {
-        cooldown.delete(message.author.id);
-      }, 15000);
+      cli.pingRaidRole(arg, message);
+      setCooldown(message.author.id, 15);
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
@@ -312,7 +322,7 @@ client.on('message', message => {
       let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
-  } else if (cmd === 'loadga' || cmd === 'pushpost') {
+  } else if (cmd === 'pushpost') {
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -322,10 +332,6 @@ client.on('message', message => {
       message.channel.send('Hey, slow down, please.');
       console.log('cooldown ' + cmd);
       return;
-    }
-    if (cmd === 'loadga') {
-      console.log(moment().format("h:mm:ssA") + ' Pulling all recent giveaways');
-      feed.postFeed(true);
     }
     if (cmd === 'pushpost') {
       if (cmdArg.includes('.com')) {
@@ -347,114 +353,11 @@ client.on('message', message => {
       message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    watch.timeCLI(cmdArg, message);
+    cli.timeCmd(cmdArg, message);
   } else if (cmd === 'reddit') {
-    let query, userIDorName;
-    if (message.mentions.users.size) {
-      userIDorName = message.mentions.users.first().id;
-      userIDorName = userIDorName.toString();
-      query = 'userid'
-    } else {
-      userIDorName = message.content.slice(prefix.length + cmd.length + 1);
-      userIDorName = userIDorName.toLowerCase();
-      query = 'reddit';
-    }
-    db.Member.findOne({ [query]: userIDorName}, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send('Sorry, nobody matches this in my database.');
-        return;
-      }
-      if (!data.userid || !data.reddit) {
-        message.channel.send('Well, I know the person, but they didn\'t register that info with me.')
-        return;
-      }
-      message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
-    });
+    cli.redditCmd(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
-    var form;
-    let formCode = '';
-    if (arg[2] && (cmd === 'sprite' || cmd === 'shiny')) {
-      cmdArg = arg[2].toLowerCase();
-      let spaceInName = watch.checkKeywords(message.content,['mime', 'rime', 'tapu', 'type']);        
-      if (spaceInName) {
-        cmdArg = arg[arg.length-2] + " " + arg[arg.length-1];
-      }
-      // evaluate if there's a form name
-      if ((!spaceInName && arg.length === 3) || arg.length === 4) {
-        form = arg[1].toLowerCase();
-        if (form.includes('galar') || form.includes('alola')) {
-          formCode = form.includes('galar') ? '-g' : '-a';
-          if (cmdArg === 'pikachu') { formCode = ''; }
-        }
-        if (form === 'female') { 
-          formCode = '-f';
-        }
-        if (form.startsWith('crown')) { formCode = '-c' }
-        if (cmdArg === 'nidoran') { 
-          cmdArg = form === 'female'? 29 : 32;
-          formCode = '';
-        }
-        if (cmdArg === 'rotom') {
-          const rotom = {
-            heat: '-h',
-            wash: '-w',
-            frost: '-f',
-            fan: '-s',
-            mow: '-m',
-            normal: ''
-          };
-          formCode = rotom[form];
-        }
-      }
-    }
-    let pkmn, urlModifier, padNum;
-    // pokedex.js reference will need to be used for both image and dex commands
-    // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
-    if (Number(cmdArg)) { 
-      pkmn = pokedex.id(Number(cmdArg)).get();
-    } else {
-      cmdArg = dex.capitalize(cmdArg);
-      if (cmdArg === 'Nidoran') { 
-        cmdArg = 'Nidoranf';
-        message.channel.send('Looking up female Nidoran, Pokedex number 29. For male, please request male Nidoran, or number 32.');
-      }
-      pkmn = pokedex.name(cmdArg).get();
-    }
-    pkmn = JSON.parse(pkmn);
-    if (pkmn.length < 1) {
-      message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
-      return;
-    }
-    padNum = pkmn[0].id;
-    padNum = padNum.padStart(3, '0');
-    if (cmd === 'dex' || cmd === 'num') {
-      if (dex.checkGalarDex(pkmn)) {
-        let pkmnName = pkmn[0].name.split(' ').join('').toLowerCase();
-        let link = `https://www.serebii.net/pokedex-swsh/${pkmnName}/`;
-        if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-swsh/${pkmnName}/>`; }
-        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
-      } else {
-        let link = `https://www.serebii.net/pokedex-sm/${padNum}.shtml`;
-        if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-sm/${padNum}.shtml>`; }
-        message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
-      }
-    } else if (cmd === 'shiny' || cmd === 'sprite') {
-      if (dex.checkGalarDex(pkmn)) {
-        if (cmd === 'shiny') { urlModifier = 'Shiny/SWSH'; }
-        if (cmd === 'sprite') { urlModifier = 'swordshield/pokemon'; }
-      } else {
-        if (cmd === 'shiny') { urlModifier = 'Shiny/SM'; }
-        if (cmd === 'sprite') { urlModifier = 'sunmoon/pokemon'; }
-      }
-      let url = `https://www.serebii.net/${urlModifier}/${padNum}${formCode}.png`;
-      axios.get(url)
-        .then((res) => { message.channel.send(url); })
-        .catch((error) => {
-          message.channel.send('Sorry, not finding anything for that.');
-          console.log(error.response.status);
-        });
-    } 
+    cli.numDexSprite(cmd, arg, cmdArg, message);
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
     let pkdexTypeRes;
     arg.shift();

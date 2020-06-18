@@ -3,9 +3,7 @@ const { pokeGuild, prefix } = require('./config.json');
 const axios = require('axios');
 const moment = require('moment');
 moment().format();
-const db = require('./db.js');
 const mori = require('./ref/dialogue.json');
-const dex = require('./dex-helpers');
 
 // Helper functions. 
 // User-facing functions used in the command line interface of the bot are locationed in the bottom section.
@@ -132,61 +130,7 @@ var timezoneCheck = function (location, message) {
 
 // Command line interface functions - CLI
 
-var timeCLI = function(commandText, message) {
-/*  Sends Discord message the local time of a specific time zone city, or of a user.
-    param commandText: string, the parameters given after the command `time` is used.
-    param message: the message object from Discord
-*/  
-  let location = mori.timeZones[commandText.toLowerCase()];
-    if (location) { 
-      timezoneCheck(location, message); 
-      return;
-    } 
-    let userID;
-    let query = 'userid';
-    if (message.mentions.users.size) {
-      userID = message.mentions.users.first().id;
-      userID = userID.toString();
-    } else {
-      userID = commandText.toLowerCase();
-      query = 'reddit';
-    }
-    db.Member.findOne({[query]: userID}, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send('Sorry, nobody matches this in my database.')
-      } else if (!data.timezone) {
-        message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
-      } else {
-        location = data.timezone;
-        timezoneCheck(location, message);
-      }
-    })
-};
 
-const pingRaidRoleCLI = function(message) {
-/*  !raid command - pings the @raid role with info about a raid.
-    param message: the message object from Discord
-*/
-  let role = "657365039979692032";
-  let index;
-  let star = '';
-  let cmd = 'raid';
-  var arg = message.content.slice(1).split(/ +/);
-  if (Number(arg[1])) {
-    index = prefix.length + cmd.length + 3;
-    star = arg[1] + '★ ';
-  } else {
-    index = prefix.length + cmd.length + 1;
-  }
-  message.guild.roles.get(role).setMentionable(true)
-    .then(() => {
-      message.channel.send('<@&' + role + '> ' + star + message.content.slice(index))
-        .then(() => {
-          message.guild.roles.get(role).setMentionable(false);
-        });
-    });
-};
 
 module.exports = {
   checkKeywords: checkKeywords,
@@ -195,6 +139,4 @@ module.exports = {
   toggleRole: toggleRole,
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
-  timeCLI: timeCLI,
-  pingRaidRoleCLI: pingRaidRoleCLI
 };
