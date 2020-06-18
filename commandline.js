@@ -197,6 +197,7 @@ const redditCmd = function(message) {
 };
 
 module.exports = {
+  formParse: formParse,
   numDexSprite: numDexSprite,
   redditCmd: redditCmd,
   timeCmd: timeCmd,
