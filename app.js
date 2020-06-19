@@ -596,17 +596,18 @@ client.on('message', message => {
 /* Raid emoji assignment */
 const raidEmojiAssignment = function(reaction, user) {
   if (reaction.message.id ==='658214917027004436') {
+    let member, roleResult;
     if (reaction.emoji.name === 'gmax') {
-      let member = reaction.message.channel.guild.members.get(user.id);
-      let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
+      member = reaction.message.channel.guild.members.get(user.id);
+      roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
     }
     if (reaction.emoji.name === '💝') {
-      let member = reaction.message.channel.guild.members.get(user.id);
-      let roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
+      member = reaction.message.channel.guild.members.get(user.id);
+      roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
     }
     if (reaction.emoji.name === 'moonball') {
-      let member = reaction.message.channel.guild.members.get(user.id);
-      let roleResult = watch.toggleRole('apriballs', reaction.message.channel.guild, member);
+      member = reaction.message.channel.guild.members.get(user.id);
+      roleResult = watch.toggleRole('apriballs', reaction.message.channel.guild, member);
     }
     if (reaction.emoji.name === 'gmax' || reaction.emoji.name === '💝' || reaction.emoji.name === 'moonball') {
       let botCommandsChannel = client.channels.get('423705492225916929');
