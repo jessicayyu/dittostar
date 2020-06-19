@@ -513,7 +513,7 @@ client.on('message', message => {
   } else if (cmd === 'ftoc' || cmd === 'ctof') { 
     let num = cli.convert(cmd, arg[1]);
     let unit = cmd === 'ftoc' ? 'C' : 'F';
-    message.channel.send(`That\'s ${num}°${unit}`);
+    message.channel.send(`That would be ${num}°${unit}.`);
   } else if (cmd === 'help') {
     const commandDex = mori.commandDex;
     const commandDexDetail = mori.commandDexDetail;
@@ -605,6 +605,12 @@ const raidEmojiAssignment = function(reaction, user) {
     if (reaction.emoji.name === '💝') {
       let member = reaction.message.channel.guild.members.get(user.id);
       let roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('423705492225916929');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
+    if (reaction.emoji.name === 'moonball') {
+      let member = reaction.message.channel.guild.members.get(user.id);
+      let roleResult = watch.toggleRole('apriballs', reaction.message.channel.guild, member);
       let botCommandsChannel = client.channels.get('423705492225916929');
       botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
     }
