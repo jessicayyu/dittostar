@@ -510,6 +510,10 @@ client.on('message', message => {
     if (symbols[cmdArg]) {
       message.channel.send(symbols[cmdArg]);
     }
+  } else if (cmd === 'ftoc' || cmd === 'ctof') { 
+    let num = cli.convert(cmd, arg[1]);
+    let unit = cmd === 'ftoc' ? 'C' : 'F';
+    message.channel.send(`That\'s ${num}°${unit}`);
   } else if (cmd === 'help') {
     const commandDex = mori.commandDex;
     const commandDexDetail = mori.commandDexDetail;

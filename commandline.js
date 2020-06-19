@@ -89,10 +89,12 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
       let link = `https://www.serebii.net/pokedex-swsh/${pkmnName}/`;
       if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-swsh/${pkmnName}/>`; }
       message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
+      return `#${pkmn[0].id} ${pkmn[0].name}: ${link}`;
     } else {
       let link = `https://www.serebii.net/pokedex-sm/${padNum}.shtml`;
       if (cmd === 'num') { link = `<https://www.serebii.net/pokedex-sm/${padNum}.shtml>`; }
       message.channel.send(`#${pkmn[0].id} ${pkmn[0].name}: ${link}`);
+      return `#${pkmn[0].id} ${pkmn[0].name}: ${link}`;
     }
   } else if (cmd === 'shiny' || cmd === 'sprite') {
     if (dex.checkGalarDex(pkmn)) {
@@ -196,10 +198,27 @@ const redditCmd = function(message) {
   });
 };
 
+const convert = function (direction, number) {
+  /*  Converts temperature from Celsius to Fahrenheit
+      @param direction: string, determines what the conversion is.
+      @param number: string, determines what to convert. 
+  */
+  let output;
+  number = Number(number);
+  if (direction === 'ftoc') {
+    output = (number - 32) / 1.8;
+  }
+  if (direction === 'ctof') {
+    output = number * 1.8 + 32;
+  }
+  return output.toString();
+};
+
 module.exports = {
   formParse: formParse,
   numDexSprite: numDexSprite,
   redditCmd: redditCmd,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
+  convert: convert,
 };

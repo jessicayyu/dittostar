@@ -1,7 +1,8 @@
 var assert = require('assert');
+var expect = require('chai').expect;
 const cli = require('../commandline.js');
 
-describe('Pokedex commands', function () {
+describe('formParse helper commands', function () {
   describe('formParse: Galarian Meowth', function () {
     let obj = { form: 'galar', formCode: '-g' };
     let result = cli.formParse(['sprite', 'Galar', 'Meowth'], 'Galar Meowth');
@@ -31,6 +32,67 @@ describe('Pokedex commands', function () {
     let result = cli.formParse(['sprite', 'male', 'Meowstic'], 'maLe MeOwsTic');
     it('should return the correct obj', function() {
       assert.deepStrictEqual(result, obj);
+    });
+  });
+}); 
+
+describe('Pokedex commands', function () {
+  let stub = { 
+    channel: {
+      send: function(text) { console.log(text); }
+    }
+   };
+  describe('!num Gyarados', function () {
+    let expected = '#130 Gyarados: <https://www.serebii.net/pokedex-swsh/gyarados/>';
+    let result = cli.numDexSprite('num', ['num', 'Gyarados'], 'Gyarados', stub);
+    it('should return the correct link', function() {
+      assert.deepStrictEqual(result, expected);
+    });
+  });
+
+  describe(`!dex Farfetch'd`, function () {
+    let expected = `#83 Farfetch'd: https://www.serebii.net/pokedex-swsh/farfetch'd/`;
+    let result = cli.numDexSprite('dex', ['dex', `farfetch'd`], `farfetch'd`, stub);
+    it('should return the correct link', function() {
+      expect(result).to.equal(expected);
+    });
+  });
+
+  describe('!dex maReep', function () {
+    let expected = `#179 Mareep: https://www.serebii.net/pokedex-sm/179.shtml`;
+    let result = cli.numDexSprite('dex', ['dex', 'mareep'], 'mareep', stub);
+    it('should return the correct link', function() {
+      expect(result).to.equal(expected);
+    });
+  });
+}); 
+
+describe('Temperature conversions', function () {
+  describe('68°F', function () {
+    let result = cli.convert('ftoc', '68');
+    it('should return the correct temperature', function() {
+      expect(result).to.equal('20');
+    });
+  });
+
+  describe('-40°F', function () {
+    let result = cli.convert('ftoc', '-40');
+    it('should return the correct temperature', function() {
+      expect(result).to.equal('-40');
+    });
+  });
+
+  describe('20°C', function () {
+    let result = cli.convert('ctof', '20');
+    it('should return the correct temperature', function() {
+      expect(result).to.equal('68');
+    });
+  });
+
+  describe('0°C', function () {
+    let result = cli.convert('ctof', '0');
+    it('should return the correct temperature', function() {
+      expect(result).to.equal('32');
     });
   });
 }); 
