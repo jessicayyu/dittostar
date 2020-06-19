@@ -198,10 +198,27 @@ const redditCmd = function(message) {
   });
 };
 
+const convert = function (direction, number) {
+  /*  Converts temperature from Celsius to Fahrenheit
+      @param direction: string, determines what the conversion is.
+      @param number: string, determines what to convert. 
+  */
+  let output;
+  number = Number(number);
+  if (direction === 'ftoc') {
+    output = (number - 32) / 1.8;
+  }
+  if (direction === 'ctof') {
+    output = number * 1.8 + 32;
+  }
+  return output.toString();
+};
+
 module.exports = {
   formParse: formParse,
   numDexSprite: numDexSprite,
   redditCmd: redditCmd,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
+  convert: convert,
 };
