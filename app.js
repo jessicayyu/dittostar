@@ -315,7 +315,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo') {
+    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo' || arg[1] === 'spoilers') {
       if (message.guild.id !== pokeGuild) {
         return
       }
