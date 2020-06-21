@@ -611,47 +611,34 @@ client.on('raw', packet => {
 });
 
 /* Raid emoji assignment */
-const raidEmojiAssignment = function(reaction, user) {
-  if (reaction.message.id ==='658214917027004436') {
+const emojiRoleAssignment = function(reaction, user) {
+  const { pkgaEmojiRoles, tamaEmojiRoles } = configJSON;
+  function emojiAssignLogic(roleList, outputChannel) {
     let member, roleResult;
-    if (reaction.emoji.name === 'gmax') {
-      member = reaction.message.channel.guild.members.get(user.id);
-      roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-    }
-    if (reaction.emoji.name === '💝') {
-      member = reaction.message.channel.guild.members.get(user.id);
-      roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
-    }
-    if (reaction.emoji.name === 'moonball') {
-      member = reaction.message.channel.guild.members.get(user.id);
-      roleResult = watch.toggleRole('apriballs', reaction.message.channel.guild, member);
-    }
-    if (reaction.emoji.name === 'gmax' || reaction.emoji.name === '💝' || reaction.emoji.name === 'moonball') {
-      let botCommandsChannel = client.channels.get('423705492225916929');
-      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
-    }
-  }
-  if (reaction.message.id === '724063851351638016') {
-    let member, roleResult;
-    let { tamaEmojiRoles } = configJSON;
-    let role = tamaEmojiRoles[reaction.emoji.name];
+    let role = roleList[reaction.emoji.name];
     if (role) {
       member = reaction.message.channel.guild.members.get(user.id);
       roleResult = watch.toggleRole(role, reaction.message.channel.guild, member);
-      let botCommandsChannel = client.channels.get('723922820282843185');
+      let botCommandsChannel = client.channels.get(outputChannel);
       botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
     }
+  }
+  if (reaction.message.id ==='658214917027004436') {
+    emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
+  }
+  if (reaction.message.id === '724063851351638016') {
+    emojiAssignLogic(tamaEmojiRoles, '423705492225916929');
   }
 };
 
 client.on('messageReactionAdd', (reaction, user) => {
   if (setStandby === true) { return; }
-  raidEmojiAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user);
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
   if (setStandby === true) { return; }
-  raidEmojiAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user);
 });
 
 
