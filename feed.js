@@ -35,15 +35,22 @@ var feedChannel;
 
 client.on('error', console.error);
 
+const cacheMessage = function(channelID, msgID) {
+  let targetChannel = client.channels.get(channelID);
+  targetChannel.fetchMessages({around: msgID, limit: 1})
+    .catch(console.error);
+};
+
 client.on('ready', () => {
   let timeStart = startupTimer();
   console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
   testingChannel = getChannel('423338578597380106');
   mainChannel = getChannel('232062367951749121');
   feedChannel = getChannel('690017722821640199');
-  let emojiChannel = client.channels.get('399407103959236618');
-  emojiChannel.fetchMessages({around: '658214917027004436', limit: 1})
-    .catch(console.error);
+  // pokeGuild cache
+  cacheMessage('399407103959236618', '658214917027004436');
+  // tamaGuild cache
+  cacheMessage('723922819859218546', '724063851351638016');
   modmailFeed();
   postFeed();
   commentFeed();

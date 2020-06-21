@@ -631,6 +631,17 @@ const raidEmojiAssignment = function(reaction, user) {
       botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
     }
   }
+  if (reaction.message.id === '724063851351638016') {
+    let member, roleResult;
+    let { tamaEmojiRoles } = configJSON;
+    let role = tamaEmojiRoles[reaction.emoji.name];
+    if (role) {
+      member = reaction.message.channel.guild.members.get(user.id);
+      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get('723922820282843185');
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
+  }
 };
 
 client.on('messageReactionAdd', (reaction, user) => {

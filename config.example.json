@@ -6,7 +6,20 @@
   "discordInvite": "inviteCodeHere",
   "pokeGuild": "guildID",
   "theCompany": "guildID",
-  "mongoURI": "URI",
+  "mongoURI": "mongodb://127.0.0.1:27017/ditto",
   "runFeedInApp": true,
-  "statusRefresh": 5
+  "statusRefresh": 5,
+  "pkgaEmojiRoles": {
+    "gmax": "raid",
+    "💝": "giveaways",
+    "moonball": "apriballs"
+  },
+  "tamaEmojiRoles": {
+    "🪔": "Fantasy Meets",
+    "hellokitty": "Sanrio Meets",
+    "🍬": "Sweets Meets",
+    "🧚": "Fairy On/Meets",
+    "🧹": "Magic On/Meets",
+    "tamagotchi": "Classic & Vintage"
+  }
 }
