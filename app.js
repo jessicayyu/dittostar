@@ -315,7 +315,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo') {
+    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo' || arg[1] === 'spoilers') {
       if (message.guild.id !== pokeGuild) {
         return
       }
@@ -323,6 +323,9 @@ client.on('message', message => {
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
   } else if (cmd === 'pushpost') {
+    if (message.guild.id !== pokeGuild) {
+      return;
+    }
     var findRole = message.member.roles.find(r => r.name === "Moderator");
     if (!findRole) {
       message.channel.send("I don't have to take orders from *you*.");
@@ -513,7 +516,7 @@ client.on('message', message => {
   } else if (cmd === 'ftoc' || cmd === 'ctof') { 
     let num = cli.convert(cmd, arg[1]);
     let unit = cmd === 'ftoc' ? 'C' : 'F';
-    message.channel.send(`That\'s ${num}°${unit}`);
+    message.channel.send(`That would be ${num}°${unit}.`);
   } else if (cmd === 'help') {
     const commandDex = mori.commandDex;
     const commandDexDetail = mori.commandDexDetail;
@@ -593,32 +596,49 @@ client.on('message', message => {
   } 
 });
 
+client.on('raw', packet => {
+  if (!['MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
+  const channel = client.channels.get(packet.d.channel_id);
+  channel.fetchMessage(packet.d.message_id).then(message => {
+    let reaction =  { 
+      emoji: packet.d.emoji,
+      message: message 
+    };
+    if (packet.t === 'MESSAGE_REACTION_REMOVE') {
+        client.emit('messageReactionRemove', reaction, client.users.get(packet.d.user_id));
+    }
+  });
+});
+
 /* Raid emoji assignment */
-const raidEmojiAssignment = function(reaction, user) {
+const emojiRoleAssignment = function(reaction, user) {
+  const { pkgaEmojiRoles, tamaEmojiRoles } = configJSON;
+  function emojiAssignLogic(roleList, outputChannel) {
+    let member, roleResult;
+    let role = roleList[reaction.emoji.name];
+    if (role) {
+      member = reaction.message.channel.guild.members.get(user.id);
+      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member);
+      let botCommandsChannel = client.channels.get(outputChannel);
+      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+    }
+  }
   if (reaction.message.id ==='658214917027004436') {
-    if (reaction.emoji.name === 'gmax') {
-      let member = reaction.message.channel.guild.members.get(user.id);
-      let roleResult = watch.toggleRole('raid', reaction.message.channel.guild, member);
-      let botCommandsChannel = client.channels.get('423705492225916929');
-      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
-    }
-    if (reaction.emoji.name === '💝') {
-      let member = reaction.message.channel.guild.members.get(user.id);
-      let roleResult = watch.toggleRole('giveaways', reaction.message.channel.guild, member);
-      let botCommandsChannel = client.channels.get('423705492225916929');
-      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
-    }
+    emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
+  }
+  if (reaction.message.id === '724063851351638016') {
+    emojiAssignLogic(tamaEmojiRoles, '423705492225916929');
   }
 };
 
 client.on('messageReactionAdd', (reaction, user) => {
   if (setStandby === true) { return; }
-  raidEmojiAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user);
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
   if (setStandby === true) { return; }
-  raidEmojiAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user);
 });
 
 
