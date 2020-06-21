@@ -596,6 +596,20 @@ client.on('message', message => {
   } 
 });
 
+client.on('raw', packet => {
+  if (!['MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
+  const channel = client.channels.get(packet.d.channel_id);
+  channel.fetchMessage(packet.d.message_id).then(message => {
+    let reaction =  { 
+      emoji: packet.d.emoji,
+      message: message 
+    };
+    if (packet.t === 'MESSAGE_REACTION_REMOVE') {
+        client.emit('messageReactionRemove', reaction, client.users.get(packet.d.user_id));
+    }
+  });
+});
+
 /* Raid emoji assignment */
 const raidEmojiAssignment = function(reaction, user) {
   if (reaction.message.id ==='658214917027004436') {
