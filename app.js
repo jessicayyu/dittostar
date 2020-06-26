@@ -87,6 +87,9 @@ const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /* Discord message responses */  
 client.on('message', message => {
+  function speak(text) {
+    message.channel.send(text);
+  }
   if (message.content.startsWith(prefix + 'standby')) {
     let arg = message.content.slice(1).split(/ +/);
     if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
@@ -356,7 +359,7 @@ client.on('message', message => {
       message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    cli.timeCmd(cmdArg, message);
+    cli.timeCmd(cmdArg, message, speak);
   } else if (cmd === 'reddit') {
     cli.redditCmd(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {

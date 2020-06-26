@@ -114,14 +114,14 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
   }
 };
 
-const timeCmd = function(commandText, message) {
+const timeCmd = function(commandText, message, callback) {
   /*  Sends Discord message the local time of a specific time zone city, or of a user.
       param commandText: string, the parameters given after the command `time` is used.
       param message: the message object from Discord
   */  
     let location = mori.timeZones[commandText.toLowerCase()];
       if (location) { 
-        watch.timezoneCheck(location, message); 
+        watch.timezoneCheck(location, message, callback); 
         return;
       } 
       let userID;
