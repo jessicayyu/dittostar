@@ -19,6 +19,8 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 |-|-|-|  
 | friendcode | [ *@user* ] | Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. |  
 | fc | [ *@user* ] | Same command as `friendcode` | Saves a friend code to be used in `!fc` |
+| ctof | *number* |  Converts the temperature from Celsius to Fahrenheit" | 
+| ftoc | *number* |  Converts the temperature from Fahrenheit to Celsius" | 
 | ga | [ *optional text* ] | Pings the people subscribed to @giveaways to announce a Discord-only giveaway, must have @giveawayaccess authorization |
 | ping | | Responds with `pong!` |
 | role | *raid* | Sets role to a specified role |  
