@@ -114,34 +114,34 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
   }
 };
 
-const timeCmd = function(commandText, message, callback) {
+const timeCmd = function(msg, callback) {
   /*  Sends Discord message the local time of a specific time zone city, or of a user.
-      param commandText: string, the parameters given after the command `time` is used.
+      param cmdParamsObj: object containing message parsing.
       param message: the message object from Discord
   */  
-    let location = mori.timeZones[commandText.toLowerCase()];
+    let location = mori.timeZones[msg.optionStr.toLowerCase()];
       if (location) { 
-        watch.timezoneCheck(location, message, callback); 
+        watch.timezoneCheck(location, callback); 
         return;
       } 
       let userID;
       let query = 'userid';
-      if (message.mentions.users.size) {
-        userID = message.mentions.users.first().id;
+      if (msg.mentions.users.size) {
+        userID = msg.mentions.users.first().id;
         userID = userID.toString();
       } else {
-        userID = commandText.toLowerCase();
+        userID = msg.optionStr.toLowerCase();
         query = 'reddit';
       }
       db.Member.findOne({[query]: userID}, function (err, data) {
         if (err) return console.error(err);
         if (!data) {
-          message.channel.send('Sorry, nobody matches this in my database.')
+          msg.channel.send('Sorry, nobody matches this in my database.')
         } else if (!data.timezone) {
-          message.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
+          msg.channel.send(`They haven't told me what their time zone is. Oh, and if I don't write it down, I won't remember.`);
         } else {
           location = data.timezone;
-          watch.timezoneCheck(location, message);
+          watch.timezoneCheck(location, callback);
         }
       })
   };

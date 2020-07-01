@@ -246,6 +246,14 @@ client.on('message', message => {
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+  const cmdParams = {
+    channel: message.channel,
+    author: message.author,
+    arg: arg,
+    cmd: arg[0],
+    optionStr: cmdArg,
+    mentions: message.mentions
+  };
   if (cmd === 'ping') {
     message.channel.send('pong!');
   } else if (cmd === 'fc' || cmd === 'friendcode') {
@@ -287,7 +295,7 @@ client.on('message', message => {
       db.writeField('reddit', textEntry.toLowerCase(), message).catch(console.error);
     }
     if (arg[1] === 'time') {
-      if (!arg[2]) {
+      if (!arg[2] || arg[2] === 'delete' || arg[2] === 'remove') {
         db.writeField('timezone', '', message);
         return;
       }
@@ -355,11 +363,12 @@ client.on('message', message => {
       cooldown.delete(message.author.id);
     }, 120000);
   } else if (cmd === 'time') {
+    /* time CLI */
     if (!arg[1]) {
       message.channel.send(`Checking the time for yourself...? Try reading the timestamp next to your message.`);
       return;
     }
-    cli.timeCmd(cmdArg, message, speak);
+    cli.timeCmd(cmdParams, speak);
   } else if (cmd === 'reddit') {
     cli.redditCmd(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
@@ -464,7 +473,7 @@ client.on('message', message => {
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     dex.checkPokeJobs(cmdArg, message);
   } else if (cmd === 'nature') {
-    stringInput = dex.capitalize(stringInput);
+    let stringInput = dex.capitalize(cmdParams.optionStr);
     let statEffect = mori.natures[stringInput];
     if (statEffect.length > 0) {
       message.channel.send(`${stringInput}: +${mori.natures[stringInput][0]}, -${mori.natures[stringInput][1]}`);
