@@ -12,6 +12,26 @@ function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
 
+const capitalize = function(inputText) {
+  //  input can be array or string
+  //  returns properly string with first letter of each word capitalized
+  let temp;
+  if (Array.isArray(inputText)) {
+    temp = inputText;
+  } else {
+    if (Number(inputText)) {
+      return inputText;
+    }
+    temp = inputText.split(' ');
+  }
+  temp.forEach((input, i) => {
+    let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
+    temp[i] = caseChange;
+  });
+  temp = temp.join(' ');
+  return temp;
+};
+
 var checkKeywords = function(input, array) {
 /*  param input: usually the message content.
     param array: array of strings it will be checked against.
@@ -97,13 +117,13 @@ var applyRole = function(role, guild, user) {
     .catch(console.error)
 };
 
-var timezoneCheck = function (location, message) {
+var timezoneCheck = function (location, callback) {
 /*  Returns the local time of the given location.
-    param location: string, the location to be queried at the time zone api
-    param message: message object */
+    @param location: string, the location to be queried at the time zone api
+    @param callback */
   if (!location) {
     let timeExcuse = mori.timeExcuse[rand(mori.timeExcuse.length)];
-    message.channel.send(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
+    callback(`Sorry, I only know the time in Sydney, Amsterdam, Tokyo, Portland, Chicago, and Miami because ${timeExcuse}`);
     return;
   }
   axios.get("http://worldtimeapi.org/api/timezone/" + location)
@@ -111,19 +131,20 @@ var timezoneCheck = function (location, message) {
       console.log(response.data.datetime, location);
       var timeData = moment().utcOffset(response.data.datetime);
       var locationCity = location.split('/')[1].split('_').join(' ');
+      locationCity = capitalize(locationCity);
       let msg = "My phone says it's " + timeData.format("h:mm a") + " in their local time right now, on " + timeData.format("dddd") + " the " + timeData.format("Do") + ". Time zone: " + locationCity + ".";
-      message.channel.send(msg);
+      callback(msg);
       let timeSassLength = mori.timeSass.length;
       var RNG = rand(timeSassLength * 5);
       if (RNG < timeSassLength) {
         setTimeout(() => {
-          message.channel.send(mori.timeSass[RNG]);
+          callback(mori.timeSass[RNG]);
         }, 2000);
       } 
     })
     .catch(error => {
       console.log(error.response);
-      message.channel.send(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
+      callback(`The website is down right now and my boss doesn't really let me check other websites, so... sorry! No clue.`);
     });
 };
 

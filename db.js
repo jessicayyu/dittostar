@@ -33,6 +33,9 @@ const writeField = async function(field, textEntry, message) {
   param message: message object 
   */
   let profile = await Member.findOne({userid: message.author.id});
+  if (textEntry === 'delete' || textEntry === 'remote') {
+    textEntry = '';
+  }
   if (profile === null) {
     profile = new Member({
       userid: message.author.id,

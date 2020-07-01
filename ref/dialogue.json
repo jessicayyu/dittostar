@@ -95,6 +95,8 @@
             "symbols": "[ *(optional) symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
             "sym": "[ *(optional) symbol desired* ] - Prints ★ ✚ \\♥ ✿ ♫ ♪ or the desired symbol",
             "ga": "Pings the people subscribed to @giveaways to announce a Discord-only giveaway",
+            "ctof": "[ number ] - Converts the temperature from Celsius to Fahrenheit",
+            "ftoc": "[ number ] - Converts the temperature from Fahrenheit to Celsius",
             "mori": "Mori's employee photo"
         },
         "reference": {
