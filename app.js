@@ -87,9 +87,6 @@ const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 /* Discord message responses */  
 client.on('message', message => {
-  function speak(text) {
-    message.channel.send(text);
-  }
   if (message.content.startsWith(prefix + 'standby')) {
     let arg = message.content.slice(1).split(/ +/);
     if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
@@ -238,10 +235,13 @@ client.on('message', message => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 5000);
   }
+  /* Bot commands, command line */
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
   }
-  /* Bot commands, command line */
+  function speak(text) {
+    message.channel.send(text);
+  }
   var role;
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
@@ -257,28 +257,7 @@ client.on('message', message => {
   if (cmd === 'ping') {
     message.channel.send('pong!');
   } else if (cmd === 'fc' || cmd === 'friendcode') {
-    let userID;
-    let query = 'userid';
-    if (!cmdArg) {
-      userID = message.author.id;
-    } else if (message.mentions.users.size) {
-      userID = message.mentions.users.first().id.toString();
-    } else { 
-      userID = cmdArg.toLowerCase();
-      query = 'reddit'; 
-    }
-    db.Member.findOne({ [query]: userID }, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send(`I don't see anything registered for that person.`);
-        return;
-      } else if (!data.friendcode) {
-        message.channel.send('Hmm, they\'re registered but have no friend code data.');
-      }
-      if (data.friendcode) {
-        message.channel.send(data.friendcode);
-      }
-    })
+    cli.friendCode(cmdParams, speak);
   } else if (cmd === 'set') {
     if (!arg[1]) {
       message.channel.send('What did you want to set? `time` or `fc`?');
