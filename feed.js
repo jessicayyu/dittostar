@@ -275,10 +275,20 @@ var pushPost = function(ids) {
             .setTitle(post.title)
             .setURL(post.url)
             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-            .setThumbnail("https://i.imgur.com/71bnPgK.png")
             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-          mainChannel().send(embed);
-          feedChannel().send(embed);
+          if (post.subreddit.display_name === 'Pokemongiveaway') {
+            embed.setThumbnail("https://i.imgur.com/71bnPgK.png")
+              .setColor(postColorsTama[post.link_flair_css_class]);
+            mainChannel().send(embed);
+            feedChannel().send(embed);
+          } else if (post.subreddit.display_name === 'tamagotchi') {
+            if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
+              embed.setImage(post.url);
+            }
+            proposalsChannel().send(embed);
+          } else {
+            console.log(post.subreddit.display_name);
+          }
         })
         .catch(console.error);
     } else {
