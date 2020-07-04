@@ -29,44 +29,6 @@ const watch = require('./watchers.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 
-var testingChannel;
-var mainChannel;
-var feedChannel;
-
-client.on('error', console.error);
-
-const cacheMessage = function(channelID, msgID) {
-  let targetChannel = client.channels.get(channelID);
-  targetChannel.fetchMessages({around: msgID, limit: 1})
-    .catch(console.error);
-};
-
-client.on('ready', () => {
-  let timeStart = startupTimer();
-  console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
-  testingChannel = getChannel('423338578597380106');
-  mainChannel = getChannel('232062367951749121');
-  feedChannel = getChannel('690017722821640199');
-  // pokeGuild cache
-  cacheMessage('399407103959236618', '658214917027004436');
-  // tamaGuild cache
-  cacheMessage('723922819859218546', '724063851351638016');
-  modmailFeed();
-  postFeed();
-  commentFeed();
-});
-
-client.login(TOKEN);
-
-
-const r = new snoowrap({
-  userAgent: 'MoriConnect',
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  username: process.env.REDDIT_USER,
-  password: process.env.REDDIT_PASS
-});
-
 const getChannel = function(channel) {
   var target = null;
   var getChannelCounter = 0;
@@ -79,6 +41,53 @@ const getChannel = function(channel) {
     return target;
   }
 };
+
+var testingChannel, mainChannel, feedChannel;
+var proposalsChannel, pictureChannel, artChannel;
+
+function getChannelsStartup() {
+  // pokeGuild channel start-ups
+  testingChannel = getChannel('423338578597380106');
+  mainChannel = getChannel('232062367951749121');
+  feedChannel = getChannel('690017722821640199');
+  // tamaTuild channel start-ups
+  proposalsChannel = getChannel('723922820282843182');
+  pictureChannel = getChannel('723930132133183579');
+  artChannel = getChannel('723937117172007022');
+}
+
+client.on('error', console.error);
+
+const cacheMessage = function(channelID, msgID) {
+  let targetChannel = client.channels.get(channelID);
+  targetChannel.fetchMessages({around: msgID, limit: 1})
+  .catch(console.error);
+};
+
+// Waits for the ready emitter
+client.on('ready', () => {
+  let timeStart = startupTimer();
+  console.log(`Logged in as ${client.user.tag} at ${timeStart}`);
+  getChannelsStartup();
+  // pokeGuild emoji message cache
+  cacheMessage('399407103959236618', '658214917027004436');
+  // tamaGuild emoji message cache
+  cacheMessage('723922819859218546', '724063851351638016');
+  modmailFeed();
+  postFeed();
+  commentFeed();
+  postFeedTama();
+});
+
+client.login(TOKEN);
+
+const r = new snoowrap({
+  userAgent: 'MoriConnect',
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  username: process.env.REDDIT_USER,
+  password: process.env.REDDIT_PASS
+});
 
 /* RNG: random number generator */
 function rand(max, min = 0) {
@@ -149,7 +158,7 @@ var checkPosts = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 2 === 0) {
+        if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
         posts.filter(post => (post.name > last)).map((post, i) => {
@@ -213,7 +222,7 @@ var checkComments = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 1 === 0) {
+        if (now.minute() % 1 === 0 || comments[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' comment feed ' + last);
         }
         comments.filter(comment => comment.id > last)
@@ -278,9 +287,60 @@ var pushPost = function(ids) {
   })
 };
 
+const postColorsTama = {
+  'proposals': '#1a9eb4', 
+  'mod': '#fd0100',
+  'wallpaper': '#c894de'
+};
+
+const checkPostsTama = function() {
+  var options = { limit:5, sort: "new"};
+  var last;
+  return function() {
+    r.getNew(subreddit, options)
+      .then((posts) => {
+        if (!last) {
+          last = posts[0].name;
+          return;
+        }
+        let now = moment();
+        if (now.minute() % 2 === 0 || posts[0].name > last) {
+          console.log(now.format("MMM D h:mm A") + ' ' + 'Tama feed ' + last);
+        }
+        posts.filter(post => (post.name > last)).map((post, i) => {
+          let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+          const embed = new Discord.RichEmbed()
+          if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
+            console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+            embed.setColor(postColorsTama[post.link_flair_css_class])
+              .setTitle(post.title)
+              .setURL("https://redd.it/" + post.id)
+              .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+              .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
+            if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
+              embed.setImage(post.url);
+              if (post.link_flair_css_class === 'wallpaper') {
+                artChannel().send(embed);
+              }
+            }
+            if (post.link_flair_css_class === 'proposals') {
+              proposalsChannel().send(embed);
+            }
+          }
+          if (i === 0) {
+            last = post.name;
+          }
+          return post;
+        })
+      })
+      .catch(console.error);
+  }
+};
+
 const modmailFeed = getModmail();
 const postFeed = checkPosts();
 const commentFeed = checkComments();
+const postFeedTama = checkPostsTama();
 
 module.exports = {
   client: client,
@@ -292,4 +352,5 @@ module.exports = {
   postFeed: postFeed,
   commentFeed: commentFeed,
   pushPost: pushPost,
+  postFeedTama: postFeedTama,
 };

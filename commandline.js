@@ -7,6 +7,31 @@ const { prefix } = require('./config.json');
 
 // Module containing the logic for the functions supporting the bot's command lines.
 
+const friendCode = function(msg, callback) {
+  let userID;
+    let query = 'userid';
+    if (!msg.optionStr) {
+      userID = msg.author.id;
+    } else if (msg.mentions.users.size) {
+      userID = msg.mentions.users.first().id.toString();
+    } else { 
+      userID = msg.optionStr.toLowerCase();
+      query = 'reddit'; 
+    }
+    db.Member.findOne({ [query]: userID }, function (err, data) {
+      if (err) return console.error(err);
+      if (!data) {
+        callback(`I don't see anything registered for that person.`);
+        return;
+      } else if (!data.friendcode) {
+        callback('Hmm, they\'re registered but have no friend code data.');
+      }
+      if (data.friendcode) {
+        callback(data.friendcode);
+      }
+    })
+};
+
 const formParse = function(arg, inputText) {
   /*
   Helper function that checks for form modifiers for the dex lookup command.
@@ -215,6 +240,7 @@ const convert = function (direction, number) {
 };
 
 module.exports = {
+  friendCode: friendCode,
   formParse: formParse,
   numDexSprite: numDexSprite,
   redditCmd: redditCmd,

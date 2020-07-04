@@ -6,3 +6,5 @@ setInterval(feed.postFeed, 90000);
 
 setInterval(feed.commentFeed, 60000);
 
+setInterval(feed.postFeedTama, 300000);
+

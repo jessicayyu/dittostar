@@ -4,7 +4,7 @@ const moment = require('moment');
 moment().format();
 
 const configJSON = require('./config.json');
-const { prefix, subreddit, pokeGuild, theCompany } = configJSON;
+const { prefix, subreddit, pokeGuild, theCompany, tamaGuild } = configJSON;
 
 const feed = require('./feed.js');
 const { client, testingChannel, mainChannel, feedChannel } = feed;
@@ -57,6 +57,7 @@ if (configJSON.runFeedInApp) {
   setInterval(feed.modmailFeed, 180000);
   setInterval(feed.postFeed, 90000);
   setInterval(feed.commentFeed, 60000);
+  setInterval(feed.postFeedTama, 300000);
 }
 
 client.on('guildMemberAdd', member => {
@@ -83,13 +84,19 @@ client.on('guildMemberAdd', member => {
   console.log('New user joined server!' + member);
 });
 
-const scream = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const scream = (function() {
+  let temp = 'AAAAAAAAAAAAAAAAAAAA';
+  let aaa = temp;
+  let x = 18;
+  while (x > 0) {
+    temp += aaa;
+    x--;
+  }
+  return temp;
+})();
 
 /* Discord message responses */  
 client.on('message', message => {
-  function speak(text) {
-    message.channel.send(text);
-  }
   if (message.content.startsWith(prefix + 'standby')) {
     let arg = message.content.slice(1).split(/ +/);
     if (message.author.id === configJSON.owner && arg[1] === configJSON.instance) {
@@ -128,7 +135,7 @@ client.on('message', message => {
       message.delete(90000);
     }
   }
-  if (message.guild.id === pokeGuild || message.guild.id === theCompany) {
+  if (message.guild.id !== "432213972863942657") {
     let mute = message.guild.roles.find(r => r.name === "mute");
     /* Remove Discord invites */
     if (message.guild.id === pokeGuild) {
@@ -147,58 +154,48 @@ client.on('message', message => {
     }
     /* curse words censor */
     const censorArray = [/fuck/i, /cunt/i];
+    const swearCensor = watch.checkKeywordsRegex(message.content, censorArray);
     const censorImmediately = watch.checkKeywordsRegex(message.content, [/fucks mori/i, /fucks?.*out.*mori/i, /fucks?.*mori.*out/i]);
     const deleteImmediately = watch.checkKeywordsRegex(message.content, [/nigger/i, /chink/i]);
-    if (watch.checkKeywordsRegex(message.content, censorArray) || censorImmediately || deleteImmediately) {
+    let strictServer;
+    if (swearCensor || censorImmediately || deleteImmediately) {
+      if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
+        strictServer = true;
+      } else {
+        strictServer = false;
+      }
+      if (!censorImmediately && !deleteImmediately) {
+        if (swearCensor && !strictServer) {
+          return;
+        }
+      }
       const angreh = client.emojis.find(emoji => emoji.name === "ping");
       const deeplyconcerned = client.emojis.find(emoji => emoji.name === "deeplyconcerned");
       const psy = client.emojis.find(emoji => emoji.name === "psy");
-      var angryMoriArray = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
-      var mildMoriArray = [scream, deeplyconcerned, psy, 
-        'Um... do you want a cup of tea to calm down?', 
-        'Yeah, fuck you! (Am I doing this right?)'
-      ];
-      mildMoriArray = mildMoriArray.concat(mori.mildMoriGifs);
-      var msg;
-      var int;
-      var resTable;
-      if (message.guild.id === pokeGuild) {
-        resTable = angryMoriArray;
-      }
-      if (message.guild.id === theCompany) {
-        resTable = mildMoriArray;
-      }
+      const resTable = [scream, 'ಠ___ಠ', ':<', '\\*cough\\*', angreh, deeplyconcerned, psy];
+      var msg, int;
       if (swear[message.author.id] === 1) {
         int = rand(resTable.length);
         if (int === 0) {
+          // reroll for lower chance at the "scream" response
           int = rand(resTable.length);
         }
         msg = resTable[rand(int)];
       } else {
-        let rate = 2;
-        if (message.guild.id === theCompany) {
-          rate = 8;
-        }
-        int = rand(resTable.length * rate);
+        int = rand(resTable.length * 2);
         if (int === 0) {
-          int = rand(resTable.lenth * rate);
+          int = rand(resTable.lenth * 4);
         }
       }
       msg = resTable[int];
       if (msg) {
-        if (message.guild.id === theCompany && int > 4) {
-          msg = new Discord.RichEmbed()
-            .setImage(resTable[int]);
-            message.channel.send(msg);
-        } else {
-          message.channel.send(`${msg}`);
-        }
-        if (swear[message.author.id] === 1 && message.guild.id === pokeGuild) {
+        message.channel.send(`${msg}`);
+        if (swear[message.author.id] === 1 && strictServer) {
           message.channel.send('\\*reaches for her hammer\\*');
         }
       }
-      /* Mute if server matches */
-      if ((swear[message.author.id] >= 2 && message.guild.id === pokeGuild) || censorImmediately || deleteImmediately) {
+      /* Mute response */
+      if ((swear[message.author.id] >= 2 && strictServer) || censorImmediately || deleteImmediately) {
         message.member.addRole(mute)
           .catch(console.error);
         watch.unmute(message, 180);
@@ -217,6 +214,13 @@ client.on('message', message => {
           testingChannel().send(embed);
         } else {
           message.channel.send(embed);
+          embed.setDescription('Muted for ' + muteReason + ' in ' + message.channel + '\n\n> ' + message.content);
+          if (message.guild.id === tamaGuild) {
+            client.channels.get('723922820282843185').send(embed);
+          }
+          if (message.guild.id === theCompany) {
+            client.channels.get('422350585526747136').send(embed);
+          }
         }
         if (deleteImmediately) {
           message.delete();
@@ -238,10 +242,13 @@ client.on('message', message => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 5000);
   }
+  /* Bot commands, command line */
   if (!message.content.startsWith(prefix) || message.author.bot) {
     return
   }
-  /* Bot commands, command line */
+  function speak(text) {
+    message.channel.send(text);
+  }
   var role;
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
@@ -257,28 +264,7 @@ client.on('message', message => {
   if (cmd === 'ping') {
     message.channel.send('pong!');
   } else if (cmd === 'fc' || cmd === 'friendcode') {
-    let userID;
-    let query = 'userid';
-    if (!cmdArg) {
-      userID = message.author.id;
-    } else if (message.mentions.users.size) {
-      userID = message.mentions.users.first().id.toString();
-    } else { 
-      userID = cmdArg.toLowerCase();
-      query = 'reddit'; 
-    }
-    db.Member.findOne({ [query]: userID }, function (err, data) {
-      if (err) return console.error(err);
-      if (!data) {
-        message.channel.send(`I don't see anything registered for that person.`);
-        return;
-      } else if (!data.friendcode) {
-        message.channel.send('Hmm, they\'re registered but have no friend code data.');
-      }
-      if (data.friendcode) {
-        message.channel.send(data.friendcode);
-      }
-    })
+    cli.friendCode(cmdParams, speak);
   } else if (cmd === 'set') {
     if (!arg[1]) {
       message.channel.send('What did you want to set? `time` or `fc`?');
