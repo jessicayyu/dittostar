@@ -161,11 +161,17 @@ var checkPosts = function() {
         if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
+        const obj = {};
         posts.filter(post => (post.name > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          const embed = new Discord.RichEmbed()
+          const embed = new Discord.RichEmbed();
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-            console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+            if (obj[post.id]) {
+              // if duplicate
+              return;
+            }
+            obj[post.id] = post.title;
+            console.log(i + " post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColors[post.link_flair_css_class])
               .setTitle(post.title)
               .setURL(post.url)
@@ -207,7 +213,9 @@ var checkPosts = function() {
           return post;
         })
       })
-      .catch(console.error);
+      .catch(error => { 
+        console.log(`${error.name}\n${error.message}`)
+      });
   }
 };
 
@@ -307,7 +315,7 @@ const checkPostsTama = function() {
   var options = { limit:5, sort: "new"};
   var last;
   return function() {
-    r.getNew(subreddit, options)
+    r.getNew('Tamagotchi', options)
       .then((posts) => {
         if (!last) {
           last = posts[0].name;
@@ -317,7 +325,12 @@ const checkPostsTama = function() {
         if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'Tama feed ' + last);
         }
+        const obj = {};
         posts.filter(post => (post.name > last)).map((post, i) => {
+          if (obj[post.id]) {
+            return;
+          }
+          obj[post.id] = post.title;
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed()
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
