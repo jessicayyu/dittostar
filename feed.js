@@ -158,7 +158,7 @@ var checkPosts = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 2 === 0) {
+        if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
         posts.filter(post => (post.name > last)).map((post, i) => {
@@ -222,7 +222,7 @@ var checkComments = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 1 === 0) {
+        if (now.minute() % 1 === 0 || comments[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' comment feed ' + last);
         }
         comments.filter(comment => comment.id > last)
@@ -304,7 +304,7 @@ const checkPostsTama = function() {
           return;
         }
         let now = moment();
-        if (now.minute() % 2 === 0) {
+        if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'Tama feed ' + last);
         }
         posts.filter(post => (post.name > last)).map((post, i) => {
@@ -353,5 +353,4 @@ module.exports = {
   commentFeed: commentFeed,
   pushPost: pushPost,
   postFeedTama: postFeedTama,
-  proposalsChannel: getChannel('723922820282843182'),
 };
