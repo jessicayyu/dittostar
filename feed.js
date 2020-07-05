@@ -94,6 +94,20 @@ function rand(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
 }
 
+/* truncates text to a certain length if exceeds length specified
+  @param text: string
+  @param length: integer. String will be cut off at (length - 3) to allow for ellipsis.
+*/
+function truncate(text, length) {
+  let output = '';
+  if (text.length > length) {
+    output = text.slice(1, length - 3);
+    output += '...';
+    return output;
+  }
+  return text;
+}
+
 var getModmail = function() {
   var timeNow = moment();
   return function() {
@@ -165,15 +179,16 @@ var checkPosts = function() {
         posts.filter(post => (post.name > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed();
+          let title = truncate(post.title, 256);
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             if (obj[post.id]) {
               // if duplicate
               return;
             }
-            obj[post.id] = post.title;
+            obj[post.id] = title;
             console.log(i + " post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColors[post.link_flair_css_class])
-              .setTitle(post.title)
+              .setTitle(title)
               .setURL(post.url)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
@@ -186,15 +201,15 @@ var checkPosts = function() {
           if (!post.distinguished && !post.stickied) {
             let matchers = watch.checkKeywords(post.selftext, ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok"]);
             if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
-              let body = post.selftext.length > 150 ? post.selftext.slice(0,150) + ". . .": post.selftext;
+              let body = truncate(post.selftext, 150);
               console.log("Post has watched keyword: " + post.url);
-              console.log(i, post.selftext.slice(0, 150));
+              console.log(i, body);
               /* Checks if post was previously picked up, ex: giveaways, announcements */
               if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
                 embed.setThumbnail("https://i.imgur.com/vXeJfVh.png");
               } else {
                 embed.setColor(postColorsEtc[post.link_flair_css_class])
-                  .setTitle(post.title)
+                  .setTitle(title)
                   .setURL(post.url)
                   .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
                   .setThumbnail("https://i.imgur.com/vXeJfVh.png");
@@ -250,7 +265,7 @@ var checkComments = function() {
                   // Otherwise, show comment if it's not from one of the approved post types.
                   let matchers = alwaysAlert ? alwaysAlert : rule2Match;
                   if (alwaysAlert || (rule2Match && postLinkClasses.indexOf(flair) < 0)) {
-                    let body = comment.body.length > 150 ? comment.body.slice(0,150) + ". . .": comment.body;
+                    let body = truncate(comment.body, 150);
                     console.log("Comment match: " + matchers + " " + comment.permalink);
                     const embed = new Discord.RichEmbed()
                       .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
@@ -278,9 +293,10 @@ var pushPost = function(ids) {
       r.getSubmission(id).fetch()
         .then((post) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
+          let title = truncate(post.title, 256);
           let embed = new Discord.RichEmbed()
             .setColor(postColors[post.link_flair_css_class])
-            .setTitle(post.title)
+            .setTitle(title)
             .setURL(post.url)
             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
@@ -330,13 +346,14 @@ const checkPostsTama = function() {
           if (obj[post.id]) {
             return;
           }
-          obj[post.id] = post.title;
+          let title = truncate(post.title, 256);
+          obj[post.id] = title;
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed()
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-            console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+            console.log("post title: " + title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColorsTama[post.link_flair_css_class])
-              .setTitle(post.title)
+              .setTitle(title)
               .setURL("https://redd.it/" + post.id)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
