@@ -24,7 +24,7 @@ const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const configJSON = require('./config.json');
-const { subreddit, pokeGuild, theCompany } = configJSON;
+const { subreddit, altReddit, pokeGuild, theCompany } = configJSON;
 const watch = require('./watchers.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -284,12 +284,12 @@ var pushPost = function(ids) {
             .setURL(post.url)
             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-          if (post.subreddit.display_name === 'Pokemongiveaway') {
+          if (post.subreddit.display_name === subreddit) {
             embed.setThumbnail("https://i.imgur.com/71bnPgK.png")
               .setColor(postColorsTama[post.link_flair_css_class]);
             mainChannel().send(embed);
             feedChannel().send(embed);
-          } else if (post.subreddit.display_name === 'tamagotchi') {
+          } else if (post.subreddit.display_name === altReddit) {
             if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
               embed.setImage(post.url);
             }
@@ -315,7 +315,7 @@ const checkPostsTama = function() {
   var options = { limit:5, sort: "new"};
   var last;
   return function() {
-    r.getNew('Tamagotchi', options)
+    r.getNew(altReddit, options)
       .then((posts) => {
         if (!last) {
           last = posts[0].name;
