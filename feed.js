@@ -24,7 +24,7 @@ const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const configJSON = require('./config.json');
-const { subreddit, pokeGuild, theCompany } = configJSON;
+const { subreddit, altReddit, pokeGuild, theCompany } = configJSON;
 const watch = require('./watchers.js');
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -161,11 +161,17 @@ var checkPosts = function() {
         if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'GA feed ' + last);
         }
+        const obj = {};
         posts.filter(post => (post.name > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          const embed = new Discord.RichEmbed()
+          const embed = new Discord.RichEmbed();
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
-            console.log("post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+            if (obj[post.id]) {
+              // if duplicate
+              return;
+            }
+            obj[post.id] = post.title;
+            console.log(i + " post title: " + post.title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColors[post.link_flair_css_class])
               .setTitle(post.title)
               .setURL(post.url)
@@ -207,7 +213,9 @@ var checkPosts = function() {
           return post;
         })
       })
-      .catch(console.error);
+      .catch(error => { 
+        console.log(`${error.name}\n${error.message}`)
+      });
   }
 };
 
@@ -275,10 +283,20 @@ var pushPost = function(ids) {
             .setTitle(post.title)
             .setURL(post.url)
             .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-            .setThumbnail("https://i.imgur.com/71bnPgK.png")
             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
-          mainChannel().send(embed);
-          feedChannel().send(embed);
+          if (post.subreddit.display_name === subreddit) {
+            embed.setThumbnail("https://i.imgur.com/71bnPgK.png")
+              .setColor(postColorsTama[post.link_flair_css_class]);
+            mainChannel().send(embed);
+            feedChannel().send(embed);
+          } else if (post.subreddit.display_name === altReddit) {
+            if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
+              embed.setImage(post.url);
+            }
+            proposalsChannel().send(embed);
+          } else {
+            console.log(post.subreddit.display_name);
+          }
         })
         .catch(console.error);
     } else {
@@ -297,7 +315,7 @@ const checkPostsTama = function() {
   var options = { limit:5, sort: "new"};
   var last;
   return function() {
-    r.getNew(subreddit, options)
+    r.getNew(altReddit, options)
       .then((posts) => {
         if (!last) {
           last = posts[0].name;
@@ -307,7 +325,12 @@ const checkPostsTama = function() {
         if (now.minute() % 2 === 0 || posts[0].name > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'Tama feed ' + last);
         }
+        const obj = {};
         posts.filter(post => (post.name > last)).map((post, i) => {
+          if (obj[post.id]) {
+            return;
+          }
+          obj[post.id] = post.title;
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed()
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {

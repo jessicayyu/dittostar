@@ -232,6 +232,7 @@ const convert = function (direction, number) {
   number = Number(number);
   if (direction === 'ftoc') {
     output = (number - 32) / 1.8;
+    output = output.toFixed(1);
   }
   if (direction === 'ctof') {
     output = number * 1.8 + 32;

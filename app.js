@@ -320,7 +320,7 @@ client.on('message', message => {
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
   } else if (cmd === 'pushpost') {
-    if (message.guild.id !== pokeGuild) {
+    if (message.guild.id !== pokeGuild && message.guild.id !== tamaGuild) {
       return;
     }
     var findRole = message.member.roles.find(r => r.name === "Moderator");
