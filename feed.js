@@ -316,10 +316,10 @@ var pushPost = function(ids) {
             .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
           if (post.subreddit.display_name === subreddit) {
             embed.setThumbnail("https://i.imgur.com/71bnPgK.png")
-              .setColor(postColorsTama[post.link_flair_css_class]);
             mainChannel().send(embed);
             feedChannel().send(embed);
           } else if (post.subreddit.display_name === altReddit) {
+            embed.setColor(postColorsTama[post.link_flair_css_class]);
             if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
               embed.setImage(post.url);
             }
