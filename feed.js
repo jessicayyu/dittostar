@@ -138,7 +138,9 @@ var getModmail = function() {
         testingChannel().send(embed);
         timeNow = moment();
       })
-      .catch(console.error);
+      .catch(error => { 
+        console.log(`Modmail Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
+      });
   }
 };
 
@@ -229,7 +231,7 @@ var checkPosts = function() {
         })
       })
       .catch(error => { 
-        console.log(`${error.name}\n${error.message}`)
+        console.log(`Post Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
       });
   }
 };
@@ -274,7 +276,9 @@ var checkComments = function() {
                     testingChannel().send(embed);
                   }
                 })
-                .catch(console.error);
+                .catch(error => { 
+                  console.log('Fetch submission ', error); 
+                });
             } 
           }
           if (i === 0) {
@@ -283,9 +287,19 @@ var checkComments = function() {
           return comment;
         })
       })
-      .catch(console.error);
+      .catch(error => { 
+        console.log(`Comments: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`);
+      })
   }
 }
+
+const postColorsTama = {
+  'proposals': '#1a9eb4', 
+  'mod': '#fd0100',
+  'wallpaper': '#c894de'
+};
+
+const postTamaLinkClasses = Object.keys(postColorsTama);
 
 var pushPost = function(ids) {
   ids.forEach(id => {
@@ -314,17 +328,13 @@ var pushPost = function(ids) {
             console.log(post.subreddit.display_name);
           }
         })
-        .catch(console.error);
+        .catch(error => { 
+          console.log('Post link, fetching ', error); 
+        });
     } else {
       console.log(`${id} not a valid post`)
     }
   })
-};
-
-const postColorsTama = {
-  'proposals': '#1a9eb4', 
-  'mod': '#fd0100',
-  'wallpaper': '#c894de'
 };
 
 const checkPostsTama = function() {
@@ -350,7 +360,7 @@ const checkPostsTama = function() {
           obj[post.id] = title;
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           const embed = new Discord.RichEmbed()
-          if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
+          if (postTamaLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColorsTama[post.link_flair_css_class])
               .setTitle(title)
@@ -373,7 +383,9 @@ const checkPostsTama = function() {
           return post;
         })
       })
-      .catch(console.error);
+      .catch(error => { 
+        console.log(`Tama Post Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
+      });
   }
 };
 
