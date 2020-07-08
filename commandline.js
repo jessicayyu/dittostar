@@ -237,11 +237,7 @@ const showAvatar = function(msg) {
     msg.channel.send('Uh... who? Are you sure they\'re on this server?');
     return false;
   }
-  let username = `${user.username}#${user.discriminator}`;
-  let nickname = msg.guild.member(user).nickname;
-  if (nickname) {
-    username = nickname + ' - ' + username;
-  }
+  let username = watch.nickAndUser(user, msg.guild);
   let avatar = user.avatarURL({ format: 'png', dynamic: true, size: 256 });
   const embed = new Discord.MessageEmbed()
     .setAuthor(username, 'https://i.imgur.com/0vy1FuQ.png')

@@ -32,6 +32,15 @@ const capitalize = function(inputText) {
   return temp;
 };
 
+const nickAndUser = function(user, guild) {
+  let usernameText = `${user.username}#${user.discriminator}`;
+  let nickname = guild.member(user).nickname;
+  if (nickname) {
+    usernameText = nickname + ' - ' + usernameText;
+  }
+  return usernameText;
+};
+
 var checkKeywords = function(input, array) {
 /*  param input: usually the message content.
     param array: array of strings it will be checked against.
@@ -161,4 +170,5 @@ module.exports = {
   toggleRole: toggleRole,
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
+  nickAndUser: nickAndUser
 };

@@ -141,10 +141,13 @@ client.on('message', message => {
     if (message.guild.id === pokeGuild) {
       if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(configJSON.discordInvite)) {
         let modCheck = message.member.roles.cache.find(r => r.name === 'Moderator');
+        let username = watch.nickAndUser(message.author, message.guild);
         if (!modCheck) {
+          let avatar = message.author.avatarURL({ format: 'png', dynamic: true, size: 64 });
           const embed = new Discord.MessageEmbed()
-            .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-            .setDescription(message.content + '\n **Discord invite link** in ' + message.channel);
+            .setAuthor(username, avatar)
+            .setColor('#dd0000')
+            .setDescription(`${message.content}\n **Discord invite link** in ${message.channel}`);
           testingChannel().send(embed);
           message.delete();
           message.member.roles.add(mute);
@@ -203,19 +206,21 @@ client.on('message', message => {
         muteReason = 'cursing';
         if (censorImmediately) { muteReason = 'being an asshole to me, jerkass, '}
         if (deleteImmediately) { muteReason = 'using racial slurs'}
+        let usernameText = watch.nickAndUser(message.author, message.guild);
+        let avatar = message.author.avatarURL({ format: 'png', dynamic: true, size: 64 });
         const embed = new Discord.MessageEmbed()
-          .setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-          .setColor('#dddddd')
+          .setAuthor(usernameText, avatar)
+          .setColor('#dd0000')
           .setDescription(`Muted for ${muteReason} in ${message.channel}`);
         if (message.guild.id === pokeGuild) {
           if (message.channel.id !== "423338578597380106") { 
             message.channel.send(embed);
           }
-          embed.setDescription('Muted for ' + muteReason + ' in ' + message.channel + '\n\n> ' + message.content);
+          embed.setDescription(`Muted for ${muteReason} in ${message.channel}\n\n> ${ message.content}`);
           testingChannel().send(embed);
         } else {
           message.channel.send(embed);
-          embed.setDescription('Muted for ' + muteReason + ' in ' + message.channel + '\n\n> ' + message.content);
+          embed.setDescription(`Muted for ${muteReason} in ${message.channel}\n\n> ${ message.content}`);
           if (message.guild.id === tamaGuild) {
             client.channels.cache.get('723922820282843185').send(embed);
           }
