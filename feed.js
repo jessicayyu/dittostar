@@ -34,7 +34,7 @@ const getChannel = function(channel) {
   var getChannelCounter = 0;
   return function () {
     while (!target) { 
-      target = client.channels.get(channel);
+      target = client.channels.cache.get(channel);
       getChannelCounter++;
       console.log('Get channel attempt ' + getChannelCounter);
     }
@@ -59,8 +59,8 @@ function getChannelsStartup() {
 client.on('error', console.error);
 
 const cacheMessage = function(channelID, msgID) {
-  let targetChannel = client.channels.get(channelID);
-  targetChannel.fetchMessages({around: msgID, limit: 1})
+  let targetChannel = client.channels.cache.get(channelID);
+  targetChannel.messages.fetch({around: msgID, limit: 1})
   .catch(console.error);
 };
 
@@ -129,7 +129,7 @@ var getModmail = function() {
         } else {
           body = modmail.messages[0].bodyMarkdown;
         }
-        const embed = new Discord.RichEmbed()
+        const embed = new Discord.MessageEmbed()
           .setTitle("Modmail: " + modmail.subject)
           .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
           .setAuthor("/u/" + modmail.participant.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${modmail.participant.name}`)
@@ -180,7 +180,7 @@ var checkPosts = function() {
         const obj = {};
         posts.filter(post => (post.name > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          const embed = new Discord.RichEmbed();
+          const embed = new Discord.MessageEmbed();
           let title = truncate(post.title, 256);
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             if (obj[post.id]) {
@@ -269,7 +269,7 @@ var checkComments = function() {
                   if (alwaysAlert || (rule2Match && postLinkClasses.indexOf(flair) < 0)) {
                     let body = truncate(comment.body, 150);
                     console.log("Comment match: " + matchers + " " + comment.permalink);
-                    const embed = new Discord.RichEmbed()
+                    const embed = new Discord.MessageEmbed()
                       .setAuthor("/u/" + comment.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${comment.author.name}`)
                       .setThumbnail("https://i.imgur.com/vXeJfVh.png")
                       .setDescription(body + "\n[" + matchers + " mentioned at " + timestamp + "](https://www.reddit.com" + comment.permalink + "?context=5)");
@@ -308,7 +308,7 @@ var pushPost = function(ids) {
         .then((post) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
           let title = truncate(post.title, 256);
-          let embed = new Discord.RichEmbed()
+          let embed = new Discord.MessageEmbed()
             .setColor(postColors[post.link_flair_css_class])
             .setTitle(title)
             .setURL(post.url)
@@ -359,7 +359,7 @@ const checkPostsTama = function() {
           let title = truncate(post.title, 256);
           obj[post.id] = title;
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          const embed = new Discord.RichEmbed()
+          const embed = new Discord.MessageEmbed()
           if (postTamaLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
             embed.setColor(postColorsTama[post.link_flair_css_class])

@@ -8,9 +8,9 @@ const mori = require('./ref/dialogue.json');
 // Helper functions. 
 // User-facing functions used in the command line interface of the bot are locationed in the bottom section.
 
-function rand(max, min = 0) {
+const rand = function(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
-}
+};
 
 const capitalize = function(inputText) {
   //  input can be array or string
@@ -68,9 +68,9 @@ var unmute = function(message, seconds) {
 /*  param input: message object.
     param seconds: number of seconds until unmute. */
   setTimeout(() => {
-    let findMute = message.member.roles.find(r => r.name === "mute");
+    let findMute = message.member.roles.cache.find(r => r.name === "mute");
     if (findMute) {
-      message.member.removeRole(findMute);
+      message.member.roles.remove(findMute);
     }
   }, seconds * 1000);
 }
@@ -79,21 +79,21 @@ var toggleRole = function(role, guild, user) {
 /*  Applies or removes a role from a user.
     param msgObj: message object
     param role: string name of desired role */
-  var findRole = user.roles.find(r => r.name === role);
+  var findRole = user.roles.cache.find(r => r.name === role);
   var result;
   if (findRole) {
-    user.removeRole(findRole)
+    user.roles.remove(findRole)
       .catch(console.error);
       result = `removed @${role}`; 
   } else {
-    findRole = guild.roles.find(r => r.name === role);
-    user.addRole(findRole)
+    findRole = guild.roles.cache.find(r => r.name === role);
+    user.roles.add(findRole)
       .catch(console.error)
       .then(() => {
         /* role organizing - Trainers grouping */
         if (guild.id === pokeGuild) {
-          let groupRole = guild.roles.get('691796497125212230');
-          user.addRole(groupRole)
+          let groupRole = guild.roles.cache.get('691796497125212230');
+          user.roles.add(groupRole)
             .catch(console.error)
           }
         });
@@ -107,13 +107,13 @@ var applyRole = function(role, guild, user) {
   // param role: string input, searches by name.
   // param guild: guild object from message
   // param user: user object
-  var findRole = guild.roles.find(r => r.name === role);
+  var findRole = guild.roles.cache.find(r => r.name === role);
   if (!findRole) {
     let time = moment().format("MMM D h:mm:ss A");
     console.log(`${time} - ${role} not found.`);
     return;
   }
-  user.addRole(findRole)
+  user.roles.add(findRole)
     .catch(console.error)
 };
 
@@ -154,6 +154,7 @@ var timezoneCheck = function (location, callback) {
 
 
 module.exports = {
+  rand: rand,
   checkKeywords: checkKeywords,
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
