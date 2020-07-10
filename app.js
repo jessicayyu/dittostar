@@ -62,10 +62,6 @@ if (configJSON.runFeedInApp) {
 
 client.on('guildMemberAdd', member => {
   if (setStandby === true) { return;  }
-  let channel = member.guild.channels.cache.find(ch => ch.name === 'chat-main');
-  if (member.guild.id === '633473228739837984') {
-    channel = member.guild.channels.cache.find(ch => ch.name === 'landing');
-  } 
   const greets = [
     `Hello, ${member}! So glad to have you here!`, 
     `Get back in the bag Neb--oh, hi ${member}!`, 
@@ -75,13 +71,30 @@ client.on('guildMemberAdd', member => {
     `Hihi! Sword or Shield, ${member}? Or maybe another generation?`,
     `Hell~loo ${member}! Take a seat anywhere, this is the main room.`
   ];
+  const tamaGreets = [
+    `Hello, ${member}, welcome to the /r/Tamagotchi Discord!`,
+    `Hell~loo ${member}! Take a seat anywhere, this is the main room.`,
+    `Hihi ${member}! What kind of Tamagotchi do you have?`,
+    `Welcome, ${member}! Make yourself at home!`,
+    `Hang on, I gotta drop my Tamagotchi's off at their parents' house... Okay! Hi, ${member}! Glad to have you here :)`
+  ];
+  let greetsArray = greets;
+  let channel = member.guild.channels.cache.find(ch => ch.name === 'chat-main');
+  if (member.guild.id === configJSON.toasterGuild) {
+    channel = member.guild.channels.cache.find(ch => ch.name === 'landing');
+  } 
+  if (member.guild.id === tamaGuild) {
+    channel = member.guild.channels.cache.find(ch => ch.name === 'main-chat');
+    greetsArray = tamaGreets;
+  } 
   if (!channel) return;
-  let greeting = greets[rand(7)];
+  let greeting = greetsArray[rand(greetsArray.length)];
   channel.send(greeting);
-  if (member.guild.id === pokeGuild) {
+  if (member.guild.id === pokeGuild || member.guild.id === tamaGuild) {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
-  console.log('New user joined server!' + member);
+  let username = member.nickname ? member.nickname : member.user.username;
+  console.log(`New user joined server ${member.guild.name}! ${username}`);
 });
 
 const scream = (function() {
@@ -123,7 +136,8 @@ client.on('message', message => {
     return 
   }
   if (message.type === 'GUILD_MEMBER_JOIN') {
-    if (message.guild.id !== pokeGuild && message.guild.id !== '633473228739837984') {
+    let toasterGuild = '633473228739837984';
+    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild) {
       console.log(message.guild.name + ' ' + message.guild.id);
       return
     }
@@ -131,28 +145,32 @@ client.on('message', message => {
       .catch(console.error);
   }
   if (message.author.id === '402601316830150656') {
+    // If author is the bot itself, remove specific greet message after delay.
     if (message.content.includes('server nickname')) {
-      message.delete(90000);
+      message.delete({ timeout: 90000, reason: "Removing rules message after delay."});
     }
   }
-  if (message.guild.id !== "432213972863942657") {
+  if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
     let mute = message.guild.roles.cache.find(r => r.name === "mute");
     /* Remove Discord invites */
-    if (message.guild.id === pokeGuild) {
-      if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(configJSON.discordInvite)) {
-        let modCheck = message.member.roles.cache.find(r => r.name === 'Moderator');
-        let username = watch.nickAndUser(message.author, message.guild);
-        if (!modCheck) {
-          let avatar = message.author.avatarURL({ format: 'png', dynamic: true, size: 64 });
-          const embed = new Discord.MessageEmbed()
-            .setAuthor(username, avatar)
-            .setColor('#dd0000')
-            .setDescription(`${message.content}\n **Discord invite link** in ${message.channel}`);
+    if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(configJSON.discordInvite)) {
+      let modCheck = message.member.roles.cache.find(r => r.name === 'Moderator');
+      let username = watch.nickAndUser(message.author, message.guild);
+      if (!modCheck) {
+        let avatar = message.author.avatarURL({ format: 'png', dynamic: true, size: 64 });
+        const embed = new Discord.MessageEmbed()
+        .setAuthor(username, avatar)
+        .setColor('#dd0000')
+        .setDescription(`${message.content}\n **Discord invite link** in ${message.channel}`);
+        if (message.guild.id === pokeGuild) {
           testingChannel().send(embed);
-          message.delete();
-          message.member.roles.add(mute);
-          watch.unmute(message, 180);
         }
+        if (message.guild.id === tamaGuild) {
+          client.channels.cache.get('723922820282843185').send(embed);
+        }
+        message.delete();
+        message.member.roles.add(mute);
+        watch.unmute(message, 180);
       }
     }
     /* curse words censor */
