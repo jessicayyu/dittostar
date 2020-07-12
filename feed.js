@@ -182,7 +182,8 @@ var checkPosts = function() {
         const obj = {};
         posts.filter(post => (post.id > last)).map((post, i) => {
           let timestamp = moment.utc(post.created_utc * 1000).fromNow();
-          let avatar;
+          let filterCheck = 0;
+          let avatar, user;
           const embed = new Discord.MessageEmbed();
           let title = truncate(post.title, 256);
           if (postLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
@@ -203,7 +204,7 @@ var checkPosts = function() {
                 console.error(err);
               }
               if (data) {
-                let user = client.users.cache.get(data.userid);
+                user = client.users.cache.get(data.userid);
                 if (configJSON.ownerReddit.toLowerCase() === username) {
                   user = client.users.cache.get(configJSON.owner);
                 }
@@ -217,36 +218,46 @@ var checkPosts = function() {
                 mainChannel().send(embed);
                 feedChannel().send(embed);
               }
+            }).then(() => {
+              runPostFilter();
             });
           }
-          const keywordArr = ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
-          let matchers = watch.checkKeywords(post.selftext, keywordArr);
-          if (!matchers) {
-            matchers = watch.checkKeywords(post.title, keywordArr);
-          }
-          if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
-            let body = truncate(post.selftext, 150);
-            console.log("Post has watched keyword: " + post.url);
-            console.log(i, body);
-            /* Checks if post was previously picked up, ex: giveaways, announcements */
-            if (postLinkClasses.indexOf(post.link_flair_css_class) < 0) {
-              embed.setColor(postColorsEtc[post.link_flair_css_class])
-                .setTitle(title)
-                .setURL(post.url)
-                .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-                .setThumbnail("https://i.imgur.com/vXeJfVh.png");
+          function runPostFilter() {
+            if (filterCheck !== 0) {
+              return;
             }
-            setTimeout(() => {
+            const keywordArr = ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
+            let matchers = watch.checkKeywords(post.selftext, keywordArr);
+            if (!matchers) {
+              matchers = watch.checkKeywords(post.title, keywordArr);
+            }
+            if (post.link_flair_css_class === 'info' || post.link_flair_css_class === 'question' || matchers) {
+              let body = truncate(post.selftext, 150);
+              console.log("Post has watched keyword: " + post.url);
+              console.log(i, body);
+              /* Checks if post was previously picked up, ex: giveaways, announcements */
+              if (postLinkClasses.indexOf(post.link_flair_css_class) < 0) {
+                embed.setColor(postColorsEtc[post.link_flair_css_class])
+                  .setTitle(title)
+                  .setURL(post.url)
+                  .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
+                  .setThumbnail("https://i.imgur.com/vXeJfVh.png");
+              }
               let desc;
               if (matchers) {
-                desc = `{ ${matchers} } at ${post.id} [${timestamp}](https://redd.it/${post.id})\n${body}`;
+                desc = `**${matchers}** at [redd.it/${post.id}](https://redd.it/${post.id}) ${timestamp} `;
               } else {
-                desc = `[${timestamp} at redd.it/${post.id}](https://redd.it/${post.id})\n${body}`;
+                desc = `[${timestamp} at redd.it/${post.id}](https://redd.it/${post.id}) `;
               }
+              if (avatar) {
+                desc += `by ${user}`;
+              }
+              desc += `\n${body}`;
               embed.setDescription(desc);
               testingChannel().send(embed);
-            }, 3000);
+            }
           }
+          setTimeout(runPostFilter, 3000);
           if (i === 0) {
             last = post.id;
           }
