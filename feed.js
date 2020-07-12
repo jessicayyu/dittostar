@@ -256,6 +256,7 @@ var checkPosts = function() {
               embed.setDescription(desc);
               testingChannel().send(embed);
             }
+            filterCheck++;
           }
           setTimeout(runPostFilter, 3000);
           if (i === 0) {

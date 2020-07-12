@@ -138,7 +138,7 @@ client.on('message', message => {
   if (message.type === 'GUILD_MEMBER_JOIN') {
     let toasterGuild = '633473228739837984';
     if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild) {
-      console.log(message.guild.name + ' ' + message.guild.id);
+      console.log(`New user joined server ${member.guild.name}! ${username}`);
       return
     }
     message.delete()
