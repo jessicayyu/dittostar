@@ -141,7 +141,11 @@ var getModmail = function() {
         timeNow = moment();
       })
       .catch(error => { 
-        console.log(`Modmail Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
+        let errMsg = error.message;
+        if (error.message.includes('<!doctype html>')) {
+          errMsg = truncate(error.message, 500);
+        }
+        console.log(`Modmail Reader: ${error.name}\n${errMsg}\n${JSON.stringify(error.options)}`)
       });
   }
 };
@@ -266,7 +270,11 @@ var checkPosts = function() {
         })
       })
       .catch(error => { 
-        console.log(`Post Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
+        let errMsg = error.message;
+        if (error.message.includes('<!doctype html>')) {
+          errMsg = truncate(error.message, 500);
+        }
+        console.log(`Post Reader: ${error.name}\n${errMsg}\n${JSON.stringify(error.options)}`)
       });
   }
 };
@@ -323,8 +331,12 @@ var checkComments = function() {
         })
       })
       .catch(error => { 
-        console.log(`Comments: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`);
-      })
+        let errMsg = error.message;
+        if (error.message.includes('<!doctype html>')) {
+          errMsg = truncate(error.message, 500);
+        }
+        console.log(`Comments: ${error.name}\n${errMsg}\n${JSON.stringify(error.options)}`)
+      });
   }
 }
 
@@ -419,7 +431,11 @@ const checkPostsTama = function() {
         })
       })
       .catch(error => { 
-        console.log(`Tama Post Reader: ${error.name}\n${error.message}\n${JSON.stringify(error.options)}`)
+        let errMsg = error.message;
+        if (error.message.includes('<!doctype html>')) {
+          errMsg = truncate(error.message, 500);
+        }
+        console.log(`Tama Post Reader: ${error.name}\n${errMsg}\n${JSON.stringify(error.options)}`)
       });
   }
 };
