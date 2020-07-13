@@ -391,11 +391,11 @@ const checkPostsTama = function() {
     r.getNew(altReddit, options)
       .then((posts) => {
         if (!last) {
-          last = posts[0].name;
+          last = posts[0].id;
           return;
         }
         let now = moment();
-        if (now.minute() % 2 === 0 || posts[0].name > last) {
+        if (now.minute() % 2 === 0 || posts[0].id > last) {
           console.log(now.format("MMM D h:mm A") + ' ' + 'Tama feed ' + last);
         }
         const obj = {};
