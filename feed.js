@@ -203,7 +203,7 @@ var checkPosts = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setThumbnail("https://i.imgur.com/71bnPgK.png")
             let username = post.author.name.toLowerCase();
-            db.Member.findOne({ 'reddit': post.author.name }, function(err, data) {
+            db.Member.findOne({ 'reddit': username }, function(err, data) {
               if (err) {
                 console.error(err);
               }
