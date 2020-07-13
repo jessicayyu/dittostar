@@ -1,3 +1,4 @@
+const Discord = require('discord.js');
 const axios = require('axios');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
@@ -223,6 +224,29 @@ const redditCmd = function(message) {
   });
 };
 
+const showAvatar = function(msg) {
+  /*  Retrieves the profile pic of the target and sends in an embed
+      @param msg: obj of message data */
+  let user = msg.author;
+  let text = watch.rand(mori.magnifying.length);
+  text = mori.magnifying[text];
+  if (msg.mentions.users.size) {
+    user = msg.mentions.users.first();
+  }
+  if (!msg.guild.member(user)) {
+    msg.channel.send('Uh... who? Are you sure they\'re on this server?');
+    return false;
+  }
+  let username = watch.nickAndUser(user, msg.guild);
+  let avatar = user.avatarURL({ format: 'png', dynamic: true, size: 256 });
+  const embed = new Discord.MessageEmbed()
+    .setAuthor(username, 'https://i.imgur.com/0vy1FuQ.png')
+    .setColor('#C8506E')
+    .setImage(avatar);
+  msg.channel.send(text, embed);
+  return embed;
+};
+
 const convert = function (direction, number) {
   /*  Converts temperature from Celsius to Fahrenheit
       @param direction: string, determines what the conversion is.
@@ -247,5 +271,6 @@ module.exports = {
   redditCmd: redditCmd,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
+  showAvatar: showAvatar,
   convert: convert,
 };

@@ -55,6 +55,12 @@
         "Serious": ["Speed", "Speed"],
         "Tired": ["Speed", "Attack"] 
     },
+    "magnifying": [
+        "Let me get my magnifying glass.",
+        "e n h a n c e",
+        "Maybe you need new glasses.",
+        "Just squint harder? Okay, fine..."
+    ],
     "commandDex": {
         "discord": {
             "role": "[ giveaways | raid | pokemongo ] - set your role to subscribe to notifications",
@@ -68,7 +74,8 @@
             "ga": "Pings the people subscribed to @giveaways to announce a Discord-only giveaway",
             "ctof": "[ number ] - Converts the temperature from Celsius to Fahrenheit",
             "ftoc": "[ number ] - Converts the temperature from Fahrenheit to Celsius",
-            "mori": "Mori's employee photo"
+            "mori": "Mori's employee photo",
+            "avatar": "[ *(optional)* @username ] - Displays 256px image of either your own avatar or someone else's. Command can also be used as `!ava` or `!pfp`"
         },
         "reference": {
             "ballsprites": "shows a picture of all the Pokeball mini-sprites",
