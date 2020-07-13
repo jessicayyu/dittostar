@@ -623,16 +623,18 @@ client.on('message', message => {
 });
 
 /* Raid emoji assignment */
-const emojiRoleAssignment = function(reaction, user) {
+const emojiRoleAssignment = function(reaction, user, action) {
   const { pkgaEmojiRoles, tamaEmojiRoles } = configJSON;
   function emojiAssignLogic(roleList, outputChannel) {
     let member, roleResult;
     let role = roleList[reaction.emoji.name];
     if (role) {
       member = reaction.message.channel.guild.members.cache.get(user.id);
-      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member);
-      let botCommandsChannel = client.channels.cache.get(outputChannel);
-      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member, action);
+      if (roleResult) {
+        let botCommandsChannel = client.channels.cache.get(outputChannel);
+        botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+      }
     }
   }
   if (reaction.message.id ==='658214917027004436') {
@@ -645,12 +647,12 @@ const emojiRoleAssignment = function(reaction, user) {
 
 client.on('messageReactionAdd', (reaction, user) => {
   if (setStandby === true) { return; }
-  emojiRoleAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user, 'add');
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
   if (setStandby === true) { return; }
-  emojiRoleAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user, 'remove');
 });
 
 
