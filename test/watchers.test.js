@@ -10,7 +10,7 @@ describe('Time Tests', function () {
       expect(result).to.include('My phone says');
     }
     it('It should return a time', function() {
-      watch.timezoneCheck('Europe/Amsterdam', {}, setResult);
+      watch.timezoneCheck('Europe/Amsterdam', setResult);
     });
   });
 });
