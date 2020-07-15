@@ -94,7 +94,7 @@ client.on('guildMemberAdd', member => {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
   let username = member.nickname ? member.nickname : member.user.username;
-  console.log(`New user joined server ${member.guild.name}! ${username}`);
+  console.log(`\nNew user joined server ${member.guild.name}! ${username}\n`);
 });
 
 const scream = (function() {
