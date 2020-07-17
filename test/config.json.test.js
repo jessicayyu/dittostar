@@ -69,7 +69,7 @@ describe('Config file should be properly set up', function () {
     });
 
     it('should have all keys', function() {
-      expect(config.tamaEmojiRoles).to.have.all.keys("🪔", "hellokitty", "🍬", "🧚", "🧹", "tamagotchi");
+      expect(config.tamaEmojiRoles).to.have.all.keys("🪔", "hellokitty", "🍬", "🧚", "🧹", "tamagotchi", "cinnamoroll");
     });
   });
 });
