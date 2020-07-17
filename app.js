@@ -619,7 +619,9 @@ client.on('message', message => {
     const embed = new Discord.MessageEmbed()
       .setImage('https://i.imgur.com/qTF3UOi.jpg')
     message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
-  } 
+  } else if (cmd === 'concern') {
+    message.channel.send('<:concern:691821511845085244>');
+  }
 });
 
 /* Raid emoji assignment */
