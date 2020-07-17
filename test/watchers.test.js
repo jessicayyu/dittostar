@@ -1,6 +1,7 @@
 var assert = require('assert');
 var expect = require('chai').expect;
 const watch = require('../watchers.js');
+const { timezoneCheck2 } = require('../watchers.js');
 
 describe('checkKeywords', function () {
   let keywordsArr = ["shiny","sparkly","legend","discord", 
@@ -27,13 +28,20 @@ describe('checkKeywords', function () {
 
 describe('Time Tests', function () {
   describe('timezoneCheck', function () {
-    let result = null;
     function setResult(text) {
-      result = text;
-      expect(result).to.include('My phone says');
+      expect(text).to.include('My phone says');
     }
-    it('It should return a time', function() {
+    it('should return a time', function() {
       watch.timezoneCheck('Europe/Amsterdam', setResult);
+    });
+  });
+
+  describe('timezoneCheck no location', function() {
+    it('should fail because no location was passed', function() {
+      function testResult(text) {
+        expect(text).to.include('Sorry, I only know the time in');
+      }
+      watch.timezoneCheck(null, testResult);  
     });
   });
 });

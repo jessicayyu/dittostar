@@ -165,9 +165,6 @@ var timezoneCheck = function (location, callback) {
 };
 
 
-// Command line interface functions - CLI
-
-
 
 module.exports = {
   rand: rand,
@@ -177,5 +174,5 @@ module.exports = {
   toggleRole: toggleRole,
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
-  nickAndUser: nickAndUser
+  nickAndUser: nickAndUser,
 };
