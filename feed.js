@@ -368,9 +368,16 @@ var pushPost = function(ids) {
           } else if (post.subreddit.display_name === altReddit) {
             embed.setColor(postColorsTama[post.link_flair_css_class]);
             if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
-              embed.setImage(post.url);
+              embed.setImage(post.url)
+                .setURL(`https://redd.it/${post.id}`);
             }
-            proposalsChannel().send(embed);
+            if (post.link_flair_css_class === 'wallpaper') {
+              artChannel().send(embed);
+            } else if (post.link_flair_css_class === 'picture') {
+              client.channels.cache.get('723930132133183579').set(embed);
+            } else {
+              proposalsChannel().send(embed);
+            }
           } else {
             console.log(post.subreddit.display_name);
           }

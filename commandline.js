@@ -189,11 +189,11 @@ const pingRaidRole = function(arg, message) {
       index = prefix.length + cmd.length + 1;
     }
     let desc = message.content.slice(index);
-    message.guild.roles.get(role).setMentionable(true)
+    message.guild.roles.cache.get(role).setMentionable(true)
       .then(() => {
         message.channel.send('<@&' + role + '> ' + star + desc)
           .then(() => {
-            message.guild.roles.get(role).setMentionable(false);
+            message.guild.roles.cache.get(role).setMentionable(false);
           });
       });
   };

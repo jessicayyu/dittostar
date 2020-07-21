@@ -84,17 +84,24 @@ var unmute = function(message, seconds) {
   }, seconds * 1000);
 }
 
-var toggleRole = function(role, guild, user) {
+var toggleRole = function(role, guild, user, action = null) {
 /*  Applies or removes a role from a user.
-    param msgObj: message object
-    param role: string name of desired role */
+    @param msgObj: message object
+    @param role: string name of desired role 
+    @param action: string indicating desired action, if restriction applies */
   var findRole = user.roles.cache.find(r => r.name === role);
   var result;
   if (findRole) {
+    if (action === 'add') {
+      return false;
+    }
     user.roles.remove(findRole)
       .catch(console.error);
       result = `removed @${role}`; 
   } else {
+    if (action === 'remove') {
+      return false;
+    }
     findRole = guild.roles.cache.find(r => r.name === role);
     user.roles.add(findRole)
       .catch(console.error)
@@ -158,9 +165,6 @@ var timezoneCheck = function (location, callback) {
 };
 
 
-// Command line interface functions - CLI
-
-
 
 module.exports = {
   rand: rand,
@@ -170,5 +174,5 @@ module.exports = {
   toggleRole: toggleRole,
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
-  nickAndUser: nickAndUser
+  nickAndUser: nickAndUser,
 };

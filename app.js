@@ -94,7 +94,7 @@ client.on('guildMemberAdd', member => {
     channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
   }
   let username = member.nickname ? member.nickname : member.user.username;
-  console.log(`New user joined server ${member.guild.name}! ${username}`);
+  console.log(`\nNew user joined server ${member.guild.name}! ${username}\n`);
 });
 
 const scream = (function() {
@@ -137,7 +137,7 @@ client.on('message', message => {
   }
   if (message.type === 'GUILD_MEMBER_JOIN') {
     let toasterGuild = '633473228739837984';
-    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild) {
+    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild && message.guild.id !== tamaGuild) {
       console.log(`New user joined server ${member.guild.name}! ${username}`);
       return
     }
@@ -147,7 +147,7 @@ client.on('message', message => {
   if (message.author.id === '402601316830150656') {
     // If author is the bot itself, remove specific greet message after delay.
     if (message.content.includes('server nickname')) {
-      message.delete({ timeout: 90000, reason: "Removing rules message after delay."});
+      message.delete({ timeout: 300000, reason: "Removing rules message after delay."});
     }
   }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
@@ -619,20 +619,24 @@ client.on('message', message => {
     const embed = new Discord.MessageEmbed()
       .setImage('https://i.imgur.com/qTF3UOi.jpg')
     message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
-  } 
+  } else if (cmd === 'concern') {
+    message.channel.send('<:concern:691821511845085244>');
+  }
 });
 
 /* Raid emoji assignment */
-const emojiRoleAssignment = function(reaction, user) {
+const emojiRoleAssignment = function(reaction, user, action) {
   const { pkgaEmojiRoles, tamaEmojiRoles } = configJSON;
   function emojiAssignLogic(roleList, outputChannel) {
     let member, roleResult;
     let role = roleList[reaction.emoji.name];
     if (role) {
       member = reaction.message.channel.guild.members.cache.get(user.id);
-      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member);
-      let botCommandsChannel = client.channels.cache.get(outputChannel);
-      botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member, action);
+      if (roleResult) {
+        let botCommandsChannel = client.channels.cache.get(outputChannel);
+        botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
+      }
     }
   }
   if (reaction.message.id ==='658214917027004436') {
@@ -645,12 +649,12 @@ const emojiRoleAssignment = function(reaction, user) {
 
 client.on('messageReactionAdd', (reaction, user) => {
   if (setStandby === true) { return; }
-  emojiRoleAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user, 'add');
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
   if (setStandby === true) { return; }
-  emojiRoleAssignment(reaction, user);
+  emojiRoleAssignment(reaction, user, 'remove');
 });
 
 
