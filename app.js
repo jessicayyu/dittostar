@@ -137,7 +137,7 @@ client.on('message', message => {
   }
   if (message.type === 'GUILD_MEMBER_JOIN') {
     let toasterGuild = '633473228739837984';
-    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild) {
+    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild && message.guild.id !== tamaGuild) {
       console.log(`New user joined server ${member.guild.name}! ${username}`);
       return
     }
@@ -147,7 +147,7 @@ client.on('message', message => {
   if (message.author.id === '402601316830150656') {
     // If author is the bot itself, remove specific greet message after delay.
     if (message.content.includes('server nickname')) {
-      message.delete({ timeout: 180000, reason: "Removing rules message after delay."});
+      message.delete({ timeout: 300000, reason: "Removing rules message after delay."});
     }
   }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
