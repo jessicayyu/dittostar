@@ -147,7 +147,13 @@ client.on('message', message => {
   if (message.author.id === '402601316830150656') {
     // If author is the bot itself, remove specific greet message after delay.
     if (message.content.includes('server nickname')) {
-      message.delete({ timeout: 300000, reason: "Removing rules message after delay."});
+      message.delete({ timeout: configJSON.rulesMessageDelete, reason: "Removing rules message after delay."});
+    }
+  }
+  if (message.author.id === '172002275412279296') {
+    // removing Tatsu bot's level up messages from #chat-main
+    if (message.content.includes('leveled up!') && message.channel.id === '723922820282843179') {
+      message.delete({ timeout: 180000, reason: "Removing level-up message after delay."});
     }
   }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
