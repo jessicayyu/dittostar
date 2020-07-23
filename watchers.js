@@ -74,7 +74,7 @@ var checkKeywordsRegex = function(input, array) {
 };
 
 var unmute = function(message, seconds) {
-/*  param input: message object.
+/*  param input: Discord message object.
     param seconds: number of seconds until unmute. */
   setTimeout(() => {
     let findMute = message.member.roles.cache.find(r => r.name === "mute");
@@ -118,19 +118,19 @@ var toggleRole = function(role, guild, user, action = null) {
   return result;
 };
 
-var applyRole = function(role, guild, user) {
+var applyRole = function(role, guild, member) {
   // Assigns a role to the user.
   // param role: string input, searches by name.
   // param guild: guild object from message
-  // param user: user object
+  // param member: member object
   var findRole = guild.roles.cache.find(r => r.name === role);
   if (!findRole) {
     let time = moment().format("MMM D h:mm:ss A");
     console.log(`${time} - ${role} not found.`);
     return;
   }
-  user.roles.add(findRole)
-    .catch(console.error)
+  member.roles.add(findRole)
+    .catch(console.error);
 };
 
 var timezoneCheck = function (location, callback) {

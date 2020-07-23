@@ -151,8 +151,8 @@ client.on('message', message => {
     }
   }
   if (message.author.id === '172002275412279296') {
-    // removing Tatsu bot's level up messages from #chat-main
-    if (message.content.includes('leveled up!') && message.channel.id === '723922820282843179') {
+    // removing Tatsu bot's level up messages from all channels except #bot-testing
+    if (message.content.includes('leveled up!') && message.channel.id !== '723922820282843178') {
       message.delete({ timeout: 180000, reason: "Removing level-up message after delay."});
     }
   }
@@ -287,6 +287,7 @@ client.on('message', message => {
   const cmdParams = {
     channel: message.channel,
     author: message.author,
+    member: message.member,
     arg: arg,
     cmd: arg[0],
     optionStr: cmdArg,
@@ -488,6 +489,14 @@ client.on('message', message => {
             message.guild.roles.cache.get(pkgoRole).setMentionable(false);
           });
         });
+  } else if (cmd === 'timeout') {
+    const notifChannel = {
+      [ pokeGuild ]: '423338578597380106',
+      [ tamaGuild ]: '723922820282843177',
+      [ theCompany ]: '422350585526747136',
+    };
+    cli.timeout(cmdParams, notifChannel[message.guild.id]);
+    // post notification
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     dex.checkPokeJobs(cmdArg, message);
   } else if (cmd === 'nature') {
@@ -630,10 +639,17 @@ client.on('message', message => {
   }
 });
 
-/* Raid emoji assignment */
 const emojiRoleAssignment = function(reaction, user, action) {
+/*  Emoji assignment function
+    Assigns a role based on what emoji is used to react to a specific message
+    @param reaction: reaction event message object from Discord
+    @param user: user Discord object that performed the react event
+    @param action: string, optional, accepts "add" or "remove" */
   const { pkgaEmojiRoles, tamaEmojiRoles } = configJSON;
   function emojiAssignLogic(roleList, outputChannel) {
+  /*  Helper function for reusability 
+      @param roleList: object, shows what roles correspond to the emoji reaction
+      @param outputChannel: string, id number of the output channel */
     let member, roleResult;
     let role = roleList[reaction.emoji.name];
     if (role) {
