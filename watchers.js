@@ -164,6 +164,21 @@ var timezoneCheck = function (location, callback) {
     });
 };
 
+const imageURLFromRedditAlbum = function(mediaMetadata) {
+  /*  retrieves the 640px size image URL from a Reddit album's metadata property
+      @param mediaMetadata: object, takes the media_metadata from post listing
+      returns the url as string */
+  let url;
+  for (var key in mediaMetadata) {
+    for (let x = 3; x >= 0; x--) {
+      url = mediaMetadata[key].p[x].u;
+      if (url) { break; } 
+    }
+    if (url) { break; }
+  }
+  return url;
+};
+
 
 
 module.exports = {
@@ -175,4 +190,5 @@ module.exports = {
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
   nickAndUser: nickAndUser,
+  imageURLFromRedditAlbum: imageURLFromRedditAlbum
 };

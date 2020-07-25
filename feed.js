@@ -371,6 +371,11 @@ var pushPost = function(ids) {
               embed.setImage(post.url)
                 .setURL(`https://redd.it/${post.id}`);
             }
+            if (post.is_gallery) {
+              let imageURL = watch.imageURLFromRedditAlbum(post.media_metadata);
+              embed.setImage(imageURL)
+                .setURL(`https://redd.it/${post.id}`);
+            }
             if (post.link_flair_css_class === 'wallpaper') {
               artChannel().send(embed);
             } else if (post.link_flair_css_class === 'picture') {
@@ -422,10 +427,16 @@ const checkPostsTama = function() {
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
               .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
             if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
-              embed.setImage(post.url);
-              if (post.link_flair_css_class === 'wallpaper') {
-                artChannel().send(embed);
-              }
+              embed.setImage(post.url)
+                .setURL(`https://redd.it/${post.id}`);
+            }
+            if (post.is_gallery) {
+              let imageURL = watch.imageURLFromRedditAlbum(post.media_metadata);
+              embed.setImage(imageURL)
+                .setURL(`https://redd.it/${post.id}`);
+            }
+            if (post.link_flair_css_class === 'wallpaper') {
+              artChannel().send(embed);
             }
             if (post.link_flair_css_class === 'proposals') {
               proposalsChannel().send(embed);
