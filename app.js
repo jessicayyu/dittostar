@@ -151,8 +151,8 @@ client.on('message', message => {
     }
   }
   if (message.author.id === '172002275412279296') {
-    // removing Tatsu bot's level up messages from all channels except #bot-testing
-    if (message.content.includes('leveled up!') && message.channel.id !== '723922820282843178') {
+    // removing Tatsu bot's level up messages from all channels except #bot-commands
+    if (message.content.includes('leveled') && message.channel.id !== '723922820282843185') {
       message.delete({ timeout: 180000, reason: "Removing level-up message after delay."});
     }
   }

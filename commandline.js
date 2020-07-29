@@ -253,10 +253,6 @@ const timeout = function(msg, outChannel) {
   @params message: obj with message details
   @params timer: integer with time in seconds
   @params notify: output channel to record mute action  */
-  // check privileges
-  // check if muted
-  // if not mute, mute
-  // remove mute stats
   let modCheck = msg.member.roles.cache.find(r => r.name === 'Moderator');
   if (!modCheck) {
     msg.channel.send(`Are you a mod?`); 
