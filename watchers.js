@@ -6,10 +6,51 @@ moment().format();
 const mori = require('./ref/dialogue.json');
 
 // Helper functions. 
-// User-facing functions used in the command line interface of the bot are locationed in the bottom section.
 
 const rand = function(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
+};
+
+const cooldownCheck = function(msg, cooldown) {
+  /* Checks whether the message author is on cooldown
+      @param msg: message object from Discord or message event
+      @param cooldown: cooldown object to check users currently on cooldown */
+  let tally = cooldown[msg.author.id];
+  if (tally) {
+    if (tally === 1) {
+      msg.channel.send('Hey, slow down, please.');
+    }
+    cooldown[msg.author.id]++;
+    console.log(`cooldown ${msg.author.username} ${msg.cmd}`);
+    return cooldown[msg.author.id];
+  }
+  return false;
+}
+
+const setCooldown = function(userID, seconds, cooldown) {
+  /* Adds user to cooldown object, removes after set time 
+      @param user: string, user id number from Discord 
+      @param seconds: Number of seconds before removing from cooldown
+      @param cooldown: cooldown object to check users currently on cooldown */
+  let duration = parseInt(seconds) * 1000;
+  if (cooldown[userID]) {
+    cooldown[userID]++;
+  } else {
+    cooldown[userID] = 1;
+    setTimeout(() => {
+      delete cooldown[userID];
+    }, duration);
+  }
+};
+
+const rankCheck = function(msg, roleName = "Moderator") {
+  /* Checks whether or not the user has the proper authorization role
+      @param msg: message object from Discord or from the message event
+      @param roleName: the role required. Defaults to "Moderator" if none specified */
+  let modCheck = msg.member.roles.cache.find(r => r.name === roleName);
+  if (modCheck) return true;
+  console.log(`${nickAndUser(msg.author, msg.guild)} attempted to use ${msg.cmd}, not authorized.`)
+  return false;
 };
 
 const capitalize = function(inputText) {
@@ -179,10 +220,19 @@ const imageURLFromRedditAlbum = function(mediaMetadata) {
   return url;
 };
 
-
+const pickDialogue = function(array) {
+  /* Returns a random line of dialogue from array 
+    @param array: array with dialogue table */
+  let length = array.length;
+  let index = rand(length);
+  return array[index];
+};
 
 module.exports = {
   rand: rand,
+  cooldownCheck: cooldownCheck,
+  setCooldown: setCooldown,
+  rankCheck: rankCheck,
   checkKeywords: checkKeywords,
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
@@ -190,5 +240,6 @@ module.exports = {
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
   nickAndUser: nickAndUser,
-  imageURLFromRedditAlbum: imageURLFromRedditAlbum
+  imageURLFromRedditAlbum: imageURLFromRedditAlbum,
+  pickDialogue: pickDialogue
 };

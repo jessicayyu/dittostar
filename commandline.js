@@ -254,11 +254,7 @@ const timeout = function(msg, outChannel) {
   @params timer: integer with time in seconds
   @params notify: output channel to record mute action  */
   let modCheck = msg.member.roles.cache.find(r => r.name === 'Moderator');
-  if (!modCheck) {
-    msg.channel.send(`Are you a mod?`); 
-    console.log('Non-authorized user attempted to use timeout');
-    return false; 
-  }
+  if (!modCheck) return false;
   if (!msg.mentions.users.size) {
     msg.channel.send(`Mm-hm... wait who?`);
     console.log('No target specified');

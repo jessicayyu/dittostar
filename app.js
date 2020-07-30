@@ -20,7 +20,7 @@ const readline = require('readline');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 const cli = require('./commandline.js');
-var cooldown = new Set();
+var cooldown = {};
 var swear = {};
 const mori = require('./ref/dialogue.json');
 let setStandby = false;
@@ -44,14 +44,6 @@ const statusFunction = function () {
 }
 const statusDisplay = statusFunction();
 setInterval(statusDisplay, configJSON.statusRefresh * 60000);
-
-const setCooldown = function(user, seconds) {
-  let duration = seconds * 1000;
-  cooldown.add(user);
-  setTimeout(() => {
-    cooldown.delete(user);
-  }, duration);
-};
 
 if (configJSON.runFeedInApp) {
   setInterval(feed.modmailFeed, 180000);
@@ -160,9 +152,8 @@ client.on('message', message => {
     let mute = message.guild.roles.cache.find(r => r.name === "mute");
     /* Remove Discord invites */
     if ((message.content.includes('discord.gg') || message.content.includes('discord.com/invite')) && !message.content.includes(configJSON.discordInvite)) {
-      let modCheck = message.member.roles.cache.find(r => r.name === 'Moderator');
       let username = watch.nickAndUser(message.author, message.guild);
-      if (!modCheck) {
+      if (!watch.rankCheck(message)) {
         let avatar = message.author.avatarURL({ format: 'png', dynamic: true, size: 64 });
         const embed = new Discord.MessageEmbed()
         .setAuthor(username, avatar)
@@ -332,8 +323,9 @@ client.on('message', message => {
       watch.applyRole('Trainers', message.guild, message.member);
     }
   } else if (cmd === 'raid') {
-    if (cooldown.has(message.author.id)) {
+    if (cooldown[message.author.id]) {
       message.channel.send('Hey, slow down, please.');
+      cooldown[message.author.id]++;
       console.log('cooldown ' + cmd);
       return;
     } else {
@@ -341,7 +333,7 @@ client.on('message', message => {
         return
       }
       cli.pingRaidRole(arg, message);
-      setCooldown(message.author.id, 15);
+      watch.setCooldown(message.author.id, 15);
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
@@ -361,8 +353,9 @@ client.on('message', message => {
       message.channel.send("I don't have to take orders from *you*.");
       return;
     }
-    if (cooldown.has(message.author.id)) {
+    if (cooldown[message.author.id]) {
       message.channel.send('Hey, slow down, please.');
+      cooldown[message.author.id]++;
       console.log('cooldown ' + cmd);
       return;
     }
@@ -452,8 +445,9 @@ client.on('message', message => {
       message.channel.send("I don't have to take orders from *you*.");
       return;
     }
-    if (cooldown.has(message.author.id)) {
+    if (cooldown[message.author.id]) {
       message.channel.send('Hey, slow down, please.');
+      cooldown[message.author.id]++;
       console.log('cooldown ' + cmd);
       return;
     }
@@ -490,13 +484,20 @@ client.on('message', message => {
           });
         });
   } else if (cmd === 'timeout') {
+    if (watch.cooldownCheck(cmdParams, cooldown) > 1) { 
+      return;
+    }
+    if (watch.rankCheck(cmdParams) === false) {
+      watch.setCooldown(message.author.id, 60, cooldown);
+      message.channel.send(watch.pickDialogue(mori.notMod));
+      return;
+    }
     const notifChannel = {
       [ pokeGuild ]: '423338578597380106',
       [ tamaGuild ]: '723922820282843177',
       [ theCompany ]: '422350585526747136',
     };
     cli.timeout(cmdParams, notifChannel[message.guild.id]);
-    // post notification
   } else if (cmd === 'pokejobs' || cmd === 'pokejob') {
     dex.checkPokeJobs(cmdArg, message);
   } else if (cmd === 'nature') {
@@ -509,8 +510,9 @@ client.on('message', message => {
     }
   } else if (cmd === 'ga') {
     if (message.guild.id === pokeGuild) {
-      if (cooldown.has(message.author.id)) {
+      if (cooldown[message.author.id]) {
         message.channel.send('Hey, slow down, please.');
+        cooldown[message.author.id]++;
         console.log('cooldown ' + cmd);
         return;
       }
