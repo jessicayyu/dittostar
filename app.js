@@ -323,10 +323,7 @@ client.on('message', message => {
       watch.applyRole('Trainers', message.guild, message.member);
     }
   } else if (cmd === 'raid') {
-    if (cooldown[message.author.id]) {
-      message.channel.send('Hey, slow down, please.');
-      cooldown[message.author.id]++;
-      console.log('cooldown ' + cmd);
+    if (watch.cooldownCheck(cmdParams, cooldown)) {
       return;
     } else {
       if (message.guild.id !== pokeGuild) {
@@ -348,32 +345,24 @@ client.on('message', message => {
     if (message.guild.id !== pokeGuild && message.guild.id !== tamaGuild) {
       return;
     }
-    var findRole = message.member.roles.cache.find(r => r.name === "Moderator");
-    if (!findRole) {
-      message.channel.send("I don't have to take orders from *you*.");
+    if (watch.cooldownCheck(cmdParams, cooldown)) {
       return;
     }
-    if (cooldown[message.author.id]) {
-      message.channel.send('Hey, slow down, please.');
-      cooldown[message.author.id]++;
-      console.log('cooldown ' + cmd);
+    if (watch.rankCheck(cmdParams) === false) {
+      watch.setCooldown(message.author.id, 60, cooldown);
+      message.channel.send(watch.pickDialogue(mori.notMod));
       return;
     }
-    if (cmd === 'pushpost') {
-      if (cmdArg.includes('.com')) {
-        cmdArg = cmdArg.match(/\/(\w{6})\//gi);
-        for (let x = 0; x < cmdArg.length; x++) {
-          cmdArg[x] = cmdArg[x].slice(1, cmdArg[x].length - 1);
-        }
-      } else {
-        cmdArg = cmdArg.match(/\w{6}/gi);
+    if (cmdArg.includes('.com')) {
+      cmdArg = cmdArg.match(/\/(\w{6})\//gi);
+      for (let x = 0; x < cmdArg.length; x++) {
+        cmdArg[x] = cmdArg[x].slice(1, cmdArg[x].length - 1);
       }
-      feed.pushPost(cmdArg);
+    } else {
+      cmdArg = cmdArg.match(/\w{6}/gi);
     }
-    cooldown.add(message.author.id);
-    setTimeout(() => {
-      cooldown.delete(message.author.id);
-    }, 120000);
+    feed.pushPost(cmdArg);
+    watch.setCooldown(message.author.id, 60, cooldown);
   } else if (cmd === 'time') {
     /* time CLI */
     if (!arg[1]) {
@@ -440,15 +429,12 @@ client.on('message', message => {
       })
     }
   } else if (cmd === 'pkgo' || cmd === 'pkgo2') {
-    var findRole = message.member.roles.cache.find(r => r.name === "Moderator");
-    if (!findRole) {
-      message.channel.send("I don't have to take orders from *you*.");
+    if (watch.cooldownCheck(cmdParams, cooldown)) { 
       return;
     }
-    if (cooldown[message.author.id]) {
-      message.channel.send('Hey, slow down, please.');
-      cooldown[message.author.id]++;
-      console.log('cooldown ' + cmd);
+    if (watch.rankCheck(cmdParams) === false) {
+      watch.setCooldown(message.author.id, 60, cooldown);
+      message.channel.send(watch.pickDialogue(mori.notMod));
       return;
     }
     let index = prefix.length + cmd.length + 1;
@@ -510,10 +496,7 @@ client.on('message', message => {
     }
   } else if (cmd === 'ga') {
     if (message.guild.id === pokeGuild) {
-      if (cooldown[message.author.id]) {
-        message.channel.send('Hey, slow down, please.');
-        cooldown[message.author.id]++;
-        console.log('cooldown ' + cmd);
+      if (watch.cooldownCheck(cmdParams, cooldown)) { 
         return;
       }
       let privCheck = message.member.roles.cache.find(r => {
@@ -530,10 +513,7 @@ client.on('message', message => {
             .then(() => {
               message.guild.roles.cache.get(role).setMentionable(false);
             });
-          cooldown.add(message.author.id);
-          setTimeout(() => {
-            cooldown.delete(message.author.id);
-          }, 45000);
+          watch.setCooldown(message.author.id, 45, cooldown);
         });
       } else {
         message.channel.send('Hmm, this says you don\'t have permission. Maybe talk to one of my managers.')
