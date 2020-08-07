@@ -88,16 +88,27 @@ describe('Role testing', function () {
 });
 
 describe('Time Tests', function () {
-  function setResult(text) {
-    expect(text).to.include('My phone says');
-  }
   it('should return a time', function() {
+    // Count ignores the 2nd callback, which only sends flavor text.
+    let count = 0;
+    const setResult = function (text) {
+      if (count > 0) { 
+        return; 
+      }
+      expect(text).to.include('My phone says');
+      count++;
+    };
     watch.timezoneCheck('Europe/Amsterdam', setResult);
   });
 
   it('should fail because no location was passed', function() {
+    let count = 0;
     function testResult(text) {
+      if (count > 0) { 
+        return; 
+      }
       expect(text).to.include('Sorry, I only know the time in');
+      count++;
     }
     watch.timezoneCheck(null, testResult);  
   });
