@@ -57,9 +57,16 @@
     },
     "magnifying": [
         "Let me get my magnifying glass.",
-        "e n h a n c e",
+        "*e n h a n c e !!!*",
         "Maybe you need new glasses.",
         "Just squint harder? Okay, fine..."
+    ],
+    "notMod": [
+        "Where's your shiny, shiny badge, sheriff?",
+        "I'm busy.",
+        "Are you a mod? I don't think so.",
+        "That's nice, dear.",
+        "How about... no."
     ],
     "commandDex": {
         "discord": {

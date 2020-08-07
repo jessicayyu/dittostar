@@ -19,6 +19,9 @@ describe('Config file should be properly set up', function () {
     it('statusRefresh', function() {
       expect(config.statusRefresh).to.exist;
     });
+    it('rulesMessageDelete', function() {
+      expect(config.rulesMessageDelete).to.exist;
+    });
   });
 
   describe('Discord', function () {
@@ -69,7 +72,7 @@ describe('Config file should be properly set up', function () {
     });
 
     it('should have all keys', function() {
-      expect(config.tamaEmojiRoles).to.have.all.keys("🪔", "hellokitty", "🍬", "🧚", "🧹", "tamagotchi", "cinnamoroll");
+      expect(config.tamaEmojiRoles).to.have.all.keys("🪔", "hellokitty", "🍬", "🧚", "🧹", "tamagotchi", "cinnamoroll", "🥚", "🐇");
     });
   });
 });
