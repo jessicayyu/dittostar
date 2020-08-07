@@ -61,6 +61,30 @@ describe('Role testing', function () {
     let result = watch.toggleRole('pancake', guild, user, 'remove');
     expect(result).to.equal(false);
   });
+
+  describe('rankCheck', function() {
+    const memberFn = function(input) {
+      return { nickname: 'Rodeo' }
+    };
+    const msg = {
+      author: { username: 'Cowboy', discriminator: 1776 },
+      cmd: 'rankCheckTest',
+      guild: {
+        member: memberFn
+      }
+    };
+    msg.member = user;
+    user.roles.cache.push({ name: 'Moderator' });
+    it('should return true for authorized', function(){
+      let result = watch.rankCheck(msg);
+      expect(result).to.equal(true);
+    });
+    it('should return false for not authorized', function(){
+      user.roles.cache.pop();
+      let result = watch.rankCheck(msg);
+      expect(result).to.equal(false);
+    });
+  })
 });
 
 describe('Time Tests', function () {

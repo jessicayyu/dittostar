@@ -12,7 +12,7 @@ const rand = function(max, min = 0) {
 };
 
 const cooldownCheck = function(msg, cooldown) {
-  /* Checks whether the message author is on cooldown
+  /* Checks whether the message author is on cooldown. If yes, increments cooldown tick.
       @param msg: message object from Discord or message event
       @param cooldown: cooldown object to check users currently on cooldown */
   let tally = cooldown[msg.author.id];
