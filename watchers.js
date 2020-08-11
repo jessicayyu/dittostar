@@ -209,15 +209,15 @@ const imageURLFromRedditAlbum = function(mediaMetadata) {
   /*  retrieves the 640px size image URL from a Reddit album's metadata property
       @param mediaMetadata: object, takes the media_metadata from post listing
       returns the url as string */
-  let url;
+  let obj;
   for (var key in mediaMetadata) {
     for (let x = 3; x >= 0; x--) {
-      url = mediaMetadata[key].p[x].u;
-      if (url) { break; } 
+      obj = mediaMetadata[key].p[x];
+      if (obj && obj.u) { break; } 
     }
-    if (url) { break; }
+    if (obj && obj.u) { break; }
   }
-  return url;
+  return obj.u;
 };
 
 const pickDialogue = function(array) {

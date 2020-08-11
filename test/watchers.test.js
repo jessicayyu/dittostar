@@ -87,7 +87,7 @@ describe('Role testing', function () {
   })
 });
 
-describe('Time Tests', function () {
+describe('Time Tests', function() {
   it('should return a time', function() {
     // Count ignores the 2nd callback, which only sends flavor text.
     let count = 0;
@@ -111,5 +111,18 @@ describe('Time Tests', function () {
       count++;
     }
     watch.timezoneCheck(null, testResult);  
+  });
+});
+
+describe('Reddit album parsing', function() {
+  const mockData = require('../ref/mockdata.js');
+  console.log(mockData.redditGalleryMetadata);
+  it('should return an image url from album', function() {
+    let result = watch.imageURLFromRedditAlbum(mockData.redditGalleryMetadata);
+    expect(result).to.include('jpg');
+  });
+  it('should return an image url from the short album', function() {
+    let result = watch.imageURLFromRedditAlbum(mockData.shortRedditGallery);
+    expect(result).to.include('jpg');
   });
 });
