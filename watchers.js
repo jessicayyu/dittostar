@@ -168,7 +168,7 @@ var applyRole = function(role, guild, member) {
   if (!findRole) {
     let time = moment().format("MMM D h:mm:ss A");
     console.log(`${time} - ${role} not found.`);
-    return;
+    return false;
   }
   member.roles.add(findRole)
     .catch(console.error);

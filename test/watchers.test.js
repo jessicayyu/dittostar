@@ -61,6 +61,14 @@ describe('Role testing', function () {
     let result = watch.toggleRole('pancake', guild, user, 'remove');
     expect(result).to.equal(false);
   });
+  it('should fail because role doesn\'t exist on guild', function() {
+    let result = watch.applyRole('Garuda', guild, user);
+    expect(result).to.equal(false);
+  });
+
+  /* more applyRole test success */
+
+
 
   describe('rankCheck', function() {
     const memberFn = function(input) {
