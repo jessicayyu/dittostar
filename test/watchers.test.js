@@ -1,7 +1,7 @@
 var assert = require('assert');
 var expect = require('chai').expect;
 const watch = require('../watchers.js');
-const { timezoneCheck2 } = require('../watchers.js');
+const mori = require('../ref/dialogue.json');
 
 describe('checkKeywords', function () {
   let keywordsArr = ["shiny","sparkly","legend","discord", 
@@ -116,7 +116,6 @@ describe('Time Tests', function() {
 
 describe('Reddit album parsing', function() {
   const mockData = require('../ref/mockdata.js');
-  console.log(mockData.redditGalleryMetadata);
   it('should return an image url from album', function() {
     let result = watch.imageURLFromRedditAlbum(mockData.redditGalleryMetadata);
     expect(result).to.include('jpg');
@@ -124,5 +123,12 @@ describe('Reddit album parsing', function() {
   it('should return an image url from the short album', function() {
     let result = watch.imageURLFromRedditAlbum(mockData.shortRedditGallery);
     expect(result).to.include('jpg');
+  });
+});
+
+describe('pickDialogue', function() {
+  it('should return a string', function() {
+    let result = typeof watch.pickDialogue(mori.magnifying);
+    expect(result).to.equal('string');
   });
 });
