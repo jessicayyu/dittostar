@@ -35,6 +35,21 @@ function setStatus(bool) {
   }
 }
 
+// The discordjs messageReactionRemove wasn't working correctly before, hence the code below to patch the missing coverage and emit the event
+client.on('raw', packet => {
+  if (!['MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
+  const channel = client.channels.cache.get(packet.d.channel_id);
+  channel.messages.fetch(packet.d.message_id).then(message => {
+    let reaction =  { 
+      emoji: packet.d.emoji,
+      message: message 
+    };
+    if (packet.t === 'MESSAGE_REACTION_REMOVE') {
+        client.emit('messageReactionRemove', reaction, client.users.cache.get(packet.d.user_id));
+    }
+  });
+});
+
 const mildMoriGifs = [
     "https://media1.tenor.com/images/a3ba0942fdaf264d6562206a178c3ab6/tenor.gif", 
     "https://media1.tenor.com/images/a0cbd8c05bb9bf57ce383f87ed871b69/tenor.gif", 

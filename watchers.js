@@ -6,11 +6,52 @@ moment().format();
 const mori = require('./ref/dialogue.json');
 
 // Helper functions. 
-// User-facing functions used in the command line interface of the bot are locationed in the bottom section.
 
-function rand(max, min = 0) {
+const rand = function(max, min = 0) {
   return min + Math.floor(Math.random() * Math.floor(max));
+};
+
+const cooldownCheck = function(msg, cooldown) {
+  /* Checks whether the message author is on cooldown. If yes, increments cooldown tick.
+      @param msg: message object from Discord or message event
+      @param cooldown: cooldown object to check users currently on cooldown */
+  let tally = cooldown[msg.author.id];
+  if (tally) {
+    if (tally === 1) {
+      msg.channel.send('Hey, slow down, please.');
+    }
+    cooldown[msg.author.id]++;
+    console.log(`cooldown ${msg.author.username} ${msg.cmd}`);
+    return cooldown[msg.author.id];
+  }
+  return false;
 }
+
+const setCooldown = function(userID, seconds, cooldown) {
+  /* Adds user to cooldown object, removes after set time 
+      @param user: string, user id number from Discord 
+      @param seconds: Number of seconds before removing from cooldown
+      @param cooldown: cooldown object to check users currently on cooldown */
+  let duration = parseInt(seconds) * 1000;
+  if (cooldown[userID]) {
+    cooldown[userID]++;
+  } else {
+    cooldown[userID] = 1;
+    setTimeout(() => {
+      delete cooldown[userID];
+    }, duration);
+  }
+};
+
+const rankCheck = function(msg, roleName = "Moderator") {
+  /* Checks whether or not the user has the proper authorization role
+      @param msg: message object from Discord or from the message event
+      @param roleName: the role required. Defaults to "Moderator" if none specified */
+  let modCheck = msg.member.roles.cache.find(r => r.name === roleName);
+  if (modCheck) return true;
+  console.log(`${nickAndUser(msg.author, msg.guild)} attempted to use ${msg.cmd}, not authorized.`)
+  return false;
+};
 
 const capitalize = function(inputText) {
   //  input can be array or string
@@ -30,6 +71,15 @@ const capitalize = function(inputText) {
   });
   temp = temp.join(' ');
   return temp;
+};
+
+const nickAndUser = function(user, guild) {
+  let usernameText = `${user.username}#${user.discriminator}`;
+  let nickname = guild.member(user).nickname;
+  if (nickname) {
+    usernameText = nickname + ' - ' + usernameText;
+  }
+  return usernameText;
 };
 
 var checkKeywords = function(input, array) {
@@ -65,35 +115,42 @@ var checkKeywordsRegex = function(input, array) {
 };
 
 var unmute = function(message, seconds) {
-/*  param input: message object.
+/*  param input: Discord message object.
     param seconds: number of seconds until unmute. */
   setTimeout(() => {
-    let findMute = message.member.roles.find(r => r.name === "mute");
+    let findMute = message.member.roles.cache.find(r => r.name === "mute");
     if (findMute) {
-      message.member.removeRole(findMute);
+      message.member.roles.remove(findMute);
     }
   }, seconds * 1000);
 }
 
-var toggleRole = function(role, guild, user) {
+var toggleRole = function(role, guild, user, action = null) {
 /*  Applies or removes a role from a user.
-    param msgObj: message object
-    param role: string name of desired role */
-  var findRole = user.roles.find(r => r.name === role);
+    @param msgObj: message object
+    @param role: string name of desired role 
+    @param action: string indicating desired action, if restriction applies */
+  var findRole = user.roles.cache.find(r => r.name === role);
   var result;
   if (findRole) {
-    user.removeRole(findRole)
+    if (action === 'add') {
+      return false;
+    }
+    user.roles.remove(findRole)
       .catch(console.error);
       result = `removed @${role}`; 
   } else {
-    findRole = guild.roles.find(r => r.name === role);
-    user.addRole(findRole)
+    if (action === 'remove') {
+      return false;
+    }
+    findRole = guild.roles.cache.find(r => r.name === role);
+    user.roles.add(findRole)
       .catch(console.error)
       .then(() => {
         /* role organizing - Trainers grouping */
         if (guild.id === pokeGuild) {
-          let groupRole = guild.roles.get('691796497125212230');
-          user.addRole(groupRole)
+          let groupRole = guild.roles.cache.get('691796497125212230');
+          user.roles.add(groupRole)
             .catch(console.error)
           }
         });
@@ -102,19 +159,19 @@ var toggleRole = function(role, guild, user) {
   return result;
 };
 
-var applyRole = function(role, guild, user) {
+var applyRole = function(role, guild, member) {
   // Assigns a role to the user.
   // param role: string input, searches by name.
   // param guild: guild object from message
-  // param user: user object
-  var findRole = guild.roles.find(r => r.name === role);
+  // param member: member object
+  var findRole = guild.roles.cache.find(r => r.name === role);
   if (!findRole) {
     let time = moment().format("MMM D h:mm:ss A");
     console.log(`${time} - ${role} not found.`);
-    return;
+    return false;
   }
-  user.addRole(findRole)
-    .catch(console.error)
+  member.roles.add(findRole)
+    .catch(console.error);
 };
 
 var timezoneCheck = function (location, callback) {
@@ -148,16 +205,41 @@ var timezoneCheck = function (location, callback) {
     });
 };
 
+const imageURLFromRedditAlbum = function(mediaMetadata) {
+  /*  retrieves the 640px size image URL from a Reddit album's metadata property
+      @param mediaMetadata: object, takes the media_metadata from post listing
+      returns the url as string */
+  let obj;
+  for (var key in mediaMetadata) {
+    for (let x = 3; x >= 0; x--) {
+      obj = mediaMetadata[key].p[x];
+      if (obj && obj.u) { break; } 
+    }
+    if (obj && obj.u) { break; }
+  }
+  return obj.u;
+};
 
-// Command line interface functions - CLI
-
-
+const pickDialogue = function(array) {
+  /* Returns a random line of dialogue from array 
+    @param array: array with dialogue table */
+  let length = array.length;
+  let index = rand(length);
+  return array[index];
+};
 
 module.exports = {
+  rand: rand,
+  cooldownCheck: cooldownCheck,
+  setCooldown: setCooldown,
+  rankCheck: rankCheck,
   checkKeywords: checkKeywords,
   checkKeywordsRegex: checkKeywordsRegex,
   unmute: unmute,
   toggleRole: toggleRole,
   applyRole: applyRole,
   timezoneCheck: timezoneCheck,
+  nickAndUser: nickAndUser,
+  imageURLFromRedditAlbum: imageURLFromRedditAlbum,
+  pickDialogue: pickDialogue
 };

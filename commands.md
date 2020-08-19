@@ -17,6 +17,7 @@ The prefix can be set in the config.json file. Simply change the prefix to the d
 #### Discord Commands
 | Command | Argument | Description |  
 |-|-|-|  
+| avatar | [ *@username* ] - Displays 256px image of either your own avatar or someone else's. Command can also be used as `!ava` or `!pfp` |
 | friendcode | [ *@user* ] | Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. |  
 | fc | [ *@user* ] | Same command as `friendcode` | Saves a friend code to be used in `!fc` |
 | ctof | *number* |  Converts the temperature from Celsius to Fahrenheit" | 

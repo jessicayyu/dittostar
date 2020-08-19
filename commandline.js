@@ -1,9 +1,11 @@
+const Discord = require('discord.js');
 const axios = require('axios');
 const dex = require('./dex-helpers');
 const watch = require('./watchers.js');
 const db = require('./db.js');
 const mori = require('./ref/dialogue.json');
-const { prefix } = require('./config.json');
+const configJSON = require('./config.json');
+const { prefix } = configJSON;
 
 // Module containing the logic for the functions supporting the bot's command lines.
 
@@ -188,11 +190,11 @@ const pingRaidRole = function(arg, message) {
       index = prefix.length + cmd.length + 1;
     }
     let desc = message.content.slice(index);
-    message.guild.roles.get(role).setMentionable(true)
+    message.guild.roles.cache.get(role).setMentionable(true)
       .then(() => {
         message.channel.send('<@&' + role + '> ' + star + desc)
           .then(() => {
-            message.guild.roles.get(role).setMentionable(false);
+            message.guild.roles.cache.get(role).setMentionable(false);
           });
       });
   };
@@ -223,6 +225,67 @@ const redditCmd = function(message) {
   });
 };
 
+const showAvatar = function(msg) {
+  /*  Retrieves the profile pic of the target and sends in an embed
+      @param msg: obj of message data */
+  let user = msg.author;
+  let text = watch.rand(mori.magnifying.length);
+  text = mori.magnifying[text];
+  if (msg.mentions.users.size) {
+    user = msg.mentions.users.first();
+  }
+  if (!msg.guild.member(user)) {
+    msg.channel.send('Uh... who? Are you sure they\'re on this server?');
+    return false;
+  }
+  let username = watch.nickAndUser(user, msg.guild);
+  let avatar = user.avatarURL({ format: 'png', dynamic: true, size: 256 });
+  const embed = new Discord.MessageEmbed()
+    .setAuthor(username, 'https://i.imgur.com/0vy1FuQ.png')
+    .setColor('#C8506E')
+    .setImage(avatar);
+  msg.channel.send(text, embed);
+  return embed;
+};
+
+const timeout = function(msg, outChannel) {
+  /* Mutes a user, and then unmutes after set time. Returns notification embed. 
+  @params message: obj with message details
+  @params timer: integer with time in seconds
+  @params notify: output channel to record mute action  */
+  let modCheck = msg.member.roles.cache.find(r => r.name === 'Moderator');
+  if (!modCheck) return false;
+  if (!msg.mentions.users.size) {
+    msg.channel.send(`Mm-hm... wait who?`);
+    console.log('No target specified');
+    return false;
+  } 
+  const target = msg.mentions.users.first();
+  const targetMember = msg.guild.member(target);
+  const mute = targetMember.roles.cache.find(r => r.name === 'mute');
+  if (!mute) {
+    watch.applyRole('mute', msg.guild, targetMember);
+  }
+  let timer = msg.arg[2] ? parseInt(msg.arg[2]) : 600;
+  watch.unmute({ member: targetMember }, timer);
+  let unit = 'seconds';
+  if (timer === 600) {
+    timer = 10;
+    unit = 'minutes';
+  }
+  const avatar = target.avatarURL({ format: 'png', dynamic: true, size: 64 }); 
+  const username = watch.nickAndUser(target, msg.guild);
+  const embed = new Discord.MessageEmbed()
+    .setAuthor(username, avatar)
+    .setColor('#dd0000')
+    .setDescription(`${target} muted for ${timer} ${unit}`);
+  msg.channel.send(embed);
+  embed.setDescription(`${target} muted for ${timer} ${unit} by ${msg.author}`);
+  const modAlert = msg.guild.channels.cache.get(outChannel);
+  modAlert.send(embed).catch(console.error);
+  return embed;
+};
+
 const convert = function (direction, number) {
   /*  Converts temperature from Celsius to Fahrenheit
       @param direction: string, determines what the conversion is.
@@ -247,5 +310,7 @@ module.exports = {
   redditCmd: redditCmd,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
+  showAvatar: showAvatar,
+  timeout: timeout,
   convert: convert,
 };

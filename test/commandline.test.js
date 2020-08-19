@@ -70,29 +70,33 @@ describe('Pokedex commands', function () {
 describe('Temperature conversions', function () {
   describe('68°F', function () {
     let result = cli.convert('ftoc', '68');
+    result = parseInt(result);
     it('should return the correct temperature', function() {
-      expect(result).to.equal('20');
+      expect(result).to.equal(20);
     });
   });
 
   describe('-40°F', function () {
     let result = cli.convert('ftoc', '-40');
+    result = parseInt(result);
     it('should return the correct temperature', function() {
-      expect(result).to.equal('-40');
+      expect(result).to.equal(-40);
     });
   });
 
   describe('20°C', function () {
     let result = cli.convert('ctof', '20');
+    result = parseInt(result);
     it('should return the correct temperature', function() {
-      expect(result).to.equal('68');
+      expect(result).to.equal(68);
     });
   });
 
   describe('0°C', function () {
     let result = cli.convert('ctof', '0');
+    result = parseInt(result);
     it('should return the correct temperature', function() {
-      expect(result).to.equal('32');
+      expect(result).to.equal(32);
     });
   });
 }); 
