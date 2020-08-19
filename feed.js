@@ -125,12 +125,7 @@ var getModmail = function() {
         } 
         console.log("Subject: " + modmail.subject + "\nAuthor:" + modmail.participant.name + "\nhttps://mod.reddit.com/mail/all/" + modmail.id + "\nLast reply: " + modmail.messages[0].author.name.name + "\n ");
         const timestamp = moment(modmail.messages[0].date).format("dddd, MMMM Do YYYY h:mmA");
-        let body = "";
-        if (modmail.messages[0].bodyMarkdown.length > 100) {
-          body = modmail.messages[0].bodyMarkdown.slice(0,100) + ". . .";
-        } else {
-          body = modmail.messages[0].bodyMarkdown;
-        }
+        let body = truncate(modmail.messages[0].bodyMarkdown, 100);
         const embed = new Discord.MessageEmbed()
           .setTitle("Modmail: " + modmail.subject)
           .setURL("https://mod.reddit.com/mail/all/" + modmail.id)
@@ -421,14 +416,19 @@ const checkPostsTama = function() {
           const embed = new Discord.MessageEmbed()
           if (postTamaLinkClasses.indexOf(post.link_flair_css_class) >= 0) {
             console.log("post title: " + title + "\nauthor: /u/" + post.author.name + "\n" + post.permalink + "\n" + timestamp + "\n");
+            let body = timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")";
             embed.setColor(postColorsTama[post.link_flair_css_class])
               .setTitle(title)
               .setURL("https://redd.it/" + post.id)
               .setAuthor("/u/" + post.author.name, "https://i.imgur.com/AvNa16N.png", `https://www.reddit.com/u/${post.author.name}`)
-              .setDescription(timestamp + " at [redd.it/" + post.id + "](https://redd.it/" + post.id + ")");
+              .setDescription(body);
             if (post.url.endsWith('.jpg') || post.url.endsWith('.png')) {
               embed.setImage(post.url)
                 .setURL(`https://redd.it/${post.id}`);
+            }
+            if (post.selftext) {
+              let appendDesc = truncate(post.selftext, 150);
+              embed.setDescription(body + '\n' + appendDesc);
             }
             if (post.is_gallery) {
               let imageURL = watch.imageURLFromRedditAlbum(post.media_metadata);
