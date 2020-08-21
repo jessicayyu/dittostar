@@ -3,6 +3,29 @@ var expect = require('chai').expect;
 const watch = require('../watchers.js');
 const mori = require('../ref/dialogue.json');
 
+describe('cooldown check', function() {
+  let cooldown = {
+    '100': 1,
+    '200': 2
+  };
+  let msg = {
+    cmd: 'ping',
+    author: {
+      id: '300',
+      username: 'Sabriel'
+    }
+  };
+  it('should return false because user not on cooldown', function(){
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(false);
+  });
+  it('should return 2 because user is on cooldown', function() {
+    msg.author.id = 100;
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(false);
+  })
+});
+
 describe('checkKeywords', function () {
   let keywordsArr = ["shiny","sparkly","legend","discord", 
     "subscribe", "channel", "mod", "paypal", "ebay", 
