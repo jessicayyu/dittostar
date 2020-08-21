@@ -13,6 +13,9 @@ describe('cooldown check', function() {
     author: {
       id: '300',
       username: 'Sabriel'
+    },
+    channel: {
+      send: function() { return },
     }
   };
   it('should return false because user not on cooldown', function(){
@@ -22,7 +25,12 @@ describe('cooldown check', function() {
   it('should return 2 because user is on cooldown', function() {
     msg.author.id = 100;
     const result = watch.cooldownCheck(msg, cooldown);
-    expect(result).to.equal(false);
+    expect(result).to.equal(2);
+  })
+  it('should return 3 because user is on x2 cooldown', function() {
+    msg.author.id = 200;
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(3);
   })
 });
 
