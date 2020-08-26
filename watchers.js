@@ -172,6 +172,7 @@ var applyRole = function(role, guild, member) {
   }
   member.roles.add(findRole)
     .catch(console.error);
+  return true;
 };
 
 var timezoneCheck = function (location, callback) {

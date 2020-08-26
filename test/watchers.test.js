@@ -96,8 +96,11 @@ describe('Role testing', function () {
     let result = watch.applyRole('Garuda', guild, user);
     expect(result).to.equal(false);
   });
+  it('should add a role', function() {
+    let result = watch.applyRole('dinosaur', guild, user);
+    expect(result).to.equal(true);
+  });
 
-  /* more applyRole test success */
 
 
 
