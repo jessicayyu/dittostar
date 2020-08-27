@@ -34,6 +34,22 @@ describe('cooldown check', function() {
   })
 });
 
+describe('nickAndUser', function() {
+  let user = {
+    username: 'Kubera',
+    discriminator: 2000
+  };
+  const guild = {
+    member: function(person) {
+      return { nickname: 'Leez' };
+    }
+  }
+  it('should return a formatted username and nickname', function() {
+    let result = watch.nickAndUser(user, guild);
+    expect(result).to.equal('Leez - Kubera#2000');
+  });
+});
+
 describe('checkKeywords', function () {
   let keywordsArr = ["shiny","sparkly","legend","discord", 
     "subscribe", "channel", "mod", "paypal", "ebay", 
@@ -100,8 +116,6 @@ describe('Role testing', function () {
     let result = watch.applyRole('dinosaur', guild, user);
     expect(result).to.equal(true);
   });
-
-
 
 
   describe('rankCheck', function() {
