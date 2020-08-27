@@ -37,13 +37,15 @@ describe('cooldown check', function() {
 describe('nickAndUser', function() {
   let user = {
     username: 'Kubera',
-    discriminator: 2000
+    discriminator: 2000,
   };
   const guild = {
-    member: function(person) {
-      return { nickname: 'Leez' };
-    }
-  }
+    'Kubera': { nickname: 'Leez' },
+  };
+  guild.member = function(person) {
+    console.log(guild[person.username]);
+    return guild[person.username];
+  };
   it('should return a formatted username and nickname', function() {
     let result = watch.nickAndUser(user, guild);
     expect(result).to.equal('Leez - Kubera#2000');
