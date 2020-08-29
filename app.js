@@ -142,12 +142,6 @@ client.on('message', message => {
       message.delete({ timeout: configJSON.rulesMessageDelete, reason: "Removing rules message after delay."});
     }
   }
-  if (message.author.id === '172002275412279296') {
-    // removing Tatsu bot's level up messages from all channels except #bot-commands
-    if (message.content.includes('leveled') && message.channel.id !== '723922820282843185') {
-      message.delete({ timeout: 180000, reason: "Removing level-up message after delay."});
-    }
-  }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
     let mute = message.guild.roles.cache.find(r => r.name === "mute");
     /* Remove Discord invites */
