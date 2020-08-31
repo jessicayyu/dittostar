@@ -257,9 +257,10 @@ client.on('message', message => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 5000);
   }
-  if (message.author.id === '172002275412279296' && message.channel.id === '723922820282843185') {
-    if (message.attachments.height >= 128) {
-      message.delete({ timeout: 180000, reason: 'Deleting Tatus bot messages'});
+  // Tatsu bot messages
+  if (message.author.id === '172002275412279296' && message.channel.id !== '723922820282843185') {
+    if (message.attachments.length > 0) {
+      message.delete({ timeout: 180000, reason: 'Deleting Tatsu bot messages'});
     }
   }
   /* Bot commands, command line */
