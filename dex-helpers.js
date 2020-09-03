@@ -1,7 +1,6 @@
 const { getTypeWeaknesses } = require('poke-types');
 const Pokedex = require('pokedex.js');
 const pokedex = new Pokedex('en');
-const axios = require('axios');
 const pokeJobs = require('./ref/pokejobs.json');
 const prefix = require('./config.json');
 
