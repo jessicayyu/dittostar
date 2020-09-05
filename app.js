@@ -142,12 +142,6 @@ client.on('message', message => {
       message.delete({ timeout: configJSON.rulesMessageDelete, reason: "Removing rules message after delay."});
     }
   }
-  if (message.author.id === '172002275412279296') {
-    // removing Tatsu bot's level up messages from all channels except #bot-commands
-    if (message.content.includes('leveled') && message.channel.id !== '723922820282843185') {
-      message.delete({ timeout: 180000, reason: "Removing level-up message after delay."});
-    }
-  }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
     let mute = message.guild.roles.cache.find(r => r.name === "mute");
     /* Remove Discord invites */
@@ -262,6 +256,12 @@ client.on('message', message => {
     setTimeout(() => {
       message.channel.send('┬─┬ ノ( ゜-゜ノ)');
     }, 5000);
+  }
+  // Tatsu bot messages
+  if (message.author.id === '172002275412279296' && message.channel.id !== '723922820282843185') {
+    if (message.attachments.length > 0) {
+      message.delete({ timeout: 180000, reason: 'Deleting Tatsu bot messages'});
+    }
   }
   /* Bot commands, command line */
   if (!message.content.startsWith(prefix) || message.author.bot) {

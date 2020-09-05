@@ -3,6 +3,55 @@ var expect = require('chai').expect;
 const watch = require('../watchers.js');
 const mori = require('../ref/dialogue.json');
 
+describe('cooldown check', function() {
+  let cooldown = {
+    '100': 1,
+    '200': 2
+  };
+  let msg = {
+    cmd: 'ping',
+    author: {
+      id: '300',
+      username: 'Sabriel'
+    },
+    channel: {
+      send: function() { return },
+    }
+  };
+  it('should return false because user not on cooldown', function(){
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(false);
+  });
+  it('should return 2 because user is on cooldown', function() {
+    msg.author.id = 100;
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(2);
+  })
+  it('should return 3 because user is on x2 cooldown', function() {
+    msg.author.id = 200;
+    const result = watch.cooldownCheck(msg, cooldown);
+    expect(result).to.equal(3);
+  })
+});
+
+describe('nickAndUser', function() {
+  let user = {
+    username: 'Kubera',
+    discriminator: 2000,
+  };
+  const guild = {
+    'Kubera': { nickname: 'Leez' },
+  };
+  guild.member = function(person) {
+    console.log(guild[person.username]);
+    return guild[person.username];
+  };
+  it('should return a formatted username and nickname', function() {
+    let result = watch.nickAndUser(user, guild);
+    expect(result).to.equal('Leez - Kubera#2000');
+  });
+});
+
 describe('checkKeywords', function () {
   let keywordsArr = ["shiny","sparkly","legend","discord", 
     "subscribe", "channel", "mod", "paypal", "ebay", 
@@ -65,9 +114,10 @@ describe('Role testing', function () {
     let result = watch.applyRole('Garuda', guild, user);
     expect(result).to.equal(false);
   });
-
-  /* more applyRole test success */
-
+  it('should add a role', function() {
+    let result = watch.applyRole('dinosaur', guild, user);
+    expect(result).to.equal(true);
+  });
 
 
   describe('rankCheck', function() {

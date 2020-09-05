@@ -12,7 +12,7 @@ const rand = function(max, min = 0) {
 };
 
 const cooldownCheck = function(msg, cooldown) {
-  /* Checks whether the message author is on cooldown. If yes, increments cooldown tick.
+  /* Checks whether the message author is on cooldown. If yes, increments cooldown tick and returns the incremented number.
       @param msg: message object from Discord or message event
       @param cooldown: cooldown object to check users currently on cooldown */
   let tally = cooldown[msg.author.id];
@@ -172,6 +172,7 @@ var applyRole = function(role, guild, member) {
   }
   member.roles.add(findRole)
     .catch(console.error);
+  return true;
 };
 
 var timezoneCheck = function (location, callback) {
