@@ -259,7 +259,7 @@ client.on('message', message => {
   }
   // Tatsu bot messages
   if (message.author.id === '172002275412279296' && message.channel.id !== '723922820282843185') {
-    if (message.attachments.length > 0) {
+    if (message.attachments.some(attachment => attachment.height > 0)) {
       message.delete({ timeout: 180000, reason: 'Deleting Tatsu bot messages'});
     }
   }
