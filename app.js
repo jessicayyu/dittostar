@@ -72,6 +72,9 @@ client.on('guildMemberAdd', member => {
   ];
   let greetsArray = greets;
   let channel = member.guild.channels.cache.find(ch => ch.name === 'chat-main');
+  if (!channel) {
+    channel = member.guild.channels.cache.find(ch => ch.name.includes('main'));
+  }
   if (member.guild.id === configJSON.toasterGuild) {
     channel = member.guild.channels.cache.find(ch => ch.name === 'landing');
   } 
@@ -128,9 +131,7 @@ client.on('message', message => {
     return 
   }
   if (message.type === 'GUILD_MEMBER_JOIN') {
-    let toasterGuild = '633473228739837984';
-    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild && message.guild.id !== tamaGuild) {
-      console.log(`New user joined server ${member.guild.name}! ${username}`);
+    if (message.guild.id === configJSON.valorGuild) {
       return
     }
     message.delete()
