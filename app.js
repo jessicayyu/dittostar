@@ -546,11 +546,11 @@ client.on('message', message => {
     const commandDexDetail = mori.commandDexDetail;
     const query = arg[1];
     let commandDexKeys = '';
-    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). \nAvailable commands are: \n';
+    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` to see all Discord commands, Reference commands, or all emoticon commands (ex: `!help reference`). \nAvailable commands are: \n';
     const embed = new Discord.MessageEmbed()
       .setTitle('Bot Commands')
       .setAuthor('Mori', 'https://cdn.discordapp.com/avatars/402601316830150656/28e2cda952cf974c0866ac2df21b8274.png?size=32')
-      .setColor('#dd0000');
+      .setColor('#C8506E');
     if (!query) {
       embed.setDescription(commandIntro);
       for (var key in commandDex) {
@@ -561,24 +561,25 @@ client.on('message', message => {
       message.channel.send(embed);
       return;
     }
-    if (query === 'all') {
-      message.channel.send(commandIntro);
-      for (var key in commandDex) {
-        commandDexKeys += `**${key} commands**:\n`
-        for (var cmd in commandDex[key]) {
-          commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
-        }
-        message.channel.send(commandDexKeys);
-        commandDexKeys = '';
-      }
-      return;
-    } 
+    // if (query === 'all') {
+    //   message.channel.send(commandIntro);
+    //   for (var key in commandDex) {
+    //     commandDexKeys += `**${key} commands**:\n`
+    //     for (var cmd in commandDex[key]) {
+    //       commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
+    //     }
+    //     message.channel.send(commandDexKeys);
+    //     commandDexKeys = '';
+    //   }
+    //   return;
+    // } 
     if (commandDex[query]) {
-      commandDexKeys += `**${query} commands:**\n`
       for (var cmd in commandDex[query]) {
         commandDexKeys += `\`${cmd}\` ${commandDex[query][cmd]}\n`
       }
-      message.channel.send(commandDexKeys);
+      embed.setTitle(`**${query} commands:**`)
+        .setDescription(commandDexKeys);
+      message.channel.send(embed);
       return;
     } 
     if (commandDexDetail[query]) {
@@ -588,7 +589,8 @@ client.on('message', message => {
     if (!commandDexDetail[query]) {
       for (var key in commandDex) {
         if (commandDex[key][query]) {
-          message.channel.send(prefix + query + ' ' + commandDex[key][query]);
+          embed.setDescription(prefix + query + ' ' + commandDex[key][query]);
+          message.channel.send(embed);
           return;
         }
       }
