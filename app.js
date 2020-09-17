@@ -547,15 +547,18 @@ client.on('message', message => {
     const query = arg[1];
     let commandDexKeys = '';
     let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). \nAvailable commands are: \n';
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Bot Commands')
+      .setAuthor('Mori', 'https://cdn.discordapp.com/avatars/402601316830150656/28e2cda952cf974c0866ac2df21b8274.png?size=32')
+      .setColor('#dd0000');
     if (!query) {
-      commandDexKeys += commandIntro;
+      embed.setDescription(commandIntro);
       for (var key in commandDex) {
-        commandDexKeys += `**${key} commands**:\n`
         let commandArray = Object.keys(commandDex[key]);
         commandArray = commandArray.join(', ');
-        commandDexKeys += commandArray + '\n';
+        embed.addFields({name:`**${key} commands**`, value: commandArray, inline: true });
       }
-      message.channel.send(commandDexKeys);
+      message.channel.send(embed);
       return;
     }
     if (query === 'all') {
