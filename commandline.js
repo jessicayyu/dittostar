@@ -42,7 +42,11 @@ const formParse = function(arg, inputText) {
   */
   let form;
   let suffix = '';
+  let dexInc = 0;
   inputText = arg[2].toLowerCase();
+  if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
+    dexInc = arg.pop();
+  }
   let spaceInName = watch.checkKeywords(inputText,['mime', 'rime', 'tapu', 'type']);        
   if (spaceInName) {
     inputText = arg[arg.length-2] + " " + arg[arg.length-1];
@@ -76,7 +80,7 @@ const formParse = function(arg, inputText) {
   }
   return {
     form: form,
-    formCode: suffix,
+    formCode: suffix
   };
 };
 
@@ -94,8 +98,19 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
     ({form, formCode} = formParse(arg, cmdArg));
   }
   let pkmn, urlModifier, padNum;
+  let dexInc = 0;
   // pokedex.js reference will need to be used for both image and dex commands
   // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
+  if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
+    console.log('remove dexInc invoked');
+    dexInc = arg.pop();
+    let removeDexInc = cmdArg.length - dexInc.length - 1;
+    dexInc = parseInt(dexInc);
+    console.log(`cmdArg ${cmdArg}, removeDexInc ${removeDexInc}, dexInc ${dexInc}`);
+    let cmdArg2 = cmdArg.slice(0, removeDexInc);
+    cmdArg = cmdArg2;
+    console.log(`cmdArg modified: "${cmdArg}"`);
+  }
   if (form) {
     cmdArg = arg[2];
   }
@@ -104,6 +119,9 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
     message.channel.send('Looking up female Nidoran, Pokedex number 29. For male, please request male Nidoran, or number 32.');
   }
   pkmn = dex.queryPokedex(cmdArg);
+  if (dexInc !== 0 && pkmn.length > 0) {
+    pkmn = dex.queryPokedex(parseInt(pkmn[0].id) + dexInc);
+  }
   if (pkmn.length < 1) {
     message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
     return;

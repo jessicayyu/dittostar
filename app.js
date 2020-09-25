@@ -276,6 +276,7 @@ client.on('message', message => {
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+  // cmdArg is a string of the command modifiers
   const cmdParams = {
     channel: message.channel,
     author: message.author,
@@ -546,7 +547,7 @@ client.on('message', message => {
     const commandDexDetail = mori.commandDexDetail;
     const query = arg[1];
     let commandDexKeys = '';
-    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` to see all Discord commands, Reference commands, or all emoticon commands (ex: `!help reference`). \nAvailable commands are: \n';
+    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` to see all Discord commands, Reference commands, or all emoticon commands (ex: `!help reference`). \n\nAvailable commands are: \n';
     const embed = new Discord.MessageEmbed()
       .setTitle('Bot Commands')
       .setAuthor('Mori', 'https://cdn.discordapp.com/avatars/402601316830150656/28e2cda952cf974c0866ac2df21b8274.png?size=32')
