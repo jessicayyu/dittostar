@@ -65,6 +65,22 @@ describe('Pokedex commands', function () {
       expect(result).to.equal(expected);
     });
   });
+
+  describe('!dex pikachu +1', function() {
+    let expected = `#26 Raichu: https://www.serebii.net/pokedex-swsh/raichu/`;
+    let result = cli.numDexSprite('dex', ['dex', 'pikachu', '+1'], 'pikachu +1', stub);
+    it('should return the correct link', function() {
+      expect(result).to.equal(expected);
+    });
+  });
+
+  describe('!num Charizard -2', function() {
+    let expected = `#4 Charmander: <https://www.serebii.net/pokedex-swsh/charmander/>`;
+    let result = cli.numDexSprite('num', ['num', 'Charizard', '-2'], 'Charizard -2', stub);
+    it('should return the correct link', function() {
+      expect(result).to.equal(expected);
+    });
+  });
 }); 
 
 describe('Temperature conversions', function () {

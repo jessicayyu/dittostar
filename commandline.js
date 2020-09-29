@@ -102,7 +102,6 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
   // pokedex.js reference will need to be used for both image and dex commands
   // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
   if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
-    console.log('remove dexInc invoked');
     dexInc = arg.pop();
     let removeDexInc = cmdArg.length - dexInc.length - 1;
     dexInc = parseInt(dexInc);
