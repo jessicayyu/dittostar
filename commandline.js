@@ -105,10 +105,8 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
     dexInc = arg.pop();
     let removeDexInc = cmdArg.length - dexInc.length - 1;
     dexInc = parseInt(dexInc);
-    console.log(`cmdArg ${cmdArg}, removeDexInc ${removeDexInc}, dexInc ${dexInc}`);
     let cmdArg2 = cmdArg.slice(0, removeDexInc);
     cmdArg = cmdArg2;
-    console.log(`cmdArg modified: "${cmdArg}"`);
   }
   if (form) {
     cmdArg = arg[2];
@@ -118,6 +116,7 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
     message.channel.send('Looking up female Nidoran, Pokedex number 29. For male, please request male Nidoran, or number 32.');
   }
   pkmn = dex.queryPokedex(cmdArg);
+  // consults dex number modifier, if applicable
   if (dexInc !== 0 && pkmn.length > 0) {
     pkmn = dex.queryPokedex(parseInt(pkmn[0].id) + dexInc);
   }
