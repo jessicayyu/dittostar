@@ -5,7 +5,7 @@ const cli = require('../commandline.js');
 
 describe('formParse helper commands', function () {
   describe('formParse: Galarian Meowth', function () {
-    let obj = { form: 'galar', formCode: '-g' };
+    let obj = { form: 'galar', formCode: '-g', dexInc: 0 };
     let result = cli.formParse(['sprite', 'Galar', 'Meowth'], 'Galar Meowth');
     it('should return the correct obj', function() {
       assert.deepStrictEqual(result, obj);
@@ -13,7 +13,7 @@ describe('formParse helper commands', function () {
   });
 
   describe('formParse: female Pikachu', function () {
-    let obj = { form: 'female', formCode: '-f' };
+    let obj = { form: 'female', formCode: '-f', dexInc: 0 };
     let result = cli.formParse(['sprite', 'female', 'Pikachu'], 'female Pikachu');
     it('should return the correct obj', function() {
       assert.deepStrictEqual(result, obj);
@@ -21,7 +21,7 @@ describe('formParse helper commands', function () {
   });
 
   describe('formParse: Wash Rotom', function () {
-    let obj = { form: 'wash', formCode: '-w' };
+    let obj = { form: 'wash', formCode: '-w', dexInc: 0 };
     let result = cli.formParse(['sprite', 'Wash', 'Rotom'], 'Wash Rotom');
     it('should return the correct obj', function() {
       assert.deepStrictEqual(result, obj);
@@ -29,7 +29,7 @@ describe('formParse helper commands', function () {
   });
 
   describe('formParse: maLe MeOwsTic', function () {
-    let obj = { form: 'male', formCode: '' };
+    let obj = { form: 'male', formCode: '', dexInc: 0 };
     let result = cli.formParse(['sprite', 'male', 'Meowstic'], 'maLe MeOwsTic');
     it('should return the correct obj', function() {
       assert.deepStrictEqual(result, obj);
@@ -121,8 +121,17 @@ describe('Pokedex commands', function () {
   });
 
   describe('!sprite Galar Zigzagoon +1', function() {
-    let expected = `https://www.serebii.net/swordshield/pokemon/263-g.png`;
+    let expected = `https://www.serebii.net/swordshield/pokemon/264-g.png`;
     const params = parseCmd('!sprite Galar Zigzagoon +1');
+    let result = cli.numDexSprite(params.cmd, params.arg, params.cmdArg, stub);
+    it('should return the correct link', function() {
+      expect(result).to.equal(expected);
+    });
+  });
+
+  describe('!shiny Dartrix -1', function() {
+    let expected = `https://www.serebii.net/Shiny/SM/722.png`;
+    const params = parseCmd('!shiny Dartrix -1');
     let result = cli.numDexSprite(params.cmd, params.arg, params.cmdArg, stub);
     it('should return the correct link', function() {
       expect(result).to.equal(expected);

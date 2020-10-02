@@ -80,7 +80,8 @@ const formParse = function(arg, inputText) {
   }
   return {
     form: form,
-    formCode: suffix
+    formCode: suffix,
+    dexInc: dexInc
   };
 };
 
@@ -94,15 +95,17 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
   */
   let form;
   let formCode = '';
+  let dexInc = 0;
   if (arg[2] && (cmd === 'sprite' || cmd === 'shiny')) {
-    ({form, formCode} = formParse(arg, cmdArg));
+    ({form, formCode, dexInc} = formParse(arg, cmdArg));
   }
   let pkmn, urlModifier, padNum;
-  let dexInc = 0;
   // pokedex.js reference will need to be used for both image and dex commands
   // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
   if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
     dexInc = arg.pop();
+  }
+  if (dexInc !== 0) {
     let removeDexInc = cmdArg.length - dexInc.length - 1;
     dexInc = parseInt(dexInc);
     let cmdArg2 = cmdArg.slice(0, removeDexInc);
@@ -154,6 +157,7 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
         message.channel.send('Sorry, not finding anything for that.');
         console.log(error.response.status);
       });
+    return `https://www.serebii.net/${urlModifier}/${padNum}${formCode}.png`;
   }
 };
 
