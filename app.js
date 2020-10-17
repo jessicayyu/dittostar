@@ -23,6 +23,7 @@ const cli = require('./commandline.js');
 var cooldown = {};
 var swear = {};
 const mori = require('./ref/dialogue.json');
+mori.emoji = require('./ref/emoji.json');
 let setStandby = false;
 
 /* RNG: random number generator */
@@ -611,16 +612,8 @@ client.on('message', message => {
     const embed = new Discord.MessageEmbed()
       .setImage('https://i.imgur.com/qTF3UOi.jpg')
     message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
-  } else if (cmd === 'tableflip') {
-    message.channel.send('(╯°□°）╯︵ ┻━┻');
-  } else if (cmd === 'concern') {
-    message.channel.send('<:concern:691821511845085244>');
-  } else if (cmd === 'moriban') {
-    message.channel.send('<moriban:766916174230585394>');
-  } else if (cmd === 'sweat') {
-    message.channel.send('<moriweat:766917539954688031>');
-  } else if (cmd === mori.commandDex.emoticon[cmd]) {
-    message.channel.send(mori.commandDex.emoticon[cmd]);
+  } else if (mori.emoji[cmd]) {
+    message.channel.send(mori.emoji[cmd]);
   }
 });
 
