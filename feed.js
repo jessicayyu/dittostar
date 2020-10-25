@@ -225,7 +225,7 @@ var checkPosts = function() {
             if (filterCheck !== 0) {
               return;
             }
-            const keywordArr = ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
+            const keywordArr = ["shiny", "shinies","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
             let matchers = watch.checkKeywords(post.selftext, keywordArr);
             if (!matchers) {
               matchers = watch.checkKeywords(post.title, keywordArr);
@@ -293,7 +293,7 @@ var checkComments = function() {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished) {
             let alwaysAlert = watch.checkKeywords(comment.body, ["mod","paypal","ebay","venmo"]);
-            let rule2Match = watch.checkKeywords(comment.body, ["shiny","legend","mythical"]);
+            let rule2Match = watch.checkKeywords(comment.body, ["shiny","shinies","legend","mythical"]);
             if (alwaysAlert || rule2Match) {
               let linkID = comment.link_id.split('_')[1];
               r.getSubmission(linkID).fetch()
