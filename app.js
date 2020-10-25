@@ -23,6 +23,7 @@ const cli = require('./commandline.js');
 var cooldown = {};
 var swear = {};
 const mori = require('./ref/dialogue.json');
+mori.emoji = require('./ref/emoji.json');
 let setStandby = false;
 
 /* RNG: random number generator */
@@ -597,18 +598,6 @@ client.on('message', message => {
       }
     } 
     message.channel.send("Sorry, I don't understand.");
-  } else if (cmd === 'lenny') {
-    message.channel.send('( ͡° ͜ʖ ͡°)');
-  } else if (cmd === 'stare') {
-    message.channel.send('ಠ\\_\\_\\_ಠ');
-  } else if (cmd === 'shrug') {
-    message.channel.send('¯\\_(ツ)_/¯');
-  } else if (cmd === 'denko') {
-    message.channel.send('(´・ω・`)');
-  } else if (cmd === 'tableflip') {
-    message.channel.send('(╯°□°）╯︵ ┻━┻');
-  } else if (cmd === 'magic') {
-    message.channel.send('(ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧:');
   } else if (cmd === 'events') {
     message.channel.send('https://www.reddit.com/r/pokemontrades/wiki/events');
   } else if (cmd === 'ballsprites') {
@@ -623,8 +612,8 @@ client.on('message', message => {
     const embed = new Discord.MessageEmbed()
       .setImage('https://i.imgur.com/qTF3UOi.jpg')
     message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
-  } else if (cmd === 'concern') {
-    message.channel.send('<:concern:691821511845085244>');
+  } else if (mori.emoji[cmd]) {
+    message.channel.send(mori.emoji[cmd]);
   }
 });
 
