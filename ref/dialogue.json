@@ -82,7 +82,8 @@
             "ctof": "[ number ] - Converts the temperature from Celsius to Fahrenheit",
             "ftoc": "[ number ] - Converts the temperature from Fahrenheit to Celsius",
             "mori": "Mori's employee photo",
-            "avatar": "[ *(optional)* @username ] - Displays 256px image of either your own avatar or someone else's. Command can also be used as `!ava` or `!pfp`"
+            "avatar": "[ *(optional)* @username ] - Displays 256px image of either your own avatar or someone else's. Command can also be used as `!ava` or `!pfp`",
+            "genshin": "[ *(optional) @user* | *Reddit username* ] - Can be used as `!genshin` to return your own saved friend code, or you can ping a user or use `!genshin @username` to see their saved friend code."
         },
         "reference": {
             "ballsprites": "shows a picture of all the Pokeball mini-sprites",
