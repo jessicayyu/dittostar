@@ -322,9 +322,6 @@ client.on('message', message => {
           message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
         });
     }
-    if (arg[1] === 'genshin') {
-      db.writeField('genshin', textEntry.toLowerCase(), message).catch(console.error);
-    }
     if (message.guild.id === pokeGuild) {
       watch.applyRole('Trainers', message.guild, message.member);
     }
@@ -376,8 +373,8 @@ client.on('message', message => {
       return;
     }
     cli.timeCmd(cmdParams, speak);
-  } else if (cmd === 'reddit' || cmd === 'genshin') {
-    cli.dbRead(cmdParams);
+  } else if (cmd === 'reddit') {
+    cli.redditCmd(message);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     cli.numDexSprite(cmd, arg, cmdArg, message);
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {

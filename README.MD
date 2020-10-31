@@ -74,12 +74,6 @@ The Reddit Feed can be run separately, if config.json is set to `runFeedInApp: f
 
 File `ecosystem.config.js` specifies restart strategies and can be modified for static restart times.
 
-## Adding DittoStar to a server
-Note that DittoStar is a private bot at this time. Replace `<CLIENT ID>` with your actual client ID.
-```
-https://discord.com/oauth2/authorize?scope=bot&permissions=519232&client_id=<CLIENT ID>
-```
-
 ## Authors
 
 * **Jessica Yu** - [Github](https://github.com/jessicayyu)

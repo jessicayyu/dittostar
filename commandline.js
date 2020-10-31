@@ -219,20 +219,17 @@ const pingRaidRole = function(arg, message) {
       });
   };
 
-const dbRead = function(message) {
-  let userIDorName, query, reply;
+const redditCmd = function(message) {
+  let query, userIDorName;
+  cmd = 'reddit';
   if (message.mentions.users.size) {
     userIDorName = message.mentions.users.first().id;
     userIDorName = userIDorName.toString();
-    query = 'userid';
+    query = 'userid'
   } else {
-    query = message.cmd;
-    userIDorName = message.optionStr;
+    userIDorName = message.content.slice(prefix.length + cmd.length + 1);
     userIDorName = userIDorName.toLowerCase();
-    if (!userIDorName) {
-      userIDorName = message.author.id;
-      query = 'userid';
-    }
+    query = 'reddit';
   }
   db.Member.findOne({ [query]: userIDorName}, function (err, data) {
     if (err) return console.error(err);
@@ -240,17 +237,11 @@ const dbRead = function(message) {
       message.channel.send('Sorry, nobody matches this in my database.');
       return;
     }
-    if (!data.userid || !data[message.cmd]) {
+    if (!data.userid || !data.reddit) {
       message.channel.send('Well, I know the person, but they didn\'t register that info with me.')
       return;
     }
-    if (message.cmd === 'reddit') {
-      reply = `<@${data.userid}> is /u/${data.reddit}, I think.`;
-    }
-    if (message.cmd === 'genshin') {
-      reply = `Their Genshin Impact friend code is ${data.genshin}.`;
-    }
-    message.channel.send(reply);
+    message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
   });
 };
 
@@ -336,7 +327,7 @@ module.exports = {
   friendCode: friendCode,
   formParse: formParse,
   numDexSprite: numDexSprite,
-  dbRead: dbRead,
+  redditCmd: redditCmd,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
   showAvatar: showAvatar,

@@ -22,8 +22,7 @@ var memberSchema = new Schema({
   friendcode: String,
   timezone: String,
   nick: String,
-  reddit: String,
-  genshin: String
+  reddit: String
 });
 var Member = mongoose.model('Member', memberSchema);
 
@@ -34,7 +33,7 @@ const writeField = async function(field, textEntry, message) {
   param message: message object 
   */
   let profile = await Member.findOne({userid: message.author.id});
-  if (textEntry === 'delete' || textEntry === 'remove') {
+  if (textEntry === 'delete' || textEntry === 'remote') {
     textEntry = '';
   }
   if (profile === null) {
