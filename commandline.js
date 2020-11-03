@@ -42,7 +42,11 @@ const formParse = function(arg, inputText) {
   */
   let form;
   let suffix = '';
+  let dexInc = 0;
   inputText = arg[2].toLowerCase();
+  if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
+    dexInc = arg.pop();
+  }
   let spaceInName = watch.checkKeywords(inputText,['mime', 'rime', 'tapu', 'type']);        
   if (spaceInName) {
     inputText = arg[arg.length-2] + " " + arg[arg.length-1];
@@ -77,6 +81,7 @@ const formParse = function(arg, inputText) {
   return {
     form: form,
     formCode: suffix,
+    dexInc: dexInc
   };
 };
 
@@ -90,12 +95,22 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
   */
   let form;
   let formCode = '';
+  let dexInc = 0;
   if (arg[2] && (cmd === 'sprite' || cmd === 'shiny')) {
-    ({form, formCode} = formParse(arg, cmdArg));
+    ({form, formCode, dexInc} = formParse(arg, cmdArg));
   }
   let pkmn, urlModifier, padNum;
   // pokedex.js reference will need to be used for both image and dex commands
   // in image commands, will be used to determine which pokedex to use because many Pokemon aren't in the Galar pokedex.
+  if (arg[arg.length - 1][0] === '-' || arg[arg.length - 1][0] === '+') {
+    dexInc = arg.pop();
+  }
+  if (dexInc !== 0) {
+    let removeDexInc = cmdArg.length - dexInc.length - 1;
+    dexInc = parseInt(dexInc);
+    let cmdArg2 = cmdArg.slice(0, removeDexInc);
+    cmdArg = cmdArg2;
+  }
   if (form) {
     cmdArg = arg[2];
   }
@@ -104,6 +119,10 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
     message.channel.send('Looking up female Nidoran, Pokedex number 29. For male, please request male Nidoran, or number 32.');
   }
   pkmn = dex.queryPokedex(cmdArg);
+  // consults dex number modifier, if applicable
+  if (dexInc !== 0 && pkmn.length > 0) {
+    pkmn = dex.queryPokedex(parseInt(pkmn[0].id) + dexInc);
+  }
   if (pkmn.length < 1) {
     message.channel.send('I dunno what Pokemon that is. Did you spell that right?');
     return;
@@ -138,6 +157,7 @@ const numDexSprite = function(cmd, arg, cmdArg, message) {
         message.channel.send('Sorry, not finding anything for that.');
         console.log(error.response.status);
       });
+    return `https://www.serebii.net/${urlModifier}/${padNum}${formCode}.png`;
   }
 };
 
@@ -199,17 +219,20 @@ const pingRaidRole = function(arg, message) {
       });
   };
 
-const redditCmd = function(message) {
-  let query, userIDorName;
-  cmd = 'reddit';
+const dbRead = function(message) {
+  let userIDorName, query, reply;
   if (message.mentions.users.size) {
     userIDorName = message.mentions.users.first().id;
     userIDorName = userIDorName.toString();
-    query = 'userid'
+    query = 'userid';
   } else {
-    userIDorName = message.content.slice(prefix.length + cmd.length + 1);
+    query = message.cmd;
+    userIDorName = message.optionStr;
     userIDorName = userIDorName.toLowerCase();
-    query = 'reddit';
+    if (!userIDorName) {
+      userIDorName = message.author.id;
+      query = 'userid';
+    }
   }
   db.Member.findOne({ [query]: userIDorName}, function (err, data) {
     if (err) return console.error(err);
@@ -217,11 +240,17 @@ const redditCmd = function(message) {
       message.channel.send('Sorry, nobody matches this in my database.');
       return;
     }
-    if (!data.userid || !data.reddit) {
+    if (!data.userid || !data[message.cmd]) {
       message.channel.send('Well, I know the person, but they didn\'t register that info with me.')
       return;
     }
-    message.channel.send(`<@${data.userid}> is /u/${data.reddit}, I think.`)
+    if (message.cmd === 'reddit') {
+      reply = `<@${data.userid}> is /u/${data.reddit}, I think.`;
+    }
+    if (message.cmd === 'genshin') {
+      reply = `Their Genshin Impact friend code is ${data.genshin}.`;
+    }
+    message.channel.send(reply);
   });
 };
 
@@ -307,7 +336,7 @@ module.exports = {
   friendCode: friendCode,
   formParse: formParse,
   numDexSprite: numDexSprite,
-  redditCmd: redditCmd,
+  dbRead: dbRead,
   timeCmd: timeCmd,
   pingRaidRole: pingRaidRole,
   showAvatar: showAvatar,

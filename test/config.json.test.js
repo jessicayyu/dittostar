@@ -43,6 +43,9 @@ describe('Config file should be properly set up', function () {
     it('toasterGuild', function() {
       expect(config.toasterGuild).to.exist;
     });
+    it('valorGuild', function() {
+      expect(config.valorGuild).to.exist;
+    });
   });
 
   describe('Reddit', function () {
@@ -62,7 +65,7 @@ describe('Config file should be properly set up', function () {
       expect(config.pkgaEmojiRoles).to.be.an('object');
     });
     it('should have all keys', function() {
-      expect(config.pkgaEmojiRoles).to.have.all.keys("gmax", "💝", "moonball");
+      expect(config.pkgaEmojiRoles).to.have.all.keys("gmax", "💝", "moonball", "🎲");
     });
   });
 

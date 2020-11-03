@@ -23,6 +23,7 @@ const cli = require('./commandline.js');
 var cooldown = {};
 var swear = {};
 const mori = require('./ref/dialogue.json');
+mori.emoji = require('./ref/emoji.json');
 let setStandby = false;
 
 /* RNG: random number generator */
@@ -72,6 +73,9 @@ client.on('guildMemberAdd', member => {
   ];
   let greetsArray = greets;
   let channel = member.guild.channels.cache.find(ch => ch.name === 'chat-main');
+  if (!channel) {
+    channel = member.guild.channels.cache.find(ch => ch.name.includes('main'));
+  }
   if (member.guild.id === configJSON.toasterGuild) {
     channel = member.guild.channels.cache.find(ch => ch.name === 'landing');
   } 
@@ -139,9 +143,7 @@ client.on('message', message => {
     return 
   }
   if (message.type === 'GUILD_MEMBER_JOIN') {
-    let toasterGuild = '633473228739837984';
-    if (message.guild.id !== pokeGuild && message.guild.id !== toasterGuild && message.guild.id !== tamaGuild) {
-      console.log(`New user joined server ${member.guild.name}! ${username}`);
+    if (message.guild.id === configJSON.valorGuild) {
       return
     }
     message.delete()
@@ -270,7 +272,7 @@ client.on('message', message => {
   }
   // Tatsu bot messages
   if (message.author.id === '172002275412279296' && message.channel.id !== '723922820282843185') {
-    if (message.attachments.length > 0) {
+    if (message.attachments.some(attachment => attachment.height > 0)) {
       message.delete({ timeout: 180000, reason: 'Deleting Tatsu bot messages'});
     }
   }
@@ -286,6 +288,7 @@ client.on('message', message => {
   var arg = message.content.slice(1).split(/ +/);
   var cmd = arg[0];
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
+  // cmdArg is a string of the command modifiers
   const cmdParams = {
     channel: message.channel,
     author: message.author,
@@ -329,6 +332,9 @@ client.on('message', message => {
           console.error('Set time error: ' + err.response.data.error);
           message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
         });
+    }
+    if (arg[1] === 'genshin') {
+      db.writeField('genshin', textEntry.toLowerCase(), message).catch(console.error);
     }
     if (message.guild.id === pokeGuild) {
       watch.applyRole('Trainers', message.guild, message.member);
@@ -381,8 +387,8 @@ client.on('message', message => {
       return;
     }
     cli.timeCmd(cmdParams, speak);
-  } else if (cmd === 'reddit') {
-    cli.redditCmd(message);
+  } else if (cmd === 'reddit' || cmd === 'genshin') {
+    cli.dbRead(cmdParams);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     cli.numDexSprite(cmd, arg, cmdArg, message);
   } else if (cmd === 'type' || cmd === 'ability' || cmd === 'ha') {
@@ -556,36 +562,40 @@ client.on('message', message => {
     const commandDexDetail = mori.commandDexDetail;
     const query = arg[1];
     let commandDexKeys = '';
-    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` or `!help all` to see only Discord commands, Reference commands, or all commands (ex: `!help reference`). \nAvailable commands are: \n';
+    let commandIntro = 'Use `!help [command]` to get more info on the command.\nYou can also use `!help [category]` to see all Discord commands, Reference commands, or all emoticon commands (ex: `!help reference`). \n\nAvailable commands are: \n';
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Bot Commands')
+      .setAuthor('Mori', 'https://cdn.discordapp.com/avatars/402601316830150656/28e2cda952cf974c0866ac2df21b8274.png?size=32')
+      .setColor('#C8506E');
     if (!query) {
-      commandDexKeys += commandIntro;
+      embed.setDescription(commandIntro);
       for (var key in commandDex) {
-        commandDexKeys += `**${key} commands**:\n`
         let commandArray = Object.keys(commandDex[key]);
         commandArray = commandArray.join(', ');
-        commandDexKeys += commandArray + '\n';
+        embed.addFields({name:`**${key} commands**`, value: commandArray, inline: true });
       }
-      message.channel.send(commandDexKeys);
+      message.channel.send(embed);
       return;
     }
-    if (query === 'all') {
-      message.channel.send(commandIntro);
-      for (var key in commandDex) {
-        commandDexKeys += `**${key} commands**:\n`
-        for (var cmd in commandDex[key]) {
-          commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
-        }
-        message.channel.send(commandDexKeys);
-        commandDexKeys = '';
-      }
-      return;
-    } 
+    // if (query === 'all') {
+    //   message.channel.send(commandIntro);
+    //   for (var key in commandDex) {
+    //     commandDexKeys += `**${key} commands**:\n`
+    //     for (var cmd in commandDex[key]) {
+    //       commandDexKeys += `\`${cmd}\` ${commandDex[key][cmd]}\n`
+    //     }
+    //     message.channel.send(commandDexKeys);
+    //     commandDexKeys = '';
+    //   }
+    //   return;
+    // } 
     if (commandDex[query]) {
-      commandDexKeys += `**${query} commands:**\n`
       for (var cmd in commandDex[query]) {
         commandDexKeys += `\`${cmd}\` ${commandDex[query][cmd]}\n`
       }
-      message.channel.send(commandDexKeys);
+      embed.setTitle(`**${query} commands:**`)
+        .setDescription(commandDexKeys);
+      message.channel.send(embed);
       return;
     } 
     if (commandDexDetail[query]) {
@@ -595,24 +605,13 @@ client.on('message', message => {
     if (!commandDexDetail[query]) {
       for (var key in commandDex) {
         if (commandDex[key][query]) {
-          message.channel.send(prefix + query + ' ' + commandDex[key][query]);
+          embed.setDescription(prefix + query + ' ' + commandDex[key][query]);
+          message.channel.send(embed);
           return;
         }
       }
     } 
     message.channel.send("Sorry, I don't understand.");
-  } else if (cmd === 'lenny') {
-    message.channel.send('( ͡° ͜ʖ ͡°)');
-  } else if (cmd === 'stare') {
-    message.channel.send('ಠ\\_\\_\\_ಠ');
-  } else if (cmd === 'shrug') {
-    message.channel.send('¯\\_(ツ)_/¯');
-  } else if (cmd === 'denko') {
-    message.channel.send('(´・ω・`)');
-  } else if (cmd === 'tableflip') {
-    message.channel.send('(╯°□°）╯︵ ┻━┻');
-  } else if (cmd === 'magic') {
-    message.channel.send('(ﾉ◕ヮ◕)ﾉ:･ﾟ✧・ﾟ:・ﾟ  : :･ﾟ・ﾟ･✧:・ﾟ  ::･ﾟ:・ﾟ:・ﾟ  ･ﾟ✧:');
   } else if (cmd === 'events') {
     message.channel.send('https://www.reddit.com/r/pokemontrades/wiki/events');
   } else if (cmd === 'ballsprites') {
@@ -627,8 +626,8 @@ client.on('message', message => {
     const embed = new Discord.MessageEmbed()
       .setImage('https://i.imgur.com/qTF3UOi.jpg')
     message.channel.send(`Can we not?? Fine, the picture is over on the wall over there... I'm employee of the month but the other employee *never* shows up. We're gonna get new uniforms soon.`,embed);
-  } else if (cmd === 'concern') {
-    message.channel.send('<:concern:691821511845085244>');
+  } else if (mori.emoji[cmd]) {
+    message.channel.send(mori.emoji[cmd]);
   }
 });
 

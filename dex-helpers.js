@@ -17,6 +17,7 @@ const capitalize = function(inputText) {
     temp = inputText.split(' ');
   }
   temp.forEach((input, i) => {
+    if (!input) { return; }
     let caseChange = input[0].toUpperCase() + input.slice(1).toLowerCase();
     temp[i] = caseChange;
   });

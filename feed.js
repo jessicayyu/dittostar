@@ -225,7 +225,7 @@ var checkPosts = function() {
             if (filterCheck !== 0) {
               return;
             }
-            const keywordArr = ["shiny","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
+            const keywordArr = ["shiny", "shinies","sparkly","legend","discord", "subscribe", "channel", "mod", "paypal", "ebay", "venmo", "instagram", "twitter", "youtube", "twitch", "tictoc", "tiktok","moderator"];
             let matchers = watch.checkKeywords(post.selftext, keywordArr);
             if (!matchers) {
               matchers = watch.checkKeywords(post.title, keywordArr);
@@ -293,7 +293,7 @@ var checkComments = function() {
           let timestamp = moment.utc(comment.created_utc * 1000).local().format("MMM D h:mm A");
           if (!comment.distinguished) {
             let alwaysAlert = watch.checkKeywords(comment.body, ["mod","paypal","ebay","venmo"]);
-            let rule2Match = watch.checkKeywords(comment.body, ["shiny","legend","mythical"]);
+            let rule2Match = watch.checkKeywords(comment.body, ["shiny","shinies","legend","mythical"]);
             if (alwaysAlert || rule2Match) {
               let linkID = comment.link_id.split('_')[1];
               r.getSubmission(linkID).fetch()
@@ -338,7 +338,8 @@ var checkComments = function() {
 const postColorsTama = {
   'proposals': '#1a9eb4', 
   'mod': '#fd0100',
-  'wallpaper': '#c894de'
+  'wallpaper': '#c894de',
+  'artwork': '#FAC02C'
 };
 
 const postTamaLinkClasses = Object.keys(postColorsTama);
@@ -371,12 +372,13 @@ var pushPost = function(ids) {
               embed.setImage(imageURL)
                 .setURL(`https://redd.it/${post.id}`);
             }
-            if (post.link_flair_css_class === 'wallpaper') {
+            if (post.link_flair_css_class === 'wallpaper' || post.link_flair_css_class === 'artwork') {
               artChannel().send(embed);
-            } else if (post.link_flair_css_class === 'picture') {
-              client.channels.cache.get('723930132133183579').set(embed);
-            } else {
+            } else if (post.link_flair_css_class === 'proposals') {
               proposalsChannel().send(embed);
+            } else {
+              // send pictures to #tama-pics
+              client.channels.cache.get('723930132133183579').set(embed);
             }
           } else {
             console.log(post.subreddit.display_name);
