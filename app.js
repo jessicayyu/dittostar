@@ -286,7 +286,7 @@ client.on('message', message => {
   }
   var role;
   var arg = message.content.slice(1).split(/ +/);
-  var cmd = arg[0];
+  var cmd = arg[0].toLowerCase();
   let cmdArg = message.content.slice(prefix.length + cmd.length + 1); 
   // cmdArg is a string of the command modifiers
   const cmdParams = {
@@ -294,7 +294,7 @@ client.on('message', message => {
     author: message.author,
     member: message.member,
     arg: arg,
-    cmd: arg[0],
+    cmd: arg[0].toLowerCase(),
     optionStr: cmdArg,
     mentions: message.mentions,
     guild: message.guild
@@ -333,7 +333,7 @@ client.on('message', message => {
           message.channel.send('Please pick a time zone from this list and submit it exactly as they wrote it: http://worldtimeapi.org/timezones');
         });
     }
-    if (arg[1] === 'genshin') {
+    if (arg[1] === 'genshin' || arg[1].toLowerCase() === 'genshin') {
       db.writeField('genshin', textEntry.toLowerCase(), message).catch(console.error);
     }
     if (message.guild.id === pokeGuild) {
@@ -387,7 +387,7 @@ client.on('message', message => {
       return;
     }
     cli.timeCmd(cmdParams, speak);
-  } else if (cmd === 'reddit' || cmd === 'genshin') {
+  } else if (cmd === 'reddit' || cmd === 'genshin' ) {
     cli.dbRead(cmdParams);
   } else if (cmd === 'dex' || cmd === 'num' || cmd === 'sprite' || cmd === 'shiny') {
     cli.numDexSprite(cmd, arg, cmdArg, message);

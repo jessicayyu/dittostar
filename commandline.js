@@ -248,7 +248,7 @@ const dbRead = function(message) {
       reply = `<@${data.userid}> is /u/${data.reddit}, I think.`;
     }
     if (message.cmd === 'genshin') {
-      reply = `Their Genshin Impact friend code is ${data.genshin}.`;
+      reply = 'Their Genshin Impact friend code is ```' + data.genshin + '```';
     }
     message.channel.send(reply);
   });
