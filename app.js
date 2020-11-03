@@ -83,7 +83,18 @@ client.on('guildMemberAdd', member => {
   let greeting = greetsArray[rand(greetsArray.length)];
   channel.send(greeting);
   if (member.guild.id === pokeGuild || member.guild.id === tamaGuild) {
-    channel.send("By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.");
+    let greet = 'By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.';
+    if (member.guild.id === tamaGuild) {
+      let randTamaTip = rand(10);
+      const tamaTipPrefix = '\n\nTama tip: ';
+      if (randTamaTip < 2) {
+        greet += tamaTipPrefix + 'Always finish naming your Tamagotchi On/Meets baby as soon as possible. It saves after naming, and if you idle out on that screen, your save might reset.';
+      }
+      if (randTamaTip === 2) {
+        greet += tamaTipPrefix + `Time spent in the mobile app doesn't count towards growth for your Tamagotchi On/Meets, and/or changing the clock while your Tama is a juvenile might delay their growth. Give them an extra 1-2 days to age up in case of delays. A little extra time is usually all you need.`;
+      }
+    }
+    channel.send(reply);
   }
   let username = member.nickname ? member.nickname : member.user.username;
   console.log(`\nNew user joined server ${member.guild.name}! ${username}\n`);
