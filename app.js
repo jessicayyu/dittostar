@@ -152,7 +152,7 @@ client.on('message', message => {
   if (message.author.id === '402601316830150656') {
     // If author is the bot itself, remove specific greet message after delay.
     if (message.content.includes('server nickname')) {
-      message.delete({ timeout: configJSON.rulesMessageDelete, reason: "Removing rules message after delay."});
+      message.delete({ timeout: configJSON.rulesMessageDelete, reason: 'Removing rules message after delay.'}).catch(console.error);
     }
   }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
