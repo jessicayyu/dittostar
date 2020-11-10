@@ -351,11 +351,13 @@ client.on('message', message => {
   } else if (cmd === 'role') {
     /* role assignment commands */
     const rolesAssignable = configJSON.pkgaRolesAssignable;
-    const roleName = arg[1].toLowerCase();
+    let roleName;
     if (rolesAssignable[roleName]) {
       if (message.guild.id !== pokeGuild) {
         message.channel.send(`Sorry, I don't do that on this server.`);
         return;
+      } else {
+        roleName = arg[1].toLowerCase();
       }
       let roleResult = watch.toggleRole(roleName, message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);

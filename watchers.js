@@ -125,12 +125,11 @@ var unmute = function(message, seconds) {
   }, seconds * 1000);
 }
 
-var toggleRole = function(roleInput, guild, user, action = null) {
-/*  Applies or removes a role from a user.
+var toggleRole = function(role, guild, user, action = null) {
+/*  Applies or removes a role from a user. Used on multiple servers, so please keep in mind role naming schemes.
     @param msgObj: message object
-    @param roleInput: string name of desired role, not case sensitive. 
+    @param role: string name of desired role, not case sensitive. 
     @param action: string indicating desired action, if restriction applies */
-  const role = roleInput.toLowerCase();
   var findRole = user.roles.cache.find(r => r.name === role);
   var guildRole = guild.roles.cache.find(r => r.name === role);
   var result;
