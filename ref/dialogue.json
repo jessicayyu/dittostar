@@ -70,7 +70,7 @@
     ],
     "commandDex": {
         "discord": {
-            "role": "[ giveaways | raid | pokemongo ] - set your role to subscribe to notifications",
+            "role": "[ rolename | giveaways | raid | pokemongo ] - Add/remove a role. Add a role to subscribe to notifications",
             "fc": "[ *(optional) @user* | *Reddit username* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user or use `!fc reddit_username` to see their saved friend code.",
             "friendcode": "[ *(optional) @user* | *Reddit username* ] - Can be used as `!fc` to return your own saved friend code, or you can ping a user to see their saved friend code. Can search by Reddit username if registered.",
             "set": "[ fc | time | reddit ] [ friend code | time zone city | username ] - Saves info to be retrieved using `!fc`, `!time @user`, or `!reddit @user`",

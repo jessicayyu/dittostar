@@ -125,13 +125,18 @@ var unmute = function(message, seconds) {
   }, seconds * 1000);
 }
 
-var toggleRole = function(role, guild, user, action = null) {
+var toggleRole = function(roleInput, guild, user, action = null) {
 /*  Applies or removes a role from a user.
     @param msgObj: message object
-    @param role: string name of desired role 
+    @param roleInput: string name of desired role, not case sensitive. 
     @param action: string indicating desired action, if restriction applies */
+  const role = roleInput.toLowerCase();
   var findRole = user.roles.cache.find(r => r.name === role);
+  var guildRole = guild.roles.cache.find(r => r.name === role);
   var result;
+  if (!guildRole) {
+    return `... nevermind, uh, please contact my boss. I can't find that role on the guild, but the role is on my clipboard here...`;
+  }
   if (findRole) {
     if (action === 'add') {
       return false;
@@ -143,8 +148,7 @@ var toggleRole = function(role, guild, user, action = null) {
     if (action === 'remove') {
       return false;
     }
-    findRole = guild.roles.cache.find(r => r.name === role);
-    user.roles.add(findRole)
+    user.roles.add(guildRole)
       .catch(console.error)
       .then(() => {
         /* role organizing - Trainers grouping */

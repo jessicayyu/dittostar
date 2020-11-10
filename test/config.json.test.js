@@ -64,8 +64,12 @@ describe('Config file should be properly set up', function () {
     it('should be an object', function () {
       expect(config.pkgaEmojiRoles).to.be.an('object');
     });
-    it('should have all keys', function() {
+    it('should have all emoji keys', function() {
       expect(config.pkgaEmojiRoles).to.have.all.keys("gmax", "💝", "moonball", "🎲");
+    });
+
+    it('should have all assignable role keys', function() {
+      expect(config.pkgaRolesAssignable).to.have.all.keys("raid", "giveaways", "pokemongo", "spoilers", "apriballs", "gamenight", "genshin", "jojo", "santa");
     });
   });
 

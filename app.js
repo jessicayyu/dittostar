@@ -87,18 +87,23 @@ client.on('guildMemberAdd', member => {
   let greeting = greetsArray[rand(greetsArray.length)];
   channel.send(greeting);
   if (member.guild.id === pokeGuild || member.guild.id === tamaGuild) {
-    let greetExtended = 'By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.';
+    let serverNickname = 'By the way, could you change your server nickname to your Reddit username? The option is in the top-left next to the server name.';
+    channel.send(serverNickname)
+      .then(msg => {
+        msg.delete({ timeout: configJSON.rulesMessageDelete, reason: 'Removing rules message after delay.'}).catch(console.error);
+      });
     if (member.guild.id === tamaGuild) {
       let randTamaTip = rand(10);
+      let tamaTipMsg;
       const tamaTipPrefix = '\n\nTama tip: ';
       if (randTamaTip < 2) {
-        greetExtended +=`${tamaTipPrefix}Always finish naming your Tamagotchi On/Meets baby as soon as possible. It saves after naming, and if you idle out on that screen, your save might reset.`;
+        tamaTipMsg +=`${tamaTipPrefix}Always finish naming your Tamagotchi On/Meets baby as soon as possible. It saves after naming, and if you idle out on that screen, your save might reset.`;
       }
       if (randTamaTip === 2) {
-        greetExtended += `${tamaTipPrefix}Time spent in the mobile app doesn't count towards growth for your Tamagotchi On/Meets, and/or changing the clock while your Tama is a juvenile might delay their growth. Give them an extra 1-2 days to age up in case of delays. A little extra time is usually all you need.`;
+        tamaTipMsg += `${tamaTipPrefix}Time spent in the mobile app doesn't count towards growth for your Tamagotchi On/Meets, and/or changing the clock while your Tama is a juvenile might delay their growth. Give them an extra 1-2 days to age up in case of delays. A little extra time is usually all you need.`;
       }
+
     }
-    channel.send(greetExtended);
   }
   let username = member.nickname ? member.nickname : member.user.username;
   console.log(`\nNew user joined server ${member.guild.name}! ${username}\n`);
@@ -148,12 +153,6 @@ client.on('message', message => {
     }
     message.delete()
       .catch(console.error);
-  }
-  if (message.author.id === '402601316830150656') {
-    // If author is the bot itself, remove specific greet message after delay.
-    if (message.content.includes('server nickname')) {
-      message.delete({ timeout: configJSON.rulesMessageDelete, reason: 'Removing rules message after delay.'}).catch(console.error);
-    }
   }
   if (message.guild.id === pokeGuild || message.guild.id === tamaGuild) {
     let mute = message.guild.roles.cache.find(r => r.name === "mute");
@@ -351,11 +350,14 @@ client.on('message', message => {
     }
   } else if (cmd === 'role') {
     /* role assignment commands */
-    if (arg[1] === 'raid' || arg[1] === 'giveaways' || arg[1] === 'pokemongo' || arg[1] === 'spoilers' || arg[1] === 'apriballs') {
+    const rolesAssignable = configJSON.pkgaRolesAssignable;
+    const roleName = arg[1].toLowerCase();
+    if (rolesAssignable[roleName]) {
       if (message.guild.id !== pokeGuild) {
-        return
+        message.channel.send(`Sorry, I don't do that on this server.`);
+        return;
       }
-      let roleResult = watch.toggleRole(arg[1], message.guild, message.member);
+      let roleResult = watch.toggleRole(roleName, message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
     }
   } else if (cmd === 'pushpost') {
