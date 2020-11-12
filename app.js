@@ -666,9 +666,9 @@ const emojiRoleAssignment = function(reaction, user, action) {
   if (reaction.message.id ==='658214917027004436') {
     emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
   }
-  // if (reaction.message.id ==='701724293825953863') {
-  //   emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
-  // }
+  if (reaction.message.id ==='701724293825953863') {
+    emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
+  }
   if (reaction.message.id === '724063851351638016') {
     emojiAssignLogic(tamaEmojiRoles, '723922820282843185');
   }

@@ -73,7 +73,7 @@ client.on('ready', () => {
   getChannelsStartup();
   // pokeGuild emoji message cache
   cacheMessage('399407103959236618', '658214917027004436');
-  // cacheMessage('399407103959236618', '701724293825953863');
+  cacheMessage('399407103959236618', '701724293825953863');
   // tamaGuild emoji message cache
   cacheMessage('723922819859218546', '724063851351638016');
   modmailFeed();
