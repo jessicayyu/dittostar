@@ -22,7 +22,7 @@ startupTimer();
 
 const snoowrap = require('snoowrap');
 const Discord = require('discord.js');
-const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+const client = new Discord.Client({ partials: ['MESSAGE', 'GUILD_MEMBER', 'CHANNEL', 'REACTION'] });
 const configJSON = require('./config.json');
 const { subreddit, altReddit, pokeGuild, theCompany } = configJSON;
 const watch = require('./watchers.js');
@@ -73,6 +73,7 @@ client.on('ready', () => {
   getChannelsStartup();
   // pokeGuild emoji message cache
   cacheMessage('399407103959236618', '658214917027004436');
+  // cacheMessage('399407103959236618', '701724293825953863');
   // tamaGuild emoji message cache
   cacheMessage('723922819859218546', '724063851351638016');
   modmailFeed();

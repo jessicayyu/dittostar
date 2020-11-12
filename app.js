@@ -351,13 +351,13 @@ client.on('message', message => {
   } else if (cmd === 'role') {
     /* role assignment commands */
     const rolesAssignable = configJSON.pkgaRolesAssignable;
-    let roleName;
+    let roleName = arg[1];
     if (rolesAssignable[roleName]) {
       if (message.guild.id !== pokeGuild) {
         message.channel.send(`Sorry, I don't do that on this server.`);
         return;
       } else {
-        roleName = arg[1].toLowerCase();
+        roleName = roleName.toLowerCase();
       }
       let roleResult = watch.toggleRole(roleName, message.guild, message.member);
       message.channel.send(`Gotcha, I've ${roleResult}.`);
@@ -647,10 +647,16 @@ const emojiRoleAssignment = function(reaction, user, action) {
       @param roleList: object, shows what roles correspond to the emoji reaction
       @param outputChannel: string, id number of the output channel */
     let member, roleResult;
+    const { guild } = reaction.message;
     let role = roleList[reaction.emoji.name];
     if (role) {
-      member = reaction.message.channel.guild.members.cache.get(user.id);
-      roleResult = watch.toggleRole(role, reaction.message.channel.guild, member, action);
+      member = guild.members.cache.find(member => member.id === user.id);
+      if (!member) { 
+        console.log(`Failed to retrieve member ${user.id}`);
+        console.log(member);
+        return false;
+      }
+      roleResult = watch.toggleRole(role, guild, member, action);
       if (roleResult) {
         let botCommandsChannel = client.channels.cache.get(outputChannel);
         botCommandsChannel.send(`Okay <@${member.id}>, I've ${roleResult}.`);
@@ -660,6 +666,9 @@ const emojiRoleAssignment = function(reaction, user, action) {
   if (reaction.message.id ==='658214917027004436') {
     emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
   }
+  // if (reaction.message.id ==='701724293825953863') {
+  //   emojiAssignLogic(pkgaEmojiRoles, '423705492225916929');
+  // }
   if (reaction.message.id === '724063851351638016') {
     emojiAssignLogic(tamaEmojiRoles, '723922820282843185');
   }
